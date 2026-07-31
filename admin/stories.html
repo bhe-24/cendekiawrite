@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Moderasi Karya - Cendekia Aksara Admin</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: #001f3f;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-icon:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px;}
+
+        /* --- PENCARIAN & FILTER --- */
+        .search-section {
+            background: white; padding: 20px; border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 60px; z-index: 99; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .search-box {
+            display: flex; align-items: center; background: #f8fafc;
+            border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 15px;
+            transition: 0.3s;
+        }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,102,0.1); background: white; }
+        .search-box input { border: none; outline: none; background: transparent; flex: 1; font-family: 'Poppins'; font-size: 0.9rem; margin-left: 10px; color: var(--text-dark);}
+        .search-box i { color: #94a3b8; }
+
+        /* --- STORY LIST --- */
+        .story-list-container { padding: 20px; flex: 1; overflow-y: auto; }
+        
+        .story-card {
+            background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px;
+            display: flex; align-items: stretch; gap: 15px; border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: 0.2s; position: relative;
+        }
+        .story-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        .story-cover {
+            width: 70px; height: 100px; border-radius: 8px; background-color: #cbd5e1;
+            background-size: cover; background-position: center; flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .story-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+        
+        .badge-editor { 
+            background: #fef3c7; color: #d97706; padding: 3px 8px; border-radius: 6px; 
+            font-size: 0.65rem; font-weight: 700; border: 1px solid #fde68a; 
+            display: inline-block; margin-bottom: 6px; width: fit-content;
+        }
+        
+        .story-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .story-author { font-size: 0.8rem; color: var(--text-gray); margin: 0 0 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .story-stats { display: flex; gap: 12px; font-size: 0.75rem; color: #94a3b8; font-weight: 500;}
+        .story-stats i { color: var(--gold); }
+
+        .btn-action {
+            background: #f8fafc; border: 1px solid #cbd5e1; color: var(--text-dark);
+            width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.2s; flex-shrink: 0; align-self: center;
+        }
+        .btn-action:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--nav-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 1rem; letter-spacing: 1px;">Memuat Naskah Publik...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Moderasi Karya</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="Cari judul, penulis, atau genre..." onkeyup="filterStories()">
+            </div>
+            <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-gray); font-weight: 500; display: flex; justify-content: space-between;">
+                <span>Total: <span id="total-stories">0</span> Karya Publik</span>
+            </div>
+        </div>
+
+        <div class="story-list-container" id="story-list">
+            <!-- Data Cerita Diisi oleh JS -->
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allStories = [];
+
+        // 1. Kunci Keamanan Ganda (Auth & Role Admin)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        loadStories();
+                    } else {
+                        kickOutHacker();
+                    }
+                } catch (error) {
+                    kickOutHacker();
+                }
+            } else {
+                window.location.href = '../login.html';
+            }
+        });
+
+        function kickOutHacker() {
+            Swal.fire({ title: 'Akses Ditolak!', text: 'Area Administrator.', icon: 'error', confirmButtonColor: '#dc2626', allowOutsideClick: false })
+            .then(() => { window.location.href = '../index.html'; });
+        }
+
+        // 2. Tarik Data Cerita (Dari Koleksi Publik)
+        async function loadStories() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "published_stories"));
+                allStories = [];
+                querySnapshot.forEach((doc) => {
+                    allStories.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Urutkan Pilihan Editor di atas, lalu berdasarkan tayangan (views) terbanyak
+                allStories.sort((a, b) => {
+                    if (a.isEditorChoice && !b.isEditorChoice) return -1;
+                    if (!a.isEditorChoice && b.isEditorChoice) return 1;
+                    return (b.views || 0) - (a.views || 0);
+                });
+
+                document.getElementById('total-stories').innerText = allStories.length;
+                renderStories(allStories);
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat cerita:", error);
+                Swal.fire('Error', 'Gagal menarik data dari server.', 'error');
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // 3. Render Data ke Layar
+        function renderStories(storiesArray) {
+            const container = document.getElementById('story-list');
+            if (storiesArray.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-book-open-reader"></i><p>Tidak ada karya ditemukan.</p></div>`;
+                return;
+            }
+
+            let html = '';
+            storiesArray.forEach(s => {
+                const bg = s.coverBase64 ? `url('${s.coverBase64}')` : 'none';
+                const badgeEditor = s.isEditorChoice ? `<span class="badge-editor"><i class="fa-solid fa-award"></i> Pilihan Editor</span>` : '';
+                const escapeTitle = (s.title || 'Tanpa Judul').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                html += `
+                    <div class="story-card">
+                        <div class="story-cover" style="background-image: ${bg};"></div>
+                        <div class="story-info">
+                            ${badgeEditor}
+                            <h4 class="story-title">${s.title || 'Tanpa Judul'}</h4>
+                            <p class="story-author"><i class="fa-solid fa-pen-nib"></i> ${s.authorName || 'Anonim'}</p>
+                            <div class="story-stats">
+                                <span><i class="fa-solid fa-eye"></i> ${s.views || 0}</span>
+                                <span><i class="fa-solid fa-star"></i> ${s.votes || 0}</span>
+                                <span><i class="fa-solid fa-layer-group"></i> ${s.genre || 'Umum'}</span>
+                            </div>
+                        </div>
+                        <button class="btn-action" onclick="showStoryOptions('${s.id}', '${escapeTitle}', ${s.isEditorChoice || false})">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // 4. Pencarian Real-time
+        window.filterStories = () => {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const filtered = allStories.filter(s => {
+                const title = (s.title || '').toLowerCase();
+                const author = (s.authorName || '').toLowerCase();
+                const genre = (s.genre || '').toLowerCase();
+                return title.includes(query) || author.includes(query) || genre.includes(query);
+            });
+            renderStories(filtered);
+        };
+
+        // 5. Menu Opsi Cerita
+        window.showStoryOptions = (id, title, isEditorChoice) => {
+            const editorActionText = isEditorChoice ? 'Cabut dari Pilihan Editor' : 'Jadikan Pilihan Editor';
+            const editorIcon = isEditorChoice ? '<i class="fa-solid fa-star-half-stroke"></i>' : '<i class="fa-solid fa-star"></i>';
+            const editorColor = isEditorChoice ? '#64748b' : '#d97706';
+
+            Swal.fire({
+                title: `Kelola Karya`,
+                html: `
+                    <p style="font-size: 0.9rem; color: #64748b; margin: 0 0 15px 0;"><strong>${title}</strong></p>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button onclick="window.open('../pratinjau.html?id=${id}', '_blank')" style="width:100%; padding:12px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:10px; font-family:'Poppins'; font-weight:600; color:#003366; cursor:pointer;"><i class="fa-solid fa-book-open"></i> Buka Pratinjau Cerita</button>
+                        <button onclick="toggleEditorChoice('${id}', ${isEditorChoice})" style="width:100%; padding:12px; border:1px solid ${editorColor}; background:white; border-radius:10px; font-family:'Poppins'; font-weight:600; color:${editorColor}; cursor:pointer;">${editorIcon} ${editorActionText}</button>
+                        <button onclick="takeDownStory('${id}')" style="width:100%; padding:12px; border:1px solid #dc2626; background:rgba(220,38,38,0.05); border-radius:10px; font-family:'Poppins'; font-weight:600; color:#dc2626; cursor:pointer;"><i class="fa-solid fa-eye-slash"></i> Take-Down (Cabut Rilis Publik)</button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        };
+
+        // 6. Aksi: Toggle Editor's Choice
+        window.toggleEditorChoice = async (id, isEditorChoice) => {
+            Swal.close();
+            const newStatus = !isEditorChoice;
+            const confirmMsg = isEditorChoice ? 'Mencabut lencana Editor Choice dari karya ini?' : 'Menyematkan lencana Editor Choice agar karya ini tampil di sorotan beranda?';
+
+            const confirm = await Swal.fire({
+                title: 'Konfirmasi', text: confirmMsg, icon: 'question',
+                showCancelButton: true, confirmButtonColor: '#003366', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Lanjutkan'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    await updateDoc(doc(db, "published_stories", id), { isEditorChoice: newStatus });
+                    
+                    // Juga update dokumen masternya di koleksi 'stories' jika dibutuhkan
+                    try { await updateDoc(doc(db, "stories", id), { isEditorChoice: newStatus }); } catch(err){}
+
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Status Diperbarui', showConfirmButton:false, timer:1500});
+                    loadStories(); // Refresh data
+                } catch(e) {
+                    Swal.fire('Error', 'Gagal memperbarui status.', 'error');
+                }
+            }
+        };
+
+        // 7. Aksi: Take-Down (Cabut dari Publik)
+        window.takeDownStory = async (id) => {
+            Swal.close();
+            const confirm = await Swal.fire({
+                title: 'Take-Down Karya?',
+                text: 'Karya ini akan dihapus dari etalase publik secara paksa. Penulis tetap bisa melihatnya di ruang kerja mereka (sebagai draf).',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Cabut Rilis'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    // Hapus dari koleksi publik (sehingga hilang dari index dan search)
+                    await deleteDoc(doc(db, "published_stories", id));
+                    
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Karya berhasil diturunkan dari publik.', showConfirmButton:false, timer:2000});
+                    loadStories(); // Refresh data
+                } catch(e) {
+                    Swal.fire('Error', 'Gagal melakukan Take-Down.', 'error');
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
