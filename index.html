@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cendekia Aksara - Platform Membaca & Menulis</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 untuk Notifikasi -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 70px; 
+            padding-bottom: 30px;
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; }
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .nav-actions { display: flex; align-items: center; gap: 15px; }
+        .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-login {
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            color: white; border: none; padding: 6px 16px; border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s;
+        }
+        .btn-login:active { transform: scale(0.95); }
+
+        /* --- BANNERS (HORIZONTAL SCROLL) --- */
+        .banner-container {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            gap: 15px; padding: 15px 20px; scrollbar-width: none;
+        }
+        .banner-container::-webkit-scrollbar { display: none; }
+        
+        .banner-card {
+            min-width: 85vw; max-width: 400px; height: 160px;
+            border-radius: 16px; scroll-snap-align: center; flex-shrink: 0;
+            background-size: cover; background-position: center;
+            position: relative; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a;
+        }
+        .banner-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+        .banner-content {
+            position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2;
+        }
+
+        /* --- QUICK ACTION ICONS --- */
+        .quick-actions {
+            display: flex; overflow-x: auto; gap: 20px; padding: 10px 20px 20px 20px;
+            scrollbar-width: none;
+        }
+        .quick-actions::-webkit-scrollbar { display: none; }
+        
+        .action-item {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            flex-shrink: 0; cursor: pointer; width: 65px;
+        }
+        .action-icon {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: white; border: 1px solid #e2e8f0;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .action-item span { font-size: 0.75rem; font-weight: 500; text-align: center; color: var(--text-dark); line-height: 1.2; }
+
+        /* --- STORY SECTIONS --- */
+        .section-container { margin-bottom: 30px; }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; margin-bottom: 12px;
+        }
+        .section-header h2 {
+            font-family: 'Playfair Display', serif; font-size: 1.2rem;
+            color: var(--nav-bg); margin: 0; font-weight: 700;
+        }
+        .section-header a { font-size: 0.8rem; color: var(--primary); font-weight: 600; text-decoration: none; }
+
+        .story-scroll {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            gap: 15px; padding: 0 20px 15px 20px; scrollbar-width: none; min-height: 150px;
+        }
+        .story-scroll::-webkit-scrollbar { display: none; }
+
+        .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
+        .story-cover {
+            width: 100%; height: 180px; border-radius: 12px;
+            background-size: cover; background-position: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0;
+            background-color: #cbd5e1;
+        }
+        .story-title { font-size: 0.85rem; font-weight: 700; margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
+        .story-meta { font-size: 0.7rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
+
+        .continue-card { width: 260px; display: flex; gap: 12px; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); flex-shrink: 0; scroll-snap-align: start; cursor: pointer;}
+        .continue-cover { width: 60px; height: 90px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
+        .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; }
+        .continue-info h3 { font-size: 0.9rem; margin: 0 0 5px 0; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
+        .continue-info p { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; }
+        .progress-bar { width: 100%; height: 4px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); }
+
+        .empty-state { font-size: 0.85rem; color: #94a3b8; text-align: center; width: 100%; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; }
+
+        /* --- CTA BOTTOM --- */
+        .cta-write {
+            margin: 10px 20px 20px 20px; padding: 30px 20px;
+            background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
+            border-radius: 16px; text-align: center; color: white;
+            box-shadow: 0 10px 25px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden;
+        }
+        .cta-write::after {
+            content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -20px; bottom: -20px; font-size: 8rem;
+            color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
+        }
+        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
+        .cta-write p { font-size: 0.85rem; color: #cbd5e1; margin: 0 0 20px 0; line-height: 1.5; position: relative; z-index: 2;}
+        .btn-cta {
+            background: var(--gold); color: white; border: none; padding: 10px 25px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2;
+        }
+
+        /* --- MOBILE FIRST TWEAKS --- */
+        @media (min-width: 768px) {
+            body { max-width: 480px; margin: 0 auto; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; background-color: white; min-height: 100vh;}
+            .top-navbar { max-width: 480px; left: 50%; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header class="top-navbar">
+        <div class="nav-brand">
+            <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
+            <h1>Cendekia</h1>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-search" onclick="requireLogin('mencari cerita')"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
+        </div>
+    </header>
+
+    <!-- BANNERS DINAMIS -->
+    <div class="banner-container" id="banner-container">
+        <!-- Akan diisi oleh JavaScript dari Firebase -->
+        <div class="empty-state" id="banner-loading"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
+    </div>
+
+    <!-- QUICK ACTIONS ICONS -->
+    <div class="quick-actions">
+        <div class="action-item" onclick="requireLogin('menelusuri genre Romansa')">
+            <div class="action-icon"><i class="fa-solid fa-heart" style="color: #ef4444;"></i></div>
+            <span>Romansa</span>
+        </div>
+        <div class="action-item" onclick="requireLogin('menelusuri genre Fantasi')">
+            <div class="action-icon"><i class="fa-solid fa-dragon" style="color: #8b5cf6;"></i></div>
+            <span>Fantasi</span>
+        </div>
+        <div class="action-item" onclick="requireLogin('menelusuri genre Fiksi Ilmiah')">
+            <div class="action-icon"><i class="fa-solid fa-rocket" style="color: #3b82f6;"></i></div>
+            <span>Sci-Fi</span>
+        </div>
+        <div class="action-item" onclick="requireLogin('menelusuri genre Misteri')">
+            <div class="action-icon"><i class="fa-solid fa-ghost" style="color: #64748b;"></i></div>
+            <span>Misteri</span>
+        </div>
+        <div class="action-item" onclick="requireLogin('menelusuri genre Religi')">
+            <div class="action-icon"><i class="fa-solid fa-moon" style="color: #059669;"></i></div>
+            <span>Religi</span>
+        </div>
+    </div>
+
+    <!-- SECTION: LANJUTKAN MEMBACA -->
+    <div class="section-container" id="continue-section" style="display: none;">
+        <div class="section-header">
+            <h2>Lanjutkan Membaca</h2>
+        </div>
+        <div class="story-scroll" id="continue-container">
+            <!-- Akan diisi riwayat baca jika user sudah login -->
+        </div>
+    </div>
+
+    <!-- SECTION: REKOMENDASI DINAMIS -->
+    <div class="section-container">
+        <div class="section-header">
+            <h2>Rekomendasi Cendekia</h2>
+            <a href="#" onclick="requireLogin('melihat daftar lengkap')">Lihat Semua</a>
+        </div>
+        <div class="story-scroll" id="rekomendasi-container">
+            <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Karya...</div>
+        </div>
+    </div>
+
+    <!-- SECTION: PILIHAN EDITOR DINAMIS -->
+    <div class="section-container">
+        <div class="section-header">
+            <h2>Pilihan Editor</h2>
+        </div>
+        <div class="story-scroll" id="editor-container">
+            <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Pilihan Editor...</div>
+        </div>
+    </div>
+
+    <!-- CTA MULAI MENULIS -->
+    <div class="cta-write">
+        <h2>Punya Cerita Menarik?</h2>
+        <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
+        <button class="btn-cta" onclick="requireLogin('mulai menulis karya')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis</button>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let isUserLoggedIn = false;
+
+        // Cek Status Login
+        onAuthStateChanged(auth, (user) => {
+            const btnLogin = document.getElementById('btn-login-header');
+            if (user) {
+                isUserLoggedIn = true;
+                btnLogin.innerText = "Dasbor";
+                btnLogin.onclick = () => window.location.href = "dasbor.html"; // Ubah sesuai rute dashboard nanti
+                loadContinueReading(user.uid);
+            } else {
+                isUserLoggedIn = false;
+                btnLogin.innerText = "Masuk";
+                btnLogin.onclick = goToLogin;
+            }
+        });
+
+        // 1. Fungsi Tarik Data Banner
+        async function loadBanners() {
+            const container = document.getElementById('banner-container');
+            try {
+                const q = query(collection(db, "app_banners"), where("isActive", "==", true), limit(5));
+                const snap = await getDocs(q);
+                
+                if (snap.empty) {
+                    container.innerHTML = `<div class="empty-state">Belum ada event atau rilis terbaru saat ini.</div>`;
+                    return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    // Mengambil gambar Base64 dari database
+                    const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
+                    const bgColor = data.bgColor || "#0f172a";
+                    const tagColor = data.tagColor || "var(--gold)";
+
+                    html += `
+                        <div class="banner-card" style="background-image: ${bgImage}; background-color: ${bgColor};" onclick="requireLogin('mengakses event ini')">
+                            <div class="banner-content">
+                                <span style="background: ${tagColor}; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color: white;">${data.tag || 'INFO'}</span>
+                                <h3 style="margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'Playfair Display', serif;">${data.title}</h3>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching banners:", error);
+                container.innerHTML = `<div class="empty-state">Gagal memuat banner.</div>`;
+            }
+        }
+
+        // 2. Fungsi Tarik Data Cerita (Rekomendasi)
+        async function loadRecommendations() {
+            const container = document.getElementById('rekomendasi-container');
+            try {
+                // Asumsi nama koleksi untuk cerita publik adalah 'published_stories'
+                const q = query(collection(db, "published_stories"), orderBy("views", "desc"), limit(6));
+                const snap = await getDocs(q);
+                
+                if (snap.empty) {
+                    container.innerHTML = `<div class="empty-state">Belum ada karya yang diterbitkan.</div>`;
+                    return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                    
+                    html += `
+                        <div class="story-card" onclick="requireLogin('membaca cerita ini')">
+                            <div class="story-cover" style="background-image: ${coverBg};"></div>
+                            <h3 class="story-title">${data.title}</h3>
+                            <div class="story-meta"><i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching recommendations:", error);
+                container.innerHTML = `<div class="empty-state">Belum ada karya di database.</div>`;
+            }
+        }
+
+        // 3. Fungsi Tarik Data Pilihan Editor
+        async function loadEditorPicks() {
+            const container = document.getElementById('editor-container');
+            try {
+                const q = query(collection(db, "published_stories"), where("isEditorChoice", "==", true), limit(4));
+                const snap = await getDocs(q);
+                
+                if (snap.empty) {
+                    container.innerHTML = `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
+                    return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                    
+                    html += `
+                        <div class="story-card" onclick="requireLogin('membaca cerita ini')">
+                            <div class="story-cover" style="background-image: ${coverBg}; border-color: var(--gold);"></div>
+                            <h3 class="story-title">${data.title}</h3>
+                            <div class="story-meta"><i class="fa-solid fa-award" style="color:var(--primary)"></i> Editor's Choice</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching editor picks:", error);
+                container.innerHTML = `<div class="empty-state">Belum ada karya pilihan editor.</div>`;
+            }
+        }
+
+        // 4. Fungsi Lanjutkan Membaca (Hanya muncul jika login)
+        async function loadContinueReading(uid) {
+            const section = document.getElementById('continue-section');
+            const container = document.getElementById('continue-container');
+            
+            try {
+                const q = query(collection(db, "users", uid, "read_history"), orderBy("lastReadAt", "desc"), limit(2));
+                const snap = await getDocs(q);
+                
+                if (!snap.empty) {
+                    section.style.display = 'block';
+                    let html = '';
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                        const progress = data.progressPercentage || 0;
+                        
+                        html += `
+                            <div class="continue-card" onclick="window.location.href='read.html?id=${data.storyId}'">
+                                <div class="continue-cover" style="background-image: ${coverBg};"></div>
+                                <div class="continue-info">
+                                    <h3>${data.title}</h3>
+                                    <p>${data.lastChapterTitle || 'Lanjutkan membaca'}</p>
+                                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error("Error fetching read history:", error);
+            }
+        }
+
+        // Eksekusi penarikan data
+        window.onload = () => {
+            loadBanners();
+            loadRecommendations();
+            loadEditorPicks();
+        };
+
+        // --- FUNGSI INTERSEP GLOBAL ---
+        window.goToLogin = () => {
+            window.location.href = 'login.html';
+        };
+
+        window.requireLogin = (action) => {
+            if(isUserLoggedIn) {
+                // Jika sudah login, abaikan intersep (Fitur ini nanti disesuaikan jalurnya)
+                Swal.fire('Fitur Segera Hadir', 'Halaman ' + action + ' sedang dalam tahap pengembangan.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Akses Terbatas',
+                text: `Silakan masuk atau buat akun terlebih dahulu untuk ${action}. Gratis dan cepat!`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Masuk / Daftar',
+                cancelButtonText: 'Nanti Saja',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    goToLogin();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
