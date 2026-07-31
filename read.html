@@ -22,6 +22,7 @@
             --gold: #d4af37;
         }
 
+        /* TEMA MALAM */
         [data-theme="dark"] {
             --reader-bg: #0f172a;
             --reader-text: #cbd5e1;
@@ -29,6 +30,7 @@
             --nav-text: #ffffff;
         }
 
+        /* TEMA SEPIA (KERTAS KUNO) */
         [data-theme="sepia"] {
             --reader-bg: #fbf0d9;
             --reader-text: #5f4b32;
@@ -60,7 +62,7 @@
             .top-navbar, .reader-settings-drawer { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- FIXED NAVBAR (Auto Hide on Scroll) --- */
+        /* --- FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
             background: var(--nav-bg); backdrop-filter: blur(10px);
@@ -72,11 +74,11 @@
 
         .btn-icon { background: none; border: none; color: var(--nav-text); font-size: 1.1rem; cursor: pointer; transition: 0.2s; padding: 5px; }
         .btn-icon:hover { color: var(--gold); }
-        .nav-title-group { text-align: center; flex: 1; overflow: hidden; padding: 0 10px; }
+        .nav-title-group { text-align: center; flex: 1; overflow: hidden; padding: 0 10px; cursor: pointer; }
         .nav-story-title { font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--nav-text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nav-chapter-title { font-family: 'Poppins', sans-serif; font-size: 0.7rem; color: var(--text-gray); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-chapter-title { font-family: 'Poppins', sans-serif; font-size: 0.7rem; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* --- READER CONTENT CONTAINER --- */
+        /* --- AREA BACA (NASKAH) --- */
         .reader-container {
             padding: 80px 25px 50px 25px; flex: 1;
             font-size: var(--reader-size); line-height: 1.9;
@@ -90,18 +92,16 @@
             color: var(--nav-text); margin-bottom: 25px; text-align: center;
         }
 
-        .chapter-body img {
-            max-width: 100%; height: auto; border-radius: 8px; margin: 15px auto; display: block;
-        }
+        .chapter-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px auto; display: block; }
         .chapter-body p { margin-bottom: 1.2em; text-align: justify; }
 
         .end-story-notice {
-            text-align: center; padding: 40px 20px; color: var(--text-gray);
+            text-align: center; padding: 40px 20px; color: #64748b;
             font-family: 'Poppins', sans-serif; font-size: 0.9rem;
         }
         .end-story-notice i { font-size: 2rem; color: var(--gold); margin-bottom: 10px; display: block; }
 
-        /* --- SETTINGS DRAWER (POPUP BAWAH) --- */
+        /* --- LACI PENGATURAN BACA (SETTING TEMA & FONT) --- */
         .reader-settings-drawer {
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000;
             background: white; color: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px;
@@ -113,34 +113,30 @@
         .setting-row { margin-bottom: 20px; }
         .setting-row label { display: block; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
         
-        /* Font Selector */
-        .font-options { display: flex; gap: 10px; }
-        .font-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 10px; font-size: 0.85srem; cursor: pointer; font-family: 'Poppins'; font-weight: 600;}
+        .font-options, .theme-options { display: flex; gap: 10px; }
+        .font-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-weight: 600;}
         .font-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Theme Selector */
-        .theme-options { display: flex; gap: 12px; }
         .theme-btn { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e1; font-family: 'Poppins'; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center;}
         .theme-btn.light { background: #ffffff; color: #1e293b; }
         .theme-btn.dark { background: #0f172a; color: #cbd5e1; }
         .theme-btn.sepia { background: #fbf0d9; color: #5f4b32; }
         .theme-btn.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
 
-        /* Brightness & Size Sliders */
         .slider-group { display: flex; align-items: center; gap: 15px; }
         .slider-group input { flex: 1; accent-color: var(--primary); cursor: pointer; }
 
-        /* --- OVERLAY KREDUP (BRIGHTNESS LAYER) --- */
+        /* BRIGHTNESS OVERLAY (KEREDUPAN) */
         #brightness-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: black; pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.1s;
         }
 
-        /* LOADING */
+        /* LOADING SCREEN */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--reader-bg); z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            justify-content: center; align-items: center; color: var(--primary);
         }
         .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -148,7 +144,7 @@
 </head>
 <body data-theme="light">
 
-    <!-- OVERLAY REDUP (Brightness) -->
+    <!-- OVERLAY KEREDUPAN LAYAR -->
     <div id="brightness-overlay"></div>
 
     <!-- OVERLAY LOADING -->
@@ -159,9 +155,9 @@
 
     <div class="app-wrapper">
         
-        <!-- FIXED NAVBAR -->
+        <!-- NAVBAR ATAS -->
         <header class="top-navbar" id="top-navbar">
-            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="nav-title-group" onclick="toggleSettings()">
                 <h2 class="nav-story-title" id="nav-story-title">Memuat...</h2>
                 <p class="nav-chapter-title" id="nav-chapter-title">Bab -</p>
@@ -172,21 +168,21 @@
             </div>
         </header>
 
-        <!-- CONTAINER KONTEN BACAAN (Bisa Scroll Panjang ke Bab Berikutnya) -->
+        <!-- KONTEN NASKAH -->
         <main class="reader-container" id="reader-container" onclick="toggleNavbarByClick()">
-            <!-- Konten bab dimasukkan via JavaScript secara dinamis -->
+            <!-- Bab akan di-render di sini via JavaScript -->
         </main>
 
-        <!-- SETTINGS DRAWER (PENGATURAN BACA) -->
+        <!-- LACI PENGATURAN -->
         <div class="reader-settings-drawer" id="settings-drawer">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3 style="font-family: 'Playfair Display'; margin:0; font-size: 1.2rem;">Pengaturan Baca</h3>
                 <button class="btn-icon" onclick="toggleSettings()"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- Tema Latar -->
+            <!-- Tema -->
             <div class="setting-row">
-                <label>Tema Warna</label>
+                <label>Tema Layar</label>
                 <div class="theme-options">
                     <button class="theme-btn light active" onclick="setTheme('light', this)">Terang</button>
                     <button class="theme-btn sepia" onclick="setTheme('sepia', this)">Sepia</button>
@@ -194,17 +190,16 @@
                 </div>
             </div>
 
-            <!-- Jenis Font -->
+            <!-- Font -->
             <div class="setting-row">
                 <label>Jenis Huruf</label>
                 <div class="font-options">
                     <button class="font-btn active" style="font-family: 'Lora';" onclick="setFont('Lora', this)">Serif</button>
                     <button class="font-btn" style="font-family: 'Poppins';" onclick="setFont('Poppins', this)">Sans</button>
-                    <button class="font-btn" style="font-family: 'Merriweather';" onclick="setFont('Merriweather', this)">Klasik</button>
                 </div>
             </div>
 
-            <!-- Ukuran Huruf -->
+            <!-- Ukuran Teks -->
             <div class="setting-row">
                 <label>Ukuran Teks (<span id="size-val">1.05</span>rem)</label>
                 <div class="slider-group">
@@ -214,7 +209,7 @@
                 </div>
             </div>
 
-            <!-- Keredupan Layar -->
+            <!-- Keredupan -->
             <div class="setting-row">
                 <label>Keredupan Layar</label>
                 <div class="slider-group">
@@ -227,13 +222,12 @@
 
     </div>
 
-    <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -249,6 +243,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Ambil ID Cerita dari URL (misal: read.html?id=ID_CERITA)
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
 
@@ -257,11 +252,12 @@
         let chaptersList = [];
         let currentActiveChapterId = null;
 
+        // Tendang ke Beranda jika tidak ada ID Cerita di URL
         if (!storyId) {
             window.location.href = 'index.html';
         }
 
-        // Cek Login (Opsional untuk pembaca umum, tapi wajib untuk simpan Riwayat Baca)
+        // Cek Login User (Untuk riwayat baca)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -269,19 +265,36 @@
             fetchStoryAndChapters();
         });
 
-        // 1. Tarik Data Cerita & Seluruh Bab Sekaligus
+        // 1. Ambil Cerita & Tambah Jumlah Pembaca (Views)
         async function fetchStoryAndChapters() {
             try {
-                // A. Ambil Info Cerita Utama
-                const storySnap = await getDoc(doc(db, "stories", storyId));
+                // A. Tarik Data Utama Cerita
+                let storyRef = doc(db, "published_stories", storyId);
+                let storySnap = await getDoc(storyRef);
+                
+                // Jika belum masuk koleksi publik (misal dibaca dari tombol Pratinjau penulis)
                 if (!storySnap.exists()) {
-                    Swal.fire('Tidak Ditemukan', 'Cerita yang ingin Anda baca sudah tidak tersedia.', 'error').then(()=>window.location.href='index.html');
-                    return;
+                    storyRef = doc(db, "stories", storyId);
+                    storySnap = await getDoc(storyRef);
+                    
+                    if (!storySnap.exists()) {
+                        throw new Error("Cerita tidak ditemukan.");
+                    }
                 }
-                storyData = storySnap.data();
-                document.getElementById('nav-story-title').innerText = storyData.title;
 
-                // B. Ambil Seluruh Bab Terpublikasi
+                storyData = storySnap.data();
+                document.getElementById('nav-story-title').innerText = storyData.title || "Tanpa Judul";
+
+                // B. TAMBAH JUMLAH VIEW (Otomatis +1 saat halaman ini dibuka)
+                // Hanya menambah view jika cerita sudah dipublikasikan di koleksi 'published_stories'
+                if (storySnap.ref.path.includes("published_stories")) {
+                    await updateDoc(storyRef, {
+                        views: increment(1)
+                    });
+                }
+
+                // C. Tarik Seluruh Bab (Hanya yang statusnya 'published')
+                // Bab selalu berada di koleksi 'stories/{id}/chapters'
                 const qChapters = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
                 const chapSnap = await getDocs(qChapters);
 
@@ -304,21 +317,23 @@
                     return;
                 }
 
-                // Render semua bab berurutan agar user bisa scroll tanpa jeda
+                // Render naskah bab ke layar
                 renderAllChapters();
                 document.getElementById('loading-overlay').style.display = 'none';
                 
-                // Mulai aktifkan pendengar posisi scroll
+                // Mulai deteksi posisi bacaan (scroll tracking)
                 initScrollObserver();
 
             } catch (error) {
                 console.error("Gagal memuat bacaan:", error);
                 document.getElementById('loading-overlay').style.display = 'none';
-                Swal.fire('Error', 'Gagal memuat lembar cerita.', 'error');
+                Swal.fire('Error 404', 'Cerita yang ingin Anda baca tidak ditemukan atau telah dihapus.', 'error').then(() => {
+                    window.location.href = 'index.html';
+                });
             }
         }
 
-        // 2. Render Konten Bab ke Layar
+        // 2. Render HTML Naskah Bab
         function renderAllChapters() {
             const container = document.getElementById('reader-container');
             let html = '';
@@ -328,30 +343,30 @@
                     <div class="chapter-block" id="chap-${ch.id}" data-chapter-title="Bab ${index + 1}: ${ch.title}">
                         <h2 class="chapter-heading">Bab ${index + 1}<br>${ch.title}</h2>
                         <div class="chapter-body">
-                            ${ch.content || '<p>Bab ini kosong.</p>'}
+                            ${ch.content || '<p>Bab ini masih kosong.</p>'}
                         </div>
                     </div>
                 `;
             });
 
-            // Tambahkan catatan penutup di ujung scroll
+            // Tanda Penutup Cerita di ujung halaman
             html += `
                 <div class="end-story-notice">
                     <i class="fa-solid fa-book-journal-whills"></i>
-                    <p>Cerita berakhir di sini.<br>Nantikan pembaruan bab berikutnya dari penulis!</p>
+                    <p>Cerita berakhir di sini.<br>Nantikan pembaruan selanjutnya dari penulis!</p>
                 </div>
             `;
 
             container.innerHTML = html;
             
-            // Set bab aktif pertama
+            // Set judul bab pertama di navbar
             if (chaptersList.length > 0) {
                 currentActiveChapterId = chaptersList[0].id;
                 document.getElementById('nav-chapter-title').innerText = `Bab 1: ${chaptersList[0].title}`;
             }
         }
 
-        // 3. Observer Posisi Scroll (Untuk Ubah Judul Bab di Navbar & Auto-Save History)
+        // 3. Deteksi Posisi Layar (Scroll Observer) & Auto-Save History
         function initScrollObserver() {
             const observerOptions = {
                 root: null,
@@ -365,9 +380,11 @@
                         const chapId = entry.target.id.replace('chap-', '');
                         currentActiveChapterId = chapId;
                         const chapTitle = entry.target.getAttribute('data-chapter-title');
+                        
+                        // Ubah teks di Navbar Atas sesuai bab yang sedang ditatap
                         document.getElementById('nav-chapter-title').innerText = chapTitle;
 
-                        // Simpan Progres Baca ke Database (Debounced)
+                        // Simpan posisi terakhir ke Pustaka
                         saveReadProgress(chapId);
                     }
                 });
@@ -379,17 +396,16 @@
             });
         }
 
-        // 4. Simpan Riwayat Baca ke Database (Agar "Lanjutkan Membaca" Berfungsi)
+        // 4. Auto-Save Riwayat Baca ke Pustaka Pengguna
         async function saveReadProgress(activeChapId) {
-            if (!currentUser) return; // Jika pembaca anonim, lewati database sync
+            if (!currentUser) return; // Jika belum login, abaikan penyimpanan riwayat
             
             try {
                 const activeIndex = chaptersList.findIndex(x => x.id === activeChapId);
                 const progressPercentage = Math.round(((activeIndex + 1) / chaptersList.length) * 100);
                 const activeChapter = chaptersList[activeIndex];
 
-                // Simpan ke sub-collection 'read_history' user
-                await setDoc(doc(db, "users", currentUser.uid, "read_history", storyId), {
+                await setDoc(doc(db, "users", currentUser.uid, "library", storyId), {
                     storyId: storyId,
                     title: storyData.title,
                     coverBase64: storyData.coverBase64 || null,
@@ -397,6 +413,7 @@
                     lastChapterId: activeChapId,
                     lastChapterTitle: `Bab ${activeIndex + 1}: ${activeChapter.title}`,
                     progressPercentage: progressPercentage,
+                    isArchived: false,
                     lastReadAt: serverTimestamp()
                 }, { merge: true });
 
@@ -405,33 +422,30 @@
             }
         }
 
-        // --- INTERAKSI TAMPILAN & PENGATURAN (UI CONTROLS) ---
-        
-        let isNavbarVisible = true;
+        // --- SISTEM PENGATURAN UI BACA ---
         let lastScrollTop = 0;
 
+        // Auto-Hide Navbar saat di-scroll ke bawah (Membaca penuh)
         window.addEventListener('scroll', () => {
             const st = window.pageYOffset || document.documentElement.scrollTop;
             const navbar = document.getElementById('top-navbar');
             
             if (st > lastScrollTop && st > 100) {
-                // Scroll ke bawah -> Sembunyikan Navbar
                 navbar.classList.add('hidden');
                 document.getElementById('settings-drawer').classList.remove('active');
             } else {
-                // Scroll ke atas -> Tampilkan Navbar
                 navbar.classList.remove('hidden');
             }
             lastScrollTop = st <= 0 ? 0 : st;
         });
 
+        // Tampilkan/Sembunyikan Menu saat layar diklik
         window.toggleNavbarByClick = () => {
-            // Klik di tengah layar memunculkan/menyembunyikan navbar
-            const navbar = document.getElementById('top-navbar');
-            navbar.classList.toggle('hidden');
+            document.getElementById('top-navbar').classList.toggle('hidden');
             document.getElementById('settings-drawer').classList.remove('active');
         };
 
+        // Buka Laci Pengaturan Bawah
         window.toggleSettings = () => {
             document.getElementById('settings-drawer').classList.toggle('active');
             event.stopPropagation();
@@ -444,9 +458,9 @@
             btn.classList.add('active');
         };
 
-        // Ubah Jenis Font
+        // Ubah Font
         window.setFont = (fontFamily, btn) => {
-            document.documentElement.style.setProperty('--reader-font', fontFamily === 'Lora' ? "'Lora', serif" : fontFamily === 'Poppins' ? "'Poppins', sans-serif" : "'Merriweather', serif");
+            document.documentElement.style.setProperty('--reader-font', fontFamily === 'Lora' ? "'Lora', serif" : "'Poppins', sans-serif");
             document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         };
@@ -457,18 +471,18 @@
             document.getElementById('size-val').innerText = val;
         };
 
-        // Ubah Keredupan Layar
+        // Ubah Brightness (Keredupan Malam Hari)
         window.changeBrightness = (val) => {
             document.getElementById('brightness-overlay').style.opacity = val;
         };
 
-        // Tombol Bagikan Tautan
+        // Bagikan Link Cerita
         window.shareStory = () => {
             const shareUrl = window.location.href;
             if (navigator.share) {
                 navigator.share({
-                    title: storyData.title,
-                    text: `Yuk baca "${storyData.title}" di Cendekia Aksara!`,
+                    title: storyData.title || 'Cerita Cendekia',
+                    text: `Yuk baca karya luar biasa ini di Cendekia Aksara!`,
                     url: shareUrl,
                 }).catch(() => {});
             } else {
