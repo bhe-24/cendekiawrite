@@ -14,7 +14,7 @@
     <style>
         /* --- GLOBAL & COLORS --- */
         :root {
-            --nav-bg: rgba(15, 23, 42, 0.95);       
+            --nav-bg: rgba(15, 23, 42, 0.95);        
             --primary: #003366;      
             --gold: #d4af37;         
             --bg-color: #f8fafc;
@@ -123,7 +123,7 @@
         .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
         .bio-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
 
-        /* --- HORIZONTAL SCROLL CARDS (Karya & Pustaka) --- */
+        /* --- HORIZONTAL SCROLL CARDS --- */
         .scroll-row { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: none; }
         .scroll-row::-webkit-scrollbar { display: none; }
         
@@ -150,7 +150,7 @@
 
         .feed-item { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
         .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
-        .feed-ava { width: 35px; height: 35px; border-radius: 50%; background-size: cover; }
+        .feed-ava { width: 35px; height: 35px; border-radius: 50%; background-size: cover; background-color: #cbd5e1;}
         .feed-info h4 { margin: 0; font-size: 0.9rem; color: var(--text-dark); }
         .feed-info span { font-size: 0.7rem; color: #94a3b8; }
         .feed-text { font-size: 0.85rem; color: #334155; line-height: 1.5; margin: 0; white-space: pre-wrap;}
@@ -180,11 +180,9 @@
 
         <!-- NAVBAR -->
         <header class="top-navbar">
-            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <h1 class="nav-title">Profil</h1>
-            <!-- Tombol Setting hanya muncul jika ini profil sendiri -->
             <button class="btn-icon" id="btn-settings" style="display: none;" onclick="window.location.href='setting.html'"><i class="fa-solid fa-gear"></i></button>
-            <!-- Spacer jika bukan profil sendiri -->
             <div id="nav-spacer" style="width: 24px; display: none;"></div> 
         </header>
 
@@ -207,7 +205,7 @@
                     <span class="stat-num" id="stat-karya">0</span>
                     <span class="stat-lbl">Karya</span>
                 </div>
-                <div class="stat-item">
+                <div class="stat-item" id="stat-pustaka-container">
                     <span class="stat-num" id="stat-pustaka">0</span>
                     <span class="stat-lbl">Pustaka</span>
                 </div>
@@ -239,7 +237,8 @@
                 </div>
             </div>
 
-            <div class="section-box">
+            <!-- Bagian Pustaka (Disembunyikan via JS jika pengunjung profil orang lain) -->
+            <div class="section-box" id="section-pustaka">
                 <h3 class="section-title">Daftar Bacaan (Pustaka)</h3>
                 <div class="scroll-row" id="list-pustaka">
                     <!-- Dinamis via JS -->
@@ -258,7 +257,7 @@
         <!-- TAB CONTENT 2: PENGUMUMAN -->
         <div class="content-area" id="tab-pengumuman">
             
-            <!-- Kotak Buat Pengumuman (Hanya jika Own Profile) -->
+            <!-- Kotak Buat Pengumuman -->
             <div class="announce-creator" id="announce-box">
                 <textarea id="announce-text" placeholder="Bagikan informasi terbaru, sapa pengikutmu, atau promosikan bab ceritamu yang baru terbit..."></textarea>
                 <div style="overflow: hidden;">
@@ -296,13 +295,12 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentUserId = null; // UID user yang sedang login
-        let targetUserId = null;  // UID profil yang sedang dilihat
+        let currentUserId = null; 
+        let targetUserId = null;  
         let isOwnProfile = false;
         let targetUserData = null;
         let isFollowing = false;
 
-        // Helper: ambil waktu (ms) dari Firestore Timestamp secara aman
         function toMillisSafe(ts) {
             if (!ts) return 0;
             if (typeof ts.toMillis === 'function') return ts.toMillis();
@@ -310,7 +308,6 @@
             return 0;
         }
 
-        // 1. Tab Switcher
         window.switchTab = (tabName) => {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
@@ -324,7 +321,7 @@
             }
         };
 
-        // 2. Cek Siapa yang Login & Siapa yang Dilihat
+        // CEK LOGIN DAN ATUR TARGET ID
         onAuthStateChanged(auth, (user) => {
             const urlParams = new URLSearchParams(window.location.search);
             const queryUid = urlParams.get('uid');
@@ -333,42 +330,53 @@
                 currentUserId = user.uid;
                 targetUserId = queryUid ? queryUid : currentUserId;
             } else {
-                // Publik (Belum Login) tetap bisa melihat profil orang lain
                 targetUserId = queryUid;
                 if (!targetUserId) {
-                    // Jika belum login dan buka profil.html tanpa uid, tolak.
                     window.location.href = 'login.html';
                     return;
                 }
             }
 
             isOwnProfile = (currentUserId === targetUserId);
-            setupUI();
             fetchProfileData();
         });
 
-        // 3. Atur Visibilitas Tombol (Self vs Other)
-        function setupUI() {
+        async function setupUI() {
             if (isOwnProfile) {
+                // UI untuk Pemilik Profil
                 document.getElementById('btn-settings').style.display = 'block';
                 document.getElementById('nav-spacer').style.display = 'none';
                 document.getElementById('btn-follow').style.display = 'none';
                 document.getElementById('announce-box').style.display = 'block';
+                
+                // Pastikan Daftar Bacaan Pribadi Terlihat
+                document.getElementById('section-pustaka').style.display = 'block';
+                document.getElementById('stat-pustaka-container').style.display = 'flex';
+                
             } else {
+                // UI untuk Pengunjung
                 document.getElementById('btn-settings').style.display = 'none';
                 document.getElementById('nav-spacer').style.display = 'block';
                 document.getElementById('btn-follow').style.display = 'block';
                 document.getElementById('announce-box').style.display = 'none';
-                checkFollowStatus();
+                
+                // PRIVASI: Sembunyikan Pustaka/Daftar Bacaan dari Pengunjung
+                document.getElementById('section-pustaka').style.display = 'none';
+                document.getElementById('stat-pustaka-container').style.display = 'none';
+
+                // PASTIKAN AWALNYA TOMBOL FOLLOW DI-RESET
+                document.getElementById('btn-follow').innerText = "Ikuti";
+                document.getElementById('btn-follow').classList.remove('following');
+                
+                // Cek secara aman status Follow ke Firebase
+                await checkFollowStatus();
             }
         }
 
-        // 4. Tarik Semua Data Profil Target
-        // Setiap bagian (karya, pustaka, following, feed) dibuatkan try/catch TERPISAH.
-        // Jadi kalau salah satu query gagal, bagian lainnya tetap bisa tampil normal
-        // -- tidak saling menjatuhkan seperti sebelumnya.
         async function fetchProfileData() {
-            // A. Data Utama User (wajib berhasil, kalau gagal baru hentikan proses)
+            // Setup UI dasar dulu berdasarkan Hak Akses (Own vs Other)
+            await setupUI(); 
+
             try {
                 const userDoc = await getDoc(doc(db, "users", targetUserId));
                 if (!userDoc.exists()) {
@@ -390,13 +398,13 @@
                 console.error("Gagal memuat data utama profil:", error);
                 document.getElementById('loading-overlay').style.display = 'none';
                 Swal.fire('Error Sistem', 'Gagal memuat data profil. Periksa koneksi Anda.', 'error');
-                return; // Tanpa data user, bagian lain tidak relevan untuk dilanjutkan
+                return; 
             }
 
-            // Jalankan semua bagian lain secara independen (tidak saling memblokir)
+            // Load bagian turunan secara bersamaan
             await Promise.allSettled([
                 loadKarya(),
-                loadPustaka(),
+                (isOwnProfile ? loadPustaka() : Promise.resolve()), // Hanya diload jika profil sendiri
                 loadFollowing(),
                 fetchAnnouncements()
             ]);
@@ -404,109 +412,9 @@
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
-        // 4B. Karya Diterbitkan — diurutkan dari yang paling baru terbit,
-        // dilengkapi badge "Baru" untuk karya yang terbit dalam 7 hari terakhir.
-        async function loadKarya() {
-            try {
-                const qKarya = query(collection(db, "published_stories"), where("authorId", "==", targetUserId));
-                const snapKarya = await getDocs(qKarya);
-
-                let karyaList = [];
-                snapKarya.forEach(d => karyaList.push({ id: d.id, ...d.data() }));
-
-                // Urutkan manual di JS (hindari perlu composite index Firestore)
-                karyaList.sort((a, b) => {
-                    const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
-                    const timeB = toMillisSafe(b.publishedAt) || toMillisSafe(b.updatedAt);
-                    return timeB - timeA;
-                });
-
-                document.getElementById('stat-karya').innerText = karyaList.length;
-
-                const now = Date.now();
-                const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-
-                let karyaHtml = '';
-                karyaList.forEach(k => {
-                    const bg = k.coverBase64 ? `url('${k.coverBase64}')` : 'none';
-                    const publishedTime = toMillisSafe(k.publishedAt);
-                    const isNew = publishedTime > 0 && (now - publishedTime) < sevenDaysMs;
-                    const badge = isNew ? `<span class="book-badge-new">Baru</span>` : '';
-                    const title = k.title || 'Tanpa Judul';
-
-                    karyaHtml += `
-                        <div class="book-card" onclick="window.location.href='read.html?id=${k.id}'">
-                            ${badge}
-                            <div class="book-cover" style="background-image: ${bg}; border-color:var(--gold);"></div>
-                            <h4 class="book-title" style="color:var(--primary);">${title}</h4>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
-            } catch (error) {
-                console.error("Gagal memuat karya diterbitkan:", error);
-                document.getElementById('list-karya').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat karya. Coba muat ulang halaman.</p></div>`;
-            }
-        }
-
-        // 4C. Pustaka (Daftar Bacaan)
-        async function loadPustaka() {
-            try {
-                const qPustaka = query(collection(db, "users", targetUserId, "library"), where("isArchived", "==", false));
-                const snapPustaka = await getDocs(qPustaka);
-                document.getElementById('stat-pustaka').innerText = snapPustaka.size;
-
-                let pustakaHtml = '';
-                snapPustaka.forEach(d => {
-                    const p = d.data();
-                    const bg = p.coverBase64 ? `url('${p.coverBase64}')` : 'none';
-                    const title = p.title || 'Tanpa Judul';
-                    pustakaHtml += `
-                        <div class="book-card" onclick="window.location.href='read.html?id=${p.storyId}'">
-                            <div class="book-cover" style="background-image: ${bg};"></div>
-                            <h4 class="book-title">${title}</h4>
-                        </div>
-                    `;
-                });
-                document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
-            } catch (error) {
-                console.error("Gagal memuat pustaka:", error);
-                document.getElementById('list-pustaka').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat pustaka.</p></div>`;
-            }
-        }
-
-        // 4D. Mengikuti (Following)
-        async function loadFollowing() {
-            try {
-                const qFollow = query(collection(db, "users", targetUserId, "following"));
-                const snapFollow = await getDocs(qFollow);
-                
-                let followHtml = '';
-                snapFollow.forEach(d => {
-                    const f = d.data();
-                    const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
-                    const name = f.name || 'Penulis Cendekia';
-                    followHtml += `
-                        <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
-                            <div class="follow-ava" style="background-image: ${bg};"></div>
-                            <div>
-                                <h4 class="follow-name">${name}</h4>
-                                <p class="follow-user">@${f.username || `user${d.id.substring(0,5)}`}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
-            } catch (error) {
-                console.error("Gagal memuat daftar mengikuti:", error);
-                document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat daftar mengikuti.</p></div>`;
-            }
-        }
-
-        // 5. Cek Status Follow (Jika Other Profile)
+        // --- CEK STATUS FOLLOW BUG FIXED ---
         async function checkFollowStatus() {
-            if (!currentUserId) return; // Belum login
+            if (!currentUserId) return; 
             try {
                 const followDoc = await getDoc(doc(db, "users", currentUserId, "following", targetUserId));
                 const btn = document.getElementById('btn-follow');
@@ -524,7 +432,6 @@
             }
         }
 
-        // 6. Fungsi Toggle Follow
         window.toggleFollow = async () => {
             if (!currentUserId) {
                 Swal.fire('Akses Ditolak', 'Silakan masuk untuk mengikuti penulis ini.', 'info').then(()=>window.location.href='login.html');
@@ -533,11 +440,15 @@
             
             const btn = document.getElementById('btn-follow');
             const myFollowRef = doc(db, "users", currentUserId, "following", targetUserId);
+            
+            // Nonaktifkan tombol sementara untuk menghindari double klik
+            btn.disabled = true;
 
             try {
                 if (isFollowing) {
-                    // Unfollow
+                    // Proses Unfollow
                     await deleteDoc(myFollowRef);
+                    
                     let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
                     document.getElementById('stat-pengikut').innerText = Math.max(0, currentCount - 1);
                     
@@ -545,7 +456,7 @@
                     btn.innerText = "Ikuti";
                     btn.classList.remove('following');
                 } else {
-                    // Follow
+                    // Proses Follow
                     await setDoc(myFollowRef, {
                         name: targetUserData.name,
                         username: targetUserData.username || '',
@@ -556,10 +467,10 @@
                     let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
                     document.getElementById('stat-pengikut').innerText = currentCount + 1;
 
-                    // Mengirim notifikasi in-app ke target user
+                    // Mengirim notifikasi in-app
                     await addDoc(collection(db, "users", targetUserId, "notifications"), {
                         title: "Pengikut Baru",
-                        message: `Pengguna anonim baru saja mengikuti Anda.`,
+                        message: `Seseorang baru saja mengikuti Anda.`,
                         type: "system",
                         isRead: false,
                         targetUrl: `profil.html?uid=${currentUserId}`,
@@ -573,10 +484,99 @@
                 }
             } catch (error) {
                 console.error("Gagal follow/unfollow:", error);
+                Swal.fire('Error', 'Gagal memproses permintaan.', 'error');
             }
+            
+            btn.disabled = false;
+        };
+
+        // LOAD KARYA
+        async function loadKarya() {
+            try {
+                const qKarya = query(collection(db, "published_stories"), where("authorId", "==", targetUserId));
+                const snapKarya = await getDocs(qKarya);
+
+                let karyaList = [];
+                snapKarya.forEach(d => karyaList.push({ id: d.id, ...d.data() }));
+
+                karyaList.sort((a, b) => {
+                    const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
+                    const timeB = toMillisSafe(b.publishedAt) || toMillisSafe(b.updatedAt);
+                    return timeB - timeA;
+                });
+
+                document.getElementById('stat-karya').innerText = karyaList.length;
+
+                const now = Date.now();
+                const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+                let karyaHtml = '';
+                karyaList.forEach(k => {
+                    const bg = k.coverBase64 ? `url('${k.coverBase64}')` : 'none';
+                    const publishedTime = toMillisSafe(k.publishedAt);
+                    const isNew = publishedTime > 0 && (now - publishedTime) < sevenDaysMs;
+                    const badge = isNew ? `<span class="book-badge-new">Baru</span>` : '';
+
+                    karyaHtml += `
+                        <div class="book-card" onclick="window.location.href='pratinjau.html?id=${k.id}'">
+                            ${badge}
+                            <div class="book-cover" style="background-image: ${bg}; border-color:var(--gold);"></div>
+                            <h4 class="book-title" style="color:var(--primary);">${k.title || 'Tanpa Judul'}</h4>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
+            } catch (error) { console.error("Error Karya:", error); }
         }
 
-        // 7. Ambil Pengumuman (Feed)
+        // LOAD PUSTAKA
+        async function loadPustaka() {
+            try {
+                const qPustaka = query(collection(db, "users", targetUserId, "library"), where("isArchived", "==", false));
+                const snapPustaka = await getDocs(qPustaka);
+                document.getElementById('stat-pustaka').innerText = snapPustaka.size;
+
+                let pustakaHtml = '';
+                snapPustaka.forEach(d => {
+                    const p = d.data();
+                    const bg = p.coverBase64 ? `url('${p.coverBase64}')` : 'none';
+                    pustakaHtml += `
+                        <div class="book-card" onclick="window.location.href='pratinjau.html?id=${p.storyId}'">
+                            <div class="book-cover" style="background-image: ${bg};"></div>
+                            <h4 class="book-title">${p.title || 'Tanpa Judul'}</h4>
+                        </div>
+                    `;
+                });
+                document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
+            } catch (error) { console.error("Error Pustaka:", error); }
+        }
+
+        // LOAD MENGIKUTI
+        async function loadFollowing() {
+            try {
+                const qFollow = query(collection(db, "users", targetUserId, "following"));
+                const snapFollow = await getDocs(qFollow);
+                
+                let followHtml = '';
+                snapFollow.forEach(d => {
+                    const f = d.data();
+                    const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    followHtml += `
+                        <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
+                            <div class="follow-ava" style="background-image: ${bg};"></div>
+                            <div>
+                                <h4 class="follow-name">${f.name || 'Pengguna'}</h4>
+                                <p class="follow-user">@${f.username || `user${d.id.substring(0,5)}`}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
+            } catch (error) { console.error("Error Follow:", error); }
+        }
+
+        // LOAD FEED PENGUMUMAN
         async function fetchAnnouncements() {
             try {
                 const qFeed = query(collection(db, "users", targetUserId, "announcements"), orderBy("createdAt", "desc"));
@@ -592,14 +592,13 @@
                 snapFeed.forEach(d => {
                     const data = d.data();
                     const bg = targetUserData.profilePicBase64 ? `url('${targetUserData.profilePicBase64}')` : 'none';
-                    
                     const timeObj = data.createdAt ? data.createdAt.toDate() : new Date();
                     const timeStr = timeObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
 
                     html += `
                         <div class="feed-item">
                             <div class="feed-header">
-                                <div class="feed-ava" style="background-image: ${bg}; background-color:#cbd5e1;"></div>
+                                <div class="feed-ava" style="background-image: ${bg};"></div>
                                 <div class="feed-info">
                                     <h4>${targetUserData.name}</h4>
                                     <span>${timeStr} WIB</span>
@@ -611,13 +610,10 @@
                 });
                 container.innerHTML = html;
 
-            } catch(e) {
-                console.error("Gagal ambil feed:", e);
-                document.getElementById('feed-container').innerHTML = `<div class="empty-state"><p>Gagal memuat pengumuman.</p></div>`;
-            }
+            } catch(e) { console.error("Error Feed:", e); }
         }
 
-        // 8. Publish Pengumuman (Khusus Own Profile)
+        // PUBLISH PENGUMUMAN
         window.publishAnnouncement = async () => {
             const text = document.getElementById('announce-text').value.trim();
             if (!text) {
@@ -632,17 +628,10 @@
                 });
 
                 document.getElementById('announce-text').value = '';
-                fetchAnnouncements();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil Dipublikasikan!',
-                    html: 'Pengumuman telah tampil di profil Anda.<br><span style="font-size:0.8rem; color:#64748b;">(Notifikasi Push OneSignal sedang dikirim ke pengikut Anda)</span>',
-                    confirmButtonColor: '#003366'
-                });
-
+                fetchAnnouncements(); // Refresh feed langsung
+                
+                Swal.fire({ toast:true, position:'top', icon:'success', title:'Dipublikasikan', showConfirmButton:false, timer:1500 });
             } catch (error) {
-                console.error("Gagal posting pengumuman:", error);
                 Swal.fire('Error', 'Gagal mempublikasikan pengumuman.', 'error');
             }
         };
