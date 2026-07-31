@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tentang Cendekia - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .hero-about {
+            background: linear-gradient(135deg, var(--primary), #001f3f);
+            padding: 40px 20px; text-align: center; color: white;
+        }
+        .hero-about .logo-circle {
+            width: 72px; height: 72px; border-radius: 50%; background: white;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        .hero-about .logo-circle i { font-size: 1.8rem; color: var(--gold); }
+        .hero-about h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin: 0 0 4px 0; }
+        .hero-about p { font-size: 0.8rem; opacity: 0.85; margin: 0; letter-spacing: 0.5px; }
+
+        .section-box { padding: 24px 20px; }
+        .card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 18px; }
+        .card h3 { font-size: 0.95rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-dark); border-left: 3px solid var(--gold); padding-left: 10px;}
+        .card p { font-size: 0.85rem; color: #475569; line-height: 1.65; margin: 0; }
+
+        .version-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .version-row:last-child { border-bottom: none; }
+        .version-row span:first-child { color: var(--text-gray); }
+        .version-row span:last-child { font-weight: 600; color: var(--text-dark); }
+
+        .social-row { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
+        .social-icon {
+            width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; text-decoration: none;
+            transition: 0.2s;
+        }
+        .social-icon:hover { background: var(--gold); }
+
+        .footer-note { text-align: center; font-size: 0.75rem; color: #94a3b8; padding: 10px 20px 30px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Tentang Cendekia</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="hero-about">
+            <div class="logo-circle"><i class="fa-solid fa-feather-pointed"></i></div>
+            <h1>Cendekia Aksara</h1>
+            <p>Ruang Tumbuh untuk Penulis Indonesia</p>
+        </div>
+
+        <div class="section-box">
+            <div class="card">
+                <h3>Visi Kami</h3>
+                <p>Menjadi ekosistem inkubasi sastra yang menumbuhkan penulis-penulis muda Indonesia agar percaya diri berkarya, belajar, dan berbagi melalui tulisan.</p>
+            </div>
+
+            <div class="card">
+                <h3>Misi Kami</h3>
+                <p>Menyediakan ruang belajar menulis yang terstruktur, pendampingan evaluasi naskah yang membangun, serta komunitas yang saling mendukung antar sesama penulis dan pembaca.</p>
+            </div>
+
+            <div class="card">
+                <h3>Informasi Aplikasi</h3>
+                <div class="version-row"><span>Versi Aplikasi</span><span>1.0.0</span></div>
+                <div class="version-row"><span>Terakhir Diperbarui</span><span>2026</span></div>
+                <div class="version-row"><span>Dikembangkan oleh</span><span>Tim Cendekia Aksara</span></div>
+            </div>
+
+            <div class="card" style="text-align:center;">
+                <h3 style="border:none; padding:0; margin-bottom:14px;">Terhubung dengan Kami</h3>
+                <div class="social-row">
+                    <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="#" class="social-icon"><i class="fa-solid fa-globe"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-note">&copy; 2026 Cendekia Aksara. Seluruh hak cipta dilindungi.</p>
+    </div>
+
+</body>
+</html>
