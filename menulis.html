@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studio Menulis - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; }
+
+        /* --- HERO STUDIO MENULIS --- */
+        .hero-studio {
+            background: linear-gradient(135deg, var(--primary) 0%, #0f172a 100%);
+            padding: 30px 20px; text-align: center; color: white; position: relative; overflow: hidden;
+        }
+        .hero-studio::after {
+            content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -20px; bottom: -20px; font-size: 8rem;
+            color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
+        }
+        .hero-studio h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; color: var(--gold); position: relative; z-index: 2;}
+        .hero-studio p { font-size: 0.85rem; color: #cbd5e1; margin: 0 0 20px 0; position: relative; z-index: 2;}
+
+        .btn-create {
+            background: var(--gold); color: white; border: none; padding: 12px 25px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; transition: 0.3s;
+        }
+        .btn-create:hover { background: #b45309; transform: translateY(-2px); }
+
+        /* --- TABS --- */
+        .tab-container {
+            display: flex; background: white; border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 60px; z-index: 100;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 14px 0; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-gray);
+            border-bottom: 3px solid transparent; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* --- KARYA LIST --- */
+        .content-area { display: none; padding: 20px; background: var(--bg-color); animation: fadeIn 0.3s ease; flex: 1; }
+        .content-area.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
+
+        .story-item {
+            display: flex; gap: 15px; background: white; padding: 15px;
+            border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s; cursor: pointer;
+        }
+        .story-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+        
+        .story-cover {
+            width: 70px; height: 100px; border-radius: 8px;
+            background-color: #e2e8f0; background-size: cover; background-position: center;
+            border: 1px solid #cbd5e1; flex-shrink: 0; display: flex; justify-content: center; align-items: center; color: #94a3b8;
+        }
+        .story-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden;}
+        .story-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; }
+        .story-meta span { display: flex; align-items: center; gap: 4px; }
+        
+        .btn-edit {
+            background: #f1f5f9; color: var(--text-dark); border: 1px solid #cbd5e1;
+            padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-family: 'Poppins';
+            width: fit-content; transition: 0.2s;
+        }
+        .story-item:hover .btn-edit { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+        .empty-state p { margin: 0; font-size: 0.9rem; }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; display: none;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-msg" style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Studio...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1 class="nav-title">Studio Menulis</h1>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <!-- HERO STUDIO -->
+        <div class="hero-studio">
+            <h2>Karya Saya</h2>
+            <p>Ruang kreativitasmu. Buat draf baru atau kelola karya yang sudah diterbitkan.</p>
+            <button class="btn-create" onclick="createNewStory()"><i class="fa-solid fa-plus"></i> Buat Cerita Baru</button>
+        </div>
+
+        <!-- TABS -->
+        <div class="tab-container">
+            <div class="tab-btn active" onclick="switchTab('draft')">Draf Saya</div>
+            <div class="tab-btn" onclick="switchTab('published')">Diterbitkan</div>
+        </div>
+
+        <!-- TAB: DRAF -->
+        <div class="content-area active" id="tab-draft">
+            <div id="draft-list">
+                <div style="text-align: center; padding: 30px;"><div class="spinner" style="margin: 0 auto;"></div></div>
+            </div>
+        </div>
+
+        <!-- TAB: DITERBITKAN -->
+        <div class="content-area" id="tab-published">
+            <div id="published-list">
+                <div style="text-align: center; padding: 30px;"><div class="spinner" style="margin: 0 auto;"></div></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+
+        // Cek Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                fetchMyStories();
+            } else {
+                Swal.fire({ title: 'Akses Ditolak', text: 'Silakan masuk untuk menulis cerita.', icon: 'warning', allowOutsideClick: false }).then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+
+        // Tab Switcher
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            
+            if(tabName === 'draft') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-draft').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-published').classList.add('active');
+            }
+        };
+
+        const showLoading = (msg) => {
+            document.getElementById('loading-msg').innerText = msg;
+            document.getElementById('loading-overlay').style.display = 'flex';
+        };
+        const hideLoading = () => document.getElementById('loading-overlay').style.display = 'none';
+
+        // 1. Ambil Data Cerita Penulis (Draf & Diterbitkan)
+        async function fetchMyStories() {
+            try {
+                // Tarik cerita dari koleksi master 'stories' yang dimiliki oleh user ini
+                const q = query(collection(db, "stories"), where("authorId", "==", currentUser.uid), orderBy("updatedAt", "desc"));
+                const snap = await getDocs(q);
+                
+                let draftHtml = '';
+                let pubHtml = '';
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const cover = data.coverBase64 ? `<div class="story-cover" style="background-image: url('${data.coverBase64}');"></div>` : `<div class="story-cover"><i class="fa-solid fa-image"></i></div>`;
+                    const updateTime = data.updatedAt ? data.updatedAt.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : 'Baru saja';
+                    
+                    const card = `
+                        <div class="story-item" onclick="window.location.href='menulis-info.html?id=${docSnap.id}'">
+                            ${cover}
+                            <div class="story-info">
+                                <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
+                                <div class="story-meta">
+                                    <span><i class="fa-regular fa-clock"></i> Diperbarui ${updateTime}</span>
+                                    <span><i class="fa-solid fa-list-ol"></i> ${data.chapterCount || 0} Bab</span>
+                                </div>
+                                <button class="btn-edit">Kelola Cerita</button>
+                            </div>
+                        </div>
+                    `;
+
+                    if (data.status === 'published') {
+                        pubHtml += card;
+                    } else {
+                        draftHtml += card;
+                    }
+                });
+
+                document.getElementById('draft-list').innerHTML = draftHtml || `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-file-pen"></i>
+                        <p>Belum ada draf. Mulai tulis ide pertamamu!</p>
+                    </div>`;
+                    
+                document.getElementById('published-list').innerHTML = pubHtml || `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-book-open"></i>
+                        <p>Belum ada karya yang diterbitkan.</p>
+                    </div>`;
+
+            } catch (error) {
+                console.error("Gagal menarik data cerita:", error);
+                Swal.fire('Error', 'Gagal memuat daftar cerita.', 'error');
+            }
+        }
+
+        // 2. Buat Cerita Baru -> Menulis-Info
+        window.createNewStory = async () => {
+            if (!currentUser) return;
+            showLoading('Mempersiapkan Kanvas...');
+            
+            try {
+                // Buat ID Dokumen unik secara otomatis
+                const newStoryRef = doc(collection(db, "stories"));
+                const generatedId = newStoryRef.id;
+
+                // Siapkan template dasar draf kosong
+                await setDoc(newStoryRef, {
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || 'Penulis Cendekia',
+                    title: '',
+                    description: '',
+                    coverBase64: null,
+                    genre: '',
+                    status: 'draft',
+                    chapterCount: 0,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
+                // Arahkan ke halaman pengaturan info cerita (menulis-info.html)
+                window.location.href = `menulis-info.html?id=${generatedId}`;
+
+            } catch (error) {
+                hideLoading();
+                Swal.fire('Gagal', 'Sistem gagal membuat cerita baru.', 'error');
+                console.error(error);
+            }
+        };
+
+    </script>
+</body>
+</html>
