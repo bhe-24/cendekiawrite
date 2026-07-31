@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notifikasi - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .section-box { padding: 20px; }
+        .group-title { font-size: 0.78rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 4px; }
+        .toggle-list { background: white; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 22px; overflow: hidden; }
+        .toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #f1f5f9; }
+        .toggle-item:last-child { border-bottom: none; }
+        .toggle-text h4 { margin: 0 0 3px 0; font-size: 0.9rem; font-weight: 500; color: var(--text-dark); }
+        .toggle-text p { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-toggle { position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .3s; border-radius: 34px; }
+        .slider-toggle:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider-toggle { background-color: var(--primary); }
+        input:checked + .slider-toggle:before { transform: translateX(20px); }
+
+        .push-status-box { display: flex; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.8rem; color: #92400e; }
+        .push-status-box.granted { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+        .push-status-box i { font-size: 1rem; }
+
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Preferensi...</div>
+        </div>
+
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Notifikasi</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="section-box">
+
+            <div class="push-status-box" id="push-status">
+                <i class="fa-solid fa-bell-slash"></i>
+                <span id="push-status-text">Memeriksa izin notifikasi perangkat...</span>
+            </div>
+
+            <h3 class="group-title">Aktivitas Sosial</h3>
+            <div class="toggle-list">
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Pengikut Baru</h4>
+                        <p>Saat seseorang mulai mengikuti Anda.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-follow" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Komentar & Tanggapan</h4>
+                        <p>Saat karya Anda mendapat komentar baru.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-comment" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Pengumuman dari yang Diikuti</h4>
+                        <p>Saat penulis yang Anda ikuti membuat pengumuman.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-announcement" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 class="group-title">Program & Kegiatan</h3>
+            <div class="toggle-list">
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Pengingat Jadwal Kegiatan</h4>
+                        <p>Pengingat sebelum jadwal kegiatan berlangsung.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-schedule" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Progres Evaluasi Naskah</h4>
+                        <p>Saat ada pembaruan status evaluasi naskah Anda.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-evaluation" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 class="group-title">Saluran Notifikasi</h3>
+            <div class="toggle-list">
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Notifikasi Push</h4>
+                        <p>Aktifkan pemberitahuan di perangkat ini.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-push" onchange="handlePushToggle()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Notifikasi Email</h4>
+                        <p>Kirimkan ringkasan aktivitas ke email Anda.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-email" onchange="savePrefs()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        const defaultPrefs = {
+            follow: true, comment: true, announcement: true,
+            schedule: true, evaluation: true, push: false, email: false
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const prefs = (snap.exists() && snap.data().notifPrefs) ? snap.data().notifPrefs : defaultPrefs;
+                document.getElementById('pref-follow').checked = prefs.follow ?? true;
+                document.getElementById('pref-comment').checked = prefs.comment ?? true;
+                document.getElementById('pref-announcement').checked = prefs.announcement ?? true;
+                document.getElementById('pref-schedule').checked = prefs.schedule ?? true;
+                document.getElementById('pref-evaluation').checked = prefs.evaluation ?? true;
+                document.getElementById('pref-email').checked = prefs.email ?? false;
+            } catch (e) {
+                console.error("Gagal memuat preferensi:", e);
+            }
+            updatePushStatus();
+            document.getElementById('loading-overlay').style.display = 'none';
+        });
+
+        function updatePushStatus() {
+            const box = document.getElementById('push-status');
+            const text = document.getElementById('push-status-text');
+            const toggle = document.getElementById('pref-push');
+            if (!('Notification' in window)) {
+                text.innerText = 'Perangkat/browser ini tidak mendukung notifikasi push.';
+                toggle.checked = false;
+                toggle.disabled = true;
+                return;
+            }
+            const perm = Notification.permission;
+            if (perm === 'granted') {
+                box.classList.add('granted');
+                text.innerText = 'Notifikasi push aktif di perangkat ini.';
+                toggle.checked = true;
+            } else if (perm === 'denied') {
+                text.innerText = 'Izin notifikasi diblokir. Aktifkan lewat pengaturan browser.';
+                toggle.checked = false;
+                toggle.disabled = true;
+            } else {
+                text.innerText = 'Izin notifikasi belum diaktifkan.';
+                toggle.checked = false;
+            }
+        }
+
+        window.handlePushToggle = async () => {
+            const toggle = document.getElementById('pref-push');
+            if (toggle.checked && 'Notification' in window && Notification.permission === 'default') {
+                const result = await Notification.requestPermission();
+                if (result !== 'granted') {
+                    toggle.checked = false;
+                    Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Izin notifikasi ditolak.', showConfirmButton: false, timer: 1800 });
+                }
+                // Integrasi OneSignal (jika tersedia) dapat ditambahkan di sini
+                if (window.OneSignal && result === 'granted') {
+                    try { window.OneSignal.login(currentUser.uid); } catch (e) {}
+                }
+            }
+            updatePushStatus();
+            savePrefs();
+        };
+
+        window.savePrefs = async () => {
+            const prefs = {
+                follow: document.getElementById('pref-follow').checked,
+                comment: document.getElementById('pref-comment').checked,
+                announcement: document.getElementById('pref-announcement').checked,
+                schedule: document.getElementById('pref-schedule').checked,
+                evaluation: document.getElementById('pref-evaluation').checked,
+                push: document.getElementById('pref-push').checked,
+                email: document.getElementById('pref-email').checked
+            };
+            try {
+                await setDoc(doc(db, "users", currentUser.uid), { notifPrefs: prefs }, { merge: true });
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Preferensi disimpan', showConfirmButton: false, timer: 1000 });
+            } catch (e) {
+                console.error("Gagal menyimpan preferensi:", e);
+            }
+        };
+    </script>
+</body>
+</html>
