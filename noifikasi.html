@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notifikasi - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- ONESIGNAL SDK (Penting untuk Push Notification HP) -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Ganti dengan App ID OneSignal Anda
+          notifyButton: { enable: true },
+        });
+      });
+    </script>
+
+    <style>
+        /* --- 1. GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px; 
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- 2. MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px; 
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- 4. HEADER NOTIFIKASI --- */
+        .page-header {
+            padding: 20px 20px 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .page-header h2 { font-size: 1.2rem; margin: 0; color: var(--primary); font-weight: 700; }
+        
+        .btn-mark-read {
+            background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
+            padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s; font-family: 'Poppins';
+        }
+        .btn-mark-read:hover { background: #3b82f6; color: white; }
+
+        /* --- 5. NOTIFICATION LIST --- */
+        .notif-container {
+            flex: 1; overflow-y: auto; padding-bottom: 20px;
+        }
+
+        .notif-item {
+            display: flex; gap: 15px; padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9; cursor: pointer;
+            transition: 0.3s; position: relative;
+        }
+        .notif-item:hover { background-color: #f8fafc; }
+        
+        /* State Belum Dibaca */
+        .notif-item.unread { background-color: #f0fdf4; }
+        .notif-item.unread::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
+            background-color: #10b981;
+        }
+
+        /* Ikon Notifikasi (Berdasarkan Tipe) */
+        .notif-icon {
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; flex-shrink: 0; color: white;
+        }
+        .icon-comment { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 4px 10px rgba(59,130,246,0.3);}
+        .icon-like { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 10px rgba(239,68,68,0.3);}
+        .icon-update { background: linear-gradient(135deg, var(--gold), #b45309); box-shadow: 0 4px 10px rgba(212,175,55,0.3);}
+        .icon-system { background: linear-gradient(135deg, #64748b, #334155); box-shadow: 0 4px 10px rgba(100,116,139,0.3);}
+
+        .notif-content { flex: 1; }
+        .notif-title {
+            font-size: 0.9rem; margin: 0 0 3px 0; color: var(--text-dark);
+        }
+        .notif-item.unread .notif-title { font-weight: 700; color: #064e3b; }
+        
+        .notif-message {
+            font-size: 0.8rem; color: var(--text-gray); margin: 0 0 5px 0;
+            line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .notif-time {
+            font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;
+        }
+
+        /* LOADING & EMPTY STATE */
+        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 4rem; margin-bottom: 15px; color: #cbd5e1; }
+        .empty-state p { margin: 0; font-size: 0.95rem; }
+
+        #loading-overlay {
+            position: absolute; top: 110px; left: 0; width: 100%; height: calc(100% - 110px);
+            background: white; z-index: 500; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0;
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="nav-brand">
+                <h1>Notifikasi</h1>
+            </div>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <div class="page-header">
+            <h2>Aktivitas Terbaru</h2>
+            <button class="btn-mark-read" onclick="markAllAsRead()"><i class="fa-solid fa-check-double"></i> Tandai Dibaca</button>
+        </div>
+
+        <!-- OVERLAY LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Sinkronisasi Radar...</div>
+        </div>
+
+        <!-- LIST NOTIFIKASI -->
+        <div class="notif-container" id="notif-container">
+            <!-- Akan diisi otomatis oleh JavaScript -->
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserUid = null;
+        let unreadNotifIds = [];
+
+        // 1. Cek Status Login & Sinkronisasi OneSignal
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                
+                // Daftarkan ke sistem Push Notification OneSignal
+                if(window.OneSignal) {
+                    OneSignal.login(user.uid);
+                }
+
+                listenToNotifications();
+            } else {
+                // Tolak akses jika belum login
+                Swal.fire({
+                    title: 'Akses Ditolak',
+                    text: 'Silakan masuk terlebih dahulu untuk melihat pemberitahuan Anda.',
+                    icon: 'warning',
+                    confirmButtonColor: '#003366',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+
+        // 2. Fungsi Formatting Waktu (Mirip Instagram/Wattpad)
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " tahun lalu";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " bulan lalu";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " hari lalu";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " jam lalu";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " menit lalu";
+            return "Baru saja";
+        }
+
+        // 3. Listener Real-time ke Firestore
+        function listenToNotifications() {
+            // Asumsi: notifikasi tersimpan di koleksi 'notifications' dalam dokumen pengguna
+            const q = query(collection(db, "users", currentUserUid, "notifications"), orderBy("createdAt", "desc"));
+            
+            onSnapshot(q, (snap) => {
+                const container = document.getElementById('notif-container');
+                document.getElementById('loading-overlay').style.display = 'none';
+
+                if (snap.empty) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-regular fa-bell-slash"></i>
+                            <p>Belum ada pemberitahuan baru.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                unreadNotifIds = [];
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const isUnread = !data.isRead;
+                    
+                    if (isUnread) unreadNotifIds.push(doc.id);
+
+                    // Penentuan Ikon berdasarkan Tipe Notifikasi
+                    let iconClass = 'fa-solid fa-bell';
+                    let bgClass = 'icon-system';
+                    
+                    if (data.type === 'comment') { iconClass = 'fa-solid fa-comment-dots'; bgClass = 'icon-comment'; }
+                    else if (data.type === 'like') { iconClass = 'fa-solid fa-heart'; bgClass = 'icon-like'; }
+                    else if (data.type === 'update') { iconClass = 'fa-solid fa-book-open'; bgClass = 'icon-update'; }
+
+                    const timeStr = data.createdAt ? timeAgo(data.createdAt.toDate()) : 'Baru saja';
+
+                    // Kartu HTML
+                    html += `
+                        <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifClick('${doc.id}', '${data.targetUrl}', ${isUnread})">
+                            <div class="notif-icon ${bgClass}"><i class="${iconClass}"></i></div>
+                            <div class="notif-content">
+                                <h4 class="notif-title">${data.title}</h4>
+                                <p class="notif-message">${data.message}</p>
+                                <span class="notif-time"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }, (error) => {
+                console.error("Gagal menarik notifikasi:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+            });
+        }
+
+        // 4. Handle Klik pada Notifikasi
+        window.handleNotifClick = async (docId, url, isUnread) => {
+            // Jika belum dibaca, ubah status di database
+            if (isUnread) {
+                try {
+                    await updateDoc(doc(db, "users", currentUserUid, "notifications", docId), {
+                        isRead: true
+                    });
+                } catch (e) {
+                    console.error("Gagal update status read:", e);
+                }
+            }
+
+            // Arahkan ke URL target (Misal: read.html?id=xxx)
+            if (url && url !== "null") {
+                window.location.href = url;
+            }
+        };
+
+        // 5. Tandai Semua Telah Dibaca (Batch Update)
+        window.markAllAsRead = async () => {
+            if (unreadNotifIds.length === 0) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tidak ada notifikasi baru', showConfirmButton: false, timer: 1500 });
+                return;
+            }
+
+            try {
+                const batch = writeBatch(db);
+                unreadNotifIds.forEach(id => {
+                    const notifRef = doc(db, "users", currentUserUid, "notifications", id);
+                    batch.update(notifRef, { isRead: true });
+                });
+                
+                await batch.commit();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Semua telah ditandai dibaca', showConfirmButton: false, timer: 1500 });
+                
+                // Array akan dikosongkan otomatis oleh listener onSnapshot
+
+            } catch (error) {
+                console.error("Gagal menandai semua dibaca:", error);
+                Swal.fire('Error', 'Terjadi kesalahan sistem saat memproses.', 'error');
+            }
+        };
+    </script>
+</body>
+</html>
