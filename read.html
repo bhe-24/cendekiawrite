@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Membaca - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- THEME & READER VARIABLES --- */
+        :root {
+            --reader-bg: #ffffff;
+            --reader-text: #1e293b;
+            --reader-font: 'Lora', serif;
+            --reader-size: 1.05rem;
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --nav-text: #1e293b;
+            --primary: #003366;
+            --gold: #d4af37;
+        }
+
+        [data-theme="dark"] {
+            --reader-bg: #0f172a;
+            --reader-text: #cbd5e1;
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --nav-text: #ffffff;
+        }
+
+        [data-theme="sepia"] {
+            --reader-bg: #fbf0d9;
+            --reader-text: #5f4b32;
+            --nav-bg: rgba(251, 240, 217, 0.95);
+            --nav-text: #5f4b32;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--reader-bg);
+            color: var(--reader-text);
+            margin: 0; padding: 0;
+            font-family: var(--reader-font);
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--reader-bg); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar, .reader-settings-drawer { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR (Auto Hide on Scroll) --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .top-navbar.hidden { transform: translateY(-100%); }
+
+        .btn-icon { background: none; border: none; color: var(--nav-text); font-size: 1.1rem; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .btn-icon:hover { color: var(--gold); }
+        .nav-title-group { text-align: center; flex: 1; overflow: hidden; padding: 0 10px; }
+        .nav-story-title { font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--nav-text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-chapter-title { font-family: 'Poppins', sans-serif; font-size: 0.7rem; color: var(--text-gray); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- READER CONTENT CONTAINER --- */
+        .reader-container {
+            padding: 80px 25px 50px 25px; flex: 1;
+            font-size: var(--reader-size); line-height: 1.9;
+        }
+        
+        .chapter-block { margin-bottom: 60px; border-bottom: 2px dashed rgba(0,0,0,0.1); padding-bottom: 40px;}
+        .chapter-block:last-child { border-bottom: none; }
+
+        .chapter-heading {
+            font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+            color: var(--nav-text); margin-bottom: 25px; text-align: center;
+        }
+
+        .chapter-body img {
+            max-width: 100%; height: auto; border-radius: 8px; margin: 15px auto; display: block;
+        }
+        .chapter-body p { margin-bottom: 1.2em; text-align: justify; }
+
+        .end-story-notice {
+            text-align: center; padding: 40px 20px; color: var(--text-gray);
+            font-family: 'Poppins', sans-serif; font-size: 0.9rem;
+        }
+        .end-story-notice i { font-size: 2rem; color: var(--gold); margin-bottom: 10px; display: block; }
+
+        /* --- SETTINGS DRAWER (POPUP BAWAH) --- */
+        .reader-settings-drawer {
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000;
+            background: white; color: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reader-settings-drawer.active { transform: translateY(0); }
+        
+        .setting-row { margin-bottom: 20px; }
+        .setting-row label { display: block; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        /* Font Selector */
+        .font-options { display: flex; gap: 10px; }
+        .font-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 10px; font-size: 0.85srem; cursor: pointer; font-family: 'Poppins'; font-weight: 600;}
+        .font-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Theme Selector */
+        .theme-options { display: flex; gap: 12px; }
+        .theme-btn { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e1; font-family: 'Poppins'; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center;}
+        .theme-btn.light { background: #ffffff; color: #1e293b; }
+        .theme-btn.dark { background: #0f172a; color: #cbd5e1; }
+        .theme-btn.sepia { background: #fbf0d9; color: #5f4b32; }
+        .theme-btn.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
+
+        /* Brightness & Size Sliders */
+        .slider-group { display: flex; align-items: center; gap: 15px; }
+        .slider-group input { flex: 1; accent-color: var(--primary); cursor: pointer; }
+
+        /* --- OVERLAY KREDUP (BRIGHTNESS LAYER) --- */
+        #brightness-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.1s;
+        }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--reader-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- OVERLAY REDUP (Brightness) -->
+    <div id="brightness-overlay"></div>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 0.9rem;">Membuka Lembar Cerita...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- FIXED NAVBAR -->
+        <header class="top-navbar" id="top-navbar">
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="nav-title-group" onclick="toggleSettings()">
+                <h2 class="nav-story-title" id="nav-story-title">Memuat...</h2>
+                <p class="nav-chapter-title" id="nav-chapter-title">Bab -</p>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-icon" onclick="shareStory()"><i class="fa-solid fa-share-nodes"></i></button>
+                <button class="btn-icon" onclick="toggleSettings()"><i class="fa-solid fa-sliders"></i></button>
+            </div>
+        </header>
+
+        <!-- CONTAINER KONTEN BACAAN (Bisa Scroll Panjang ke Bab Berikutnya) -->
+        <main class="reader-container" id="reader-container" onclick="toggleNavbarByClick()">
+            <!-- Konten bab dimasukkan via JavaScript secara dinamis -->
+        </main>
+
+        <!-- SETTINGS DRAWER (PENGATURAN BACA) -->
+        <div class="reader-settings-drawer" id="settings-drawer">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-family: 'Playfair Display'; margin:0; font-size: 1.2rem;">Pengaturan Baca</h3>
+                <button class="btn-icon" onclick="toggleSettings()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Tema Latar -->
+            <div class="setting-row">
+                <label>Tema Warna</label>
+                <div class="theme-options">
+                    <button class="theme-btn light active" onclick="setTheme('light', this)">Terang</button>
+                    <button class="theme-btn sepia" onclick="setTheme('sepia', this)">Sepia</button>
+                    <button class="theme-btn dark" onclick="setTheme('dark', this)">Malam</button>
+                </div>
+            </div>
+
+            <!-- Jenis Font -->
+            <div class="setting-row">
+                <label>Jenis Huruf</label>
+                <div class="font-options">
+                    <button class="font-btn active" style="font-family: 'Lora';" onclick="setFont('Lora', this)">Serif</button>
+                    <button class="font-btn" style="font-family: 'Poppins';" onclick="setFont('Poppins', this)">Sans</button>
+                    <button class="font-btn" style="font-family: 'Merriweather';" onclick="setFont('Merriweather', this)">Klasik</button>
+                </div>
+            </div>
+
+            <!-- Ukuran Huruf -->
+            <div class="setting-row">
+                <label>Ukuran Teks (<span id="size-val">1.05</span>rem)</label>
+                <div class="slider-group">
+                    <i class="fa-solid fa-font" style="font-size: 0.8rem;"></i>
+                    <input type="range" id="font-size-slider" min="0.85" max="1.5" step="0.05" value="1.05" oninput="changeFontSize(this.value)">
+                    <i class="fa-solid fa-font" style="font-size: 1.3rem;"></i>
+                </div>
+            </div>
+
+            <!-- Keredupan Layar -->
+            <div class="setting-row">
+                <label>Keredupan Layar</label>
+                <div class="slider-group">
+                    <i class="fa-solid fa-sun"></i>
+                    <input type="range" id="brightness-slider" min="0" max="0.8" step="0.05" value="0" oninput="changeBrightness(this.value)">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('id');
+
+        let currentUser = null;
+        let storyData = {};
+        let chaptersList = [];
+        let currentActiveChapterId = null;
+
+        if (!storyId) {
+            window.location.href = 'index.html';
+        }
+
+        // Cek Login (Opsional untuk pembaca umum, tapi wajib untuk simpan Riwayat Baca)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+            }
+            fetchStoryAndChapters();
+        });
+
+        // 1. Tarik Data Cerita & Seluruh Bab Sekaligus
+        async function fetchStoryAndChapters() {
+            try {
+                // A. Ambil Info Cerita Utama
+                const storySnap = await getDoc(doc(db, "stories", storyId));
+                if (!storySnap.exists()) {
+                    Swal.fire('Tidak Ditemukan', 'Cerita yang ingin Anda baca sudah tidak tersedia.', 'error').then(()=>window.location.href='index.html');
+                    return;
+                }
+                storyData = storySnap.data();
+                document.getElementById('nav-story-title').innerText = storyData.title;
+
+                // B. Ambil Seluruh Bab Terpublikasi
+                const qChapters = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
+                const chapSnap = await getDocs(qChapters);
+
+                chaptersList = [];
+                chapSnap.forEach(d => {
+                    const chData = d.data();
+                    if (chData.status === 'published') {
+                        chaptersList.push({ id: d.id, ...chData });
+                    }
+                });
+
+                if (chaptersList.length === 0) {
+                    document.getElementById('reader-container').innerHTML = `
+                        <div class="end-story-notice">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <p>Penulis belum mempublikasikan satupun bab untuk cerita ini.</p>
+                        </div>
+                    `;
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return;
+                }
+
+                // Render semua bab berurutan agar user bisa scroll tanpa jeda
+                renderAllChapters();
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+                // Mulai aktifkan pendengar posisi scroll
+                initScrollObserver();
+
+            } catch (error) {
+                console.error("Gagal memuat bacaan:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Error', 'Gagal memuat lembar cerita.', 'error');
+            }
+        }
+
+        // 2. Render Konten Bab ke Layar
+        function renderAllChapters() {
+            const container = document.getElementById('reader-container');
+            let html = '';
+
+            chaptersList.forEach((ch, index) => {
+                html += `
+                    <div class="chapter-block" id="chap-${ch.id}" data-chapter-title="Bab ${index + 1}: ${ch.title}">
+                        <h2 class="chapter-heading">Bab ${index + 1}<br>${ch.title}</h2>
+                        <div class="chapter-body">
+                            ${ch.content || '<p>Bab ini kosong.</p>'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Tambahkan catatan penutup di ujung scroll
+            html += `
+                <div class="end-story-notice">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                    <p>Cerita berakhir di sini.<br>Nantikan pembaruan bab berikutnya dari penulis!</p>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            
+            // Set bab aktif pertama
+            if (chaptersList.length > 0) {
+                currentActiveChapterId = chaptersList[0].id;
+                document.getElementById('nav-chapter-title').innerText = `Bab 1: ${chaptersList[0].title}`;
+            }
+        }
+
+        // 3. Observer Posisi Scroll (Untuk Ubah Judul Bab di Navbar & Auto-Save History)
+        function initScrollObserver() {
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const chapId = entry.target.id.replace('chap-', '');
+                        currentActiveChapterId = chapId;
+                        const chapTitle = entry.target.getAttribute('data-chapter-title');
+                        document.getElementById('nav-chapter-title').innerText = chapTitle;
+
+                        // Simpan Progres Baca ke Database (Debounced)
+                        saveReadProgress(chapId);
+                    }
+                });
+            }, observerOptions);
+
+            chaptersList.forEach(ch => {
+                const el = document.getElementById(`chap-${ch.id}`);
+                if (el) observer.observe(el);
+            });
+        }
+
+        // 4. Simpan Riwayat Baca ke Database (Agar "Lanjutkan Membaca" Berfungsi)
+        async function saveReadProgress(activeChapId) {
+            if (!currentUser) return; // Jika pembaca anonim, lewati database sync
+            
+            try {
+                const activeIndex = chaptersList.findIndex(x => x.id === activeChapId);
+                const progressPercentage = Math.round(((activeIndex + 1) / chaptersList.length) * 100);
+                const activeChapter = chaptersList[activeIndex];
+
+                // Simpan ke sub-collection 'read_history' user
+                await setDoc(doc(db, "users", currentUser.uid, "read_history", storyId), {
+                    storyId: storyId,
+                    title: storyData.title,
+                    coverBase64: storyData.coverBase64 || null,
+                    authorName: storyData.authorName || 'Anonim',
+                    lastChapterId: activeChapId,
+                    lastChapterTitle: `Bab ${activeIndex + 1}: ${activeChapter.title}`,
+                    progressPercentage: progressPercentage,
+                    lastReadAt: serverTimestamp()
+                }, { merge: true });
+
+            } catch (error) {
+                console.error("Gagal menyimpan riwayat baca:", error);
+            }
+        }
+
+        // --- INTERAKSI TAMPILAN & PENGATURAN (UI CONTROLS) ---
+        
+        let isNavbarVisible = true;
+        let lastScrollTop = 0;
+
+        window.addEventListener('scroll', () => {
+            const st = window.pageYOffset || document.documentElement.scrollTop;
+            const navbar = document.getElementById('top-navbar');
+            
+            if (st > lastScrollTop && st > 100) {
+                // Scroll ke bawah -> Sembunyikan Navbar
+                navbar.classList.add('hidden');
+                document.getElementById('settings-drawer').classList.remove('active');
+            } else {
+                // Scroll ke atas -> Tampilkan Navbar
+                navbar.classList.remove('hidden');
+            }
+            lastScrollTop = st <= 0 ? 0 : st;
+        });
+
+        window.toggleNavbarByClick = () => {
+            // Klik di tengah layar memunculkan/menyembunyikan navbar
+            const navbar = document.getElementById('top-navbar');
+            navbar.classList.toggle('hidden');
+            document.getElementById('settings-drawer').classList.remove('active');
+        };
+
+        window.toggleSettings = () => {
+            document.getElementById('settings-drawer').classList.toggle('active');
+            event.stopPropagation();
+        };
+
+        // Ubah Tema
+        window.setTheme = (themeName, btn) => {
+            document.body.setAttribute('data-theme', themeName);
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+
+        // Ubah Jenis Font
+        window.setFont = (fontFamily, btn) => {
+            document.documentElement.style.setProperty('--reader-font', fontFamily === 'Lora' ? "'Lora', serif" : fontFamily === 'Poppins' ? "'Poppins', sans-serif" : "'Merriweather', serif");
+            document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+
+        // Ubah Ukuran Font
+        window.changeFontSize = (val) => {
+            document.documentElement.style.setProperty('--reader-size', val + 'rem');
+            document.getElementById('size-val').innerText = val;
+        };
+
+        // Ubah Keredupan Layar
+        window.changeBrightness = (val) => {
+            document.getElementById('brightness-overlay').style.opacity = val;
+        };
+
+        // Tombol Bagikan Tautan
+        window.shareStory = () => {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: storyData.title,
+                    text: `Yuk baca "${storyData.title}" di Cendekia Aksara!`,
+                    url: shareUrl,
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tautan disalin ke klipboard!', showConfirmButton: false, timer: 1500 });
+            }
+        };
+    </script>
+</body>
+</html>
