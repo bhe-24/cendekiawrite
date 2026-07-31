@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pustaka Saya - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- 1. GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px; 
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- 2. MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px; 
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- 4. TABS NAVIGATION --- */
+        .tab-container {
+            display: flex; background: white; padding: 15px 20px 0 20px;
+            border-bottom: 1px solid #e2e8f0; position: sticky; top: 52px; z-index: 99;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 12px 0;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; font-weight: 600;
+            color: var(--text-gray); cursor: pointer; border-bottom: 3px solid transparent;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            color: var(--primary); border-bottom-color: var(--primary);
+        }
+
+        /* --- 5. LIBRARY LIST CONTENT --- */
+        .content-area {
+            padding: 20px; flex: 1; display: none; flex-direction: column; gap: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        .content-area.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .library-card {
+            display: flex; gap: 12px; background: white; padding: 15px;
+            border-radius: 16px; border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;
+        }
+        .library-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+
+        .story-cover {
+            width: 75px; height: 110px; border-radius: 8px;
+            background-color: #cbd5e1; background-size: cover; background-position: center;
+            flex-shrink: 0; border: 1px solid #e2e8f0;
+        }
+
+        .story-info {
+            display: flex; flex-direction: column; flex: 1; overflow: hidden;
+        }
+        .story-info h3 {
+            font-size: 1.05rem; font-weight: 700; color: var(--primary);
+            margin: 0 0 5px 0; line-height: 1.2;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .story-info .author {
+            font-size: 0.8rem; color: var(--text-gray); margin: 0 0 10px 0;
+            display: flex; align-items: center; gap: 6px;
+        }
+        
+        .progress-container { margin-bottom: 12px; }
+        .progress-label { font-size: 0.7rem; color: var(--primary); font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;}
+        .progress-bar { width: 100%; height: 5px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); }
+
+        /* Aksi Kartu */
+        .card-actions { display: flex; gap: 8px; margin-top: auto;}
+        .btn-action {
+            flex: 1; padding: 8px 0; border-radius: 8px; border: none;
+            font-family: 'Poppins'; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-read { background: var(--gold); color: white; }
+        .btn-read:hover { background: #b45309; }
+        .btn-archive { background: #f1f5f9; color: var(--text-gray); border: 1px solid #cbd5e1;}
+        .btn-archive:hover { background: #e2e8f0; color: #dc2626; }
+        .btn-restore { background: #10b981; color: white; }
+        .btn-restore:hover { background: #059669; }
+        .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Info Box Arsip */
+        .info-box {
+            background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 12px;
+            display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;
+        }
+        .info-box i { color: #d97706; font-size: 1.2rem; margin-top: 2px;}
+        .info-box p { margin: 0; font-size: 0.8rem; color: #92400e; line-height: 1.5;}
+
+        /* LOADING & EMPTY STATE */
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; margin-top: 20px;}
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+        .empty-state p { margin: 0; font-size: 0.95rem; }
+
+        #loading-overlay {
+            position: absolute; top: 110px; left: 0; width: 100%; height: calc(100% - 110px);
+            background: white; z-index: 500; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0;
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="nav-brand">
+                <h1>Pustaka Saya</h1>
+            </div>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <!-- TABS -->
+        <div class="tab-container">
+            <div class="tab-btn active" onclick="switchTab('bacaan')">Daftar Bacaan</div>
+            <div class="tab-btn" onclick="switchTab('arsip')">Arsip Buku</div>
+        </div>
+
+        <!-- OVERLAY LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyinkronkan Pustaka...</div>
+        </div>
+
+        <!-- TAB CONTENT: DAFTAR BACAAN -->
+        <div class="content-area active" id="tab-bacaan">
+            <!-- Akan diisi otomatis oleh JavaScript -->
+        </div>
+
+        <!-- TAB CONTENT: ARSIP BUKU -->
+        <div class="content-area" id="tab-arsip">
+            <div class="info-box">
+                <i class="fa-solid fa-box-archive"></i>
+                <p><b>Akses Diputus:</b> Cerita yang berada di arsip ini tidak akan muncul di rekomendasi utama dan algoritma kami akan berhenti menyarankan genre serupa kepada Anda.</p>
+            </div>
+            <div id="arsip-container" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Akan diisi otomatis oleh JavaScript -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserUid = null;
+        let libraryItems = [];
+
+        // 1. Cek Status Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                fetchLibrary();
+            } else {
+                // Jika belum login, tolak akses masuk halaman pustaka
+                Swal.fire({
+                    title: 'Akses Ditolak',
+                    text: 'Silakan masuk ke akun Anda terlebih dahulu untuk membuka pustaka.',
+                    icon: 'warning',
+                    confirmButtonColor: '#003366',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+
+        // 2. Tab Switcher
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            
+            if(tabName === 'bacaan') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-bacaan').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-arsip').classList.add('active');
+            }
+        };
+
+        // 3. Ambil Data Pustaka User
+        async function fetchLibrary() {
+            try {
+                // Asumsi: data pustaka disimpan di sub-collection 'library' dalam doc user
+                const q = query(collection(db, "users", currentUserUid, "library"), orderBy("addedAt", "desc"));
+                const snap = await getDocs(q);
+                
+                libraryItems = [];
+                snap.forEach(doc => {
+                    libraryItems.push({ docId: doc.id, ...doc.data() });
+                });
+
+                document.getElementById('loading-overlay').style.display = 'none';
+                renderLibrary();
+
+            } catch (error) {
+                console.error("Gagal menarik data pustaka:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Error', 'Gagal memuat pustaka buku Anda.', 'error');
+            }
+        }
+
+        // 4. Render ke Layar
+        function renderLibrary() {
+            const bacaanContainer = document.getElementById('tab-bacaan');
+            const arsipContainer = document.getElementById('arsip-container');
+            
+            let bacaanHtml = '';
+            let arsipHtml = '';
+
+            libraryItems.forEach(item => {
+                const coverBg = item.coverBase64 ? `url('${item.coverBase64}')` : "none";
+                const progress = item.progressPercentage || 0;
+                
+                if (item.isArchived) {
+                    // KARTU ARSIP BUKU
+                    arsipHtml += `
+                        <div class="library-card">
+                            <div class="story-cover" style="background-image: ${coverBg}; filter: grayscale(100%);"></div>
+                            <div class="story-info">
+                                <h3 style="color:var(--text-gray);">${item.title}</h3>
+                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.authorName || 'Anonim'}</p>
+                                <div class="card-actions">
+                                    <button class="btn-action btn-restore" onclick="unarchiveStory('${item.docId}')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>
+                                    <button class="btn-action btn-delete" onclick="removeStory('${item.docId}')"><i class="fa-solid fa-trash"></i> Hapus Permanen</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // KARTU DAFTAR BACAAN
+                    bacaanHtml += `
+                        <div class="library-card">
+                            <div class="story-cover" style="background-image: ${coverBg};"></div>
+                            <div class="story-info">
+                                <h3>${item.title}</h3>
+                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.authorName || 'Anonim'}</p>
+                                <div class="progress-container">
+                                    <div class="progress-label"><span>Progres Baca</span> <span>${progress}%</span></div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-action btn-read" onclick="window.location.href='read.html?id=${item.storyId}'"><i class="fa-solid fa-book-open"></i> Lanjut Baca</button>
+                                    <button class="btn-action btn-archive" onclick="archiveStory('${item.docId}')" title="Arsipkan & Putus Akses Algoritma"><i class="fa-solid fa-box-archive"></i> Arsipkan</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Handle Empty States
+            if (bacaanHtml === '') {
+                bacaanHtml = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                        <p>Daftar bacaan Anda masih kosong.<br>Jelajahi cerita menarik di beranda!</p>
+                    </div>
+                `;
+            }
+            if (arsipHtml === '') {
+                arsipHtml = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>Tidak ada cerita yang diarsipkan.</p>
+                    </div>
+                `;
+            }
+
+            bacaanContainer.innerHTML = bacaanHtml;
+            arsipContainer.innerHTML = arsipHtml;
+        }
+
+        // 5. Aksi Database: Arsipkan Cerita
+        window.archiveStory = async (docId) => {
+            const konfirmasi = await Swal.fire({
+                title: 'Arsipkan Cerita Ini?',
+                html: 'Cerita ini akan dipindahkan ke tab Arsip.<br><b>Algoritma kami juga akan berhenti merekomendasikan karya serupa kepada Anda.</b>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Arsipkan',
+                cancelButtonText: 'Batal'
+            });
+
+            if(konfirmasi.isConfirmed) {
+                try {
+                    await updateDoc(doc(db, "users", currentUserUid, "library", docId), {
+                        isArchived: true,
+                        archivedAt: new Date().toISOString()
+                    });
+                    
+                    // Update array lokal & render ulang
+                    const item = libraryItems.find(x => x.docId === docId);
+                    if(item) item.isArchived = true;
+                    renderLibrary();
+                    
+                    Swal.fire({ icon: 'success', title: 'Diarsipkan', timer: 1500, showConfirmButton: false });
+                } catch(e) {
+                    Swal.fire('Error', 'Gagal mengarsipkan cerita.', 'error');
+                }
+            }
+        };
+
+        // 6. Aksi Database: Pulihkan Arsip
+        window.unarchiveStory = async (docId) => {
+            try {
+                await updateDoc(doc(db, "users", currentUserUid, "library", docId), {
+                    isArchived: false,
+                    archivedAt: null
+                });
+                
+                // Update array lokal & render ulang
+                const item = libraryItems.find(x => x.docId === docId);
+                if(item) item.isArchived = false;
+                renderLibrary();
+                
+                Swal.fire({ icon: 'success', title: 'Dipulihkan', text: 'Cerita kembali ke daftar bacaan.', timer: 1500, showConfirmButton: false });
+            } catch(e) {
+                Swal.fire('Error', 'Gagal memulihkan cerita.', 'error');
+            }
+        };
+
+        // 7. Aksi Database: Hapus Permanen dari Pustaka
+        window.removeStory = async (docId) => {
+            const konfirmasi = await Swal.fire({
+                title: 'Hapus dari Pustaka?',
+                text: 'Cerita ini akan dihapus secara permanen dari daftar pustaka Anda.',
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            });
+
+            if(konfirmasi.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "users", currentUserUid, "library", docId));
+                    
+                    // Update array lokal & render ulang
+                    libraryItems = libraryItems.filter(x => x.docId !== docId);
+                    renderLibrary();
+                    
+                    Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false });
+                } catch(e) {
+                    Swal.fire('Error', 'Gagal menghapus cerita.', 'error');
+                }
+            }
+        };
+    </script>
+</body>
+</html>
