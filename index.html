@@ -36,7 +36,6 @@
             --bg-color: #f8fafc;
             --text-dark: #1e293b;
             --text-gray: #64748b;
-            --gap-section: clamp(16px, 4vw, 40px);
         }
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -53,28 +52,11 @@
         }
 
         /* --- 2. WRAPPER & RESPONSIVE GRID --- */
-        .app-wrapper {
-            width: 100%;
-            max-width: 1280px;
-            margin: 0 auto;
-            flex: 1;
-            display: flex; flex-direction: column;
-            overflow-x: hidden;
-        }
+        .app-wrapper { width: 100%; max-width: 1280px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; overflow-x: hidden; }
 
         /* --- 3. FIXED NAVBAR --- */
-        .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid var(--gold);
-            display: flex; justify-content: center;
-        }
-        .navbar-content {
-            width: 100%; max-width: 1280px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px clamp(16px, 4vw, 40px);
-        }
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--gold); display: flex; justify-content: center; }
+        .navbar-content { width: 100%; max-width: 1280px; display: flex; justify-content: space-between; align-items: center; padding: 10px clamp(16px, 4vw, 40px); }
 
         .nav-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; flex-shrink: 0; }
@@ -83,88 +65,44 @@
         .nav-actions { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); flex-shrink: 0; }
         .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;}
         .btn-search:hover { color: var(--gold); }
-        .btn-login {
-            background: linear-gradient(135deg, var(--gold), #b45309);
-            color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px;
-            font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap;
-        }
+        .btn-login { background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
         /* --- 4. BANNERS --- */
-        .banner-container {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none;
-        }
+        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none; }
         .banner-container::-webkit-scrollbar { display: none; }
-        
-        .banner-card {
-            min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px);
-            border-radius: 16px; scroll-snap-align: center; flex-shrink: 0;
-            background-size: cover; background-position: center;
-            position: relative; overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a;
-        }
-        .banner-card::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-        }
+        .banner-card { min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px); border-radius: 16px; scroll-snap-align: center; flex-shrink: 0; background-size: cover; background-position: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a; }
+        .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
         .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; }
 
         /* --- 5. QUICK ACTION ICONS --- */
-        .quick-actions {
-            display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 10px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px);
-            scrollbar-width: none; justify-content: flex-start;
-        }
+        .quick-actions { display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 10px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px); scrollbar-width: none; justify-content: flex-start; }
         .quick-actions::-webkit-scrollbar { display: none; }
-        
-        .action-item {
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            flex-shrink: 0; cursor: pointer; width: clamp(65px, 8vw, 80px); text-decoration: none;
-        }
-        .action-icon {
-            width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%;
-            background: white; border: 1px solid #e2e8f0;
-            display: flex; justify-content: center; align-items: center;
-            font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .action-item { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; cursor: pointer; width: clamp(65px, 8vw, 80px); text-decoration: none; }
+        .action-icon { width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%; background: white; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .action-item:hover .action-icon { background: var(--nav-bg); color: white; transform: scale(1.1); }
         .action-item span { font-size: clamp(0.72rem, 1.6vw, 0.9rem); font-weight: 600; text-align: center; color: var(--text-dark); }
 
         /* --- 6. STORY SECTIONS --- */
         .section-container { margin-bottom: clamp(28px, 5vw, 40px); }
-        .section-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 clamp(16px, 4vw, 20px); margin-bottom: 15px; gap: 10px;
-        }
-        .section-header h2 {
-            font-family: 'Playfair Display', serif; font-size: clamp(1.15rem, 2.6vw, 1.4rem);
-            color: var(--nav-bg); margin: 0; font-weight: 700;
-        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 clamp(16px, 4vw, 20px); margin-bottom: 15px; gap: 10px; }
+        .section-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.15rem, 2.6vw, 1.4rem); color: var(--nav-bg); margin: 0; font-weight: 700; }
         .section-header a { font-size: 0.9rem; color: var(--primary); font-weight: 600; text-decoration: none; transition: 0.2s; white-space: nowrap;}
         .section-header a:hover { color: var(--gold); }
 
-        .story-scroll {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: clamp(14px, 2.5vw, 20px); padding: 0 clamp(16px,4vw,20px) 20px clamp(16px,4vw,20px);
-            scrollbar-width: none; min-height: 150px;
-        }
+        .story-scroll { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(14px, 2.5vw, 20px); padding: 0 clamp(16px,4vw,20px) 20px clamp(16px,4vw,20px); scrollbar-width: none; min-height: 150px; }
         .story-scroll::-webkit-scrollbar { display: none; }
 
         .story-card { width: clamp(120px, 15vw, 165px); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; position: relative; }
         .story-card:hover { transform: translateY(-5px); }
-        .story-cover {
-            width: 100%; height: clamp(170px, 21vw, 235px); border-radius: 12px;
-            background-size: cover; background-position: center;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1); margin-bottom: 10px; border: 1px solid #e2e8f0;
-            background-color: #cbd5e1;
-        }
+        .story-cover { width: 100%; height: clamp(170px, 21vw, 235px); border-radius: 12px; background-size: cover; background-position: center; box-shadow: 0 6px 15px rgba(0,0,0,0.1); margin-bottom: 10px; border: 1px solid #e2e8f0; background-color: #cbd5e1; }
         .story-title { font-size: 0.9rem; font-weight: 700; margin: 0 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
         .story-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .story-badge { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; z-index: 5; }
+        .badge-new { background: #ecfdf5; color: #059669; }
+        .badge-editor { background: #eff6ff; color: var(--primary); }
 
-        /* Lanjutkan Membaca */
         .continue-card { width: clamp(240px, 30vw, 300px); display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
         .continue-card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .continue-cover { width: clamp(60px, 8vw, 80px); height: clamp(90px, 11vw, 115px); border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
@@ -174,94 +112,41 @@
         .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); }
 
+        /* SKELETON / LOADING TEXT STYLE */
         .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
-
-        .story-badge {
-            position: absolute; top: 8px; left: 8px;
-            display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700;
-            padding: 2px 8px; border-radius: 6px; z-index: 5;
-        }
-        .badge-new { background: #ecfdf5; color: #059669; }
-        .badge-editor { background: #eff6ff; color: var(--primary); }
+        .spinner { width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px auto;}
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- 7. CTA BOTTOM & FOOTER --- */
-        .cta-write {
-            margin: clamp(16px,3vw,20px); padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px);
-            background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
-            border-radius: 24px; text-align: center; color: white;
-            box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden;
-        }
-        .cta-write::after {
-            content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: -20px; bottom: -20px; font-size: 12rem;
-            color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
-        }
+        .cta-write { margin: clamp(16px,3vw,20px); padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 24px; text-align: center; color: white; box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden; }
+        .cta-write::after { content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; right: -20px; bottom: -20px; font-size: 12rem; color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg); }
         .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 4vw, 1.8rem); margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
         .cta-write p { font-size: clamp(0.85rem, 2vw, 0.95rem); color: #cbd5e1; margin: 0 auto 25px auto; max-width: 600px; line-height: 1.6; position: relative; z-index: 2;}
-        .btn-cta {
-            background: var(--gold); color: white; border: none; padding: 12px clamp(22px, 4vw, 30px);
-            border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700;
-            cursor: pointer; box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-            display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s;
-        }
+        .btn-cta { background: var(--gold); color: white; border: none; padding: 12px clamp(22px, 4vw, 30px); border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s; }
         .btn-cta:hover { background: #b45309; transform: translateY(-3px); }
 
-        .app-footer {
-            margin-top: auto; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center;
-            background: var(--nav-bg); color: white;
-        }
+        .app-footer { margin-top: auto; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center; background: var(--nav-bg); color: white; }
         .app-footer p { margin: 0 0 10px 0; font-size: 0.85rem; color: #cbd5e1; }
         .app-footer a { color: var(--gold); text-decoration: none; font-weight: 600; margin: 0 10px; transition: 0.2s;}
         .app-footer a:hover { color: white; }
         .app-footer .version { font-size: 0.75rem; color: #64748b; margin-top: 15px; display: block; }
 
-        /* LOADING LAYAR TRANSPARAN (FREEZE SCREEN) */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.5); /* Latar transparan */
-            backdrop-filter: blur(2px); /* Blur tipis agar layar terlihat beku */
-            z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        /* Spinner dihilangkan sesuai request "agar tidak kelihatan memuat" 
-           tapi layar tetap tidak bisa diklik */
-
         /* PWA Install Button */
-        #install-btn {
-            display: none; width: calc(100% - 40px); margin: 0 auto 30px auto; max-width: 600px;
-            background: #10b981; color: white; border: none; padding: 15px;
-            border-radius: 16px; font-family: 'Poppins'; font-weight: 600; font-size: 1rem;
-            cursor: pointer; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
-            text-align: center; transition: 0.3s;
-        }
+        #install-btn { display: none; width: calc(100% - 40px); margin: 0 auto 30px auto; max-width: 600px; background: #10b981; color: white; border: none; padding: 15px; border-radius: 16px; font-family: 'Poppins'; font-weight: 600; font-size: 1rem; cursor: pointer; text-align: center; transition: 0.3s;}
         #install-btn:hover { background: #059669; transform: translateY(-2px); }
         #install-btn.show { display: block; }
 
-        @media (min-width: 600px) and (max-width: 1023px) {
-            .quick-actions { justify-content: center; }
-        }
-
-        @media (min-width: 768px) {
-            .quick-actions { justify-content: center; padding-top: 20px; padding-bottom: 40px;}
-        }
-
+        @media (min-width: 600px) and (max-width: 1023px) { .quick-actions { justify-content: center; } }
+        @media (min-width: 768px) { .quick-actions { justify-content: center; padding-top: 20px; padding-bottom: 40px;} }
         @media (min-width: 1024px) {
-            .story-scroll {
-                flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; justify-content: flex-start;
-            }
+            .story-scroll { flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; justify-content: flex-start; }
             .continue-container.story-scroll { flex-wrap: nowrap; overflow-x: auto; }
             .banner-container { justify-content: center; }
         }
-
-        @media (max-width: 359px) {
-            .nav-brand h1 { display: none; }
-        }
+        @media (max-width: 359px) { .nav-brand h1 { display: none; } }
     </style>
 </head>
 <body>
-
-    <!-- OVERLAY LOADING TRANSPARAN (FREEZE EFEK) -->
-    <div id="loading-overlay"></div>
 
     <!-- NAVBAR -->
     <header class="top-navbar">
@@ -271,6 +156,7 @@
                 <h1>Cendekia</h1>
             </div>
             <div class="nav-actions">
+                <!-- Langsung pindah ke halaman search.html -->
                 <button class="btn-search" onclick="window.location.href='search.html'"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
             </div>
@@ -279,9 +165,11 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS DINAMIS -->
+        <!-- BANNERS -->
         <div class="banner-container" id="banner-container">
-            <div class="empty-state" id="banner-loading" style="border:none; margin-top:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
+            <div class="empty-state" style="border:none; margin-top:20px;">
+                <div class="spinner"></div><p>Memuat Etalase...</p>
+            </div>
         </div>
 
         <!-- QUICK ACTIONS ICONS -->
@@ -308,45 +196,45 @@
             </a>
         </div>
 
-        <!-- SECTION: LANJUTKAN MEMBACA -->
+        <!-- LANJUTKAN MEMBACA -->
         <div class="section-container" id="continue-section" style="display: none;">
             <div class="section-header">
                 <h2>Lanjutkan Membaca</h2>
             </div>
             <div class="story-scroll continue-container" id="continue-container">
-                <!-- Akan diisi riwayat baca -->
+                <!-- Diisi via JS -->
             </div>
         </div>
 
-        <!-- SECTION: REKOMENDASI UTAMA -->
+        <!-- REKOMENDASI UTAMA -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Rekomendasi Utama</h2>
                 <a href="search.html">Lihat Semua</a>
             </div>
             <div class="story-scroll" id="rekomendasi-container">
-                <!-- Diisi via JS -->
+                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Rekomendasi...</p></div>
             </div>
         </div>
 
-        <!-- SECTION: CERITA TERBARU -->
+        <!-- CERITA TERBARU -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Cerita Terbaru</h2>
                 <a href="search.html">Lihat Semua</a>
             </div>
             <div class="story-scroll" id="terbaru-container">
-                <!-- Diisi via JS -->
+                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Cerita Terbaru...</p></div>
             </div>
         </div>
 
-        <!-- SECTION: PILIHAN EDITOR DINAMIS -->
+        <!-- PILIHAN EDITOR -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Pilihan Editor</h2>
             </div>
             <div class="story-scroll" id="editor-container">
-                <!-- Diisi via JS -->
+                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Pilihan Editor...</p></div>
             </div>
         </div>
 
@@ -360,7 +248,6 @@
             <button class="btn-cta" onclick="requireLogin('menulis', 'menulis.html')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis Karya</button>
         </div>
 
-        <!-- FOOTER PROFESIONAL -->
         <footer class="app-footer">
             <p>&copy; 2026 Cendekia Aksara. Seluruh Hak Cipta Dilindungi.</p>
             <p>
@@ -377,7 +264,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Konfigurasi Database Cendekia Aksara
@@ -414,6 +301,7 @@
             }
         });
 
+        // Helper Tanggal
         function toMillisSafe(ts) {
             if (!ts) return 0;
             if (typeof ts.toMillis === 'function') return ts.toMillis();
@@ -421,14 +309,17 @@
             return 0;
         }
 
-        // Tautan diarahkan ke pratinjau.html
+        // Tautan ke pratinjau.html & Sistem Vote murni (Bukan Rating 5.0 lagi)
         function buildStoryCard(data, opts = {}) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
-            const metaHtml = opts.metaHtml || `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}`;
+            
+            // FIX: Hanya menggunakan data.votes, jika kosong maka 0
+            const metaHtml = opts.metaHtml || `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0}`;
+            
             const coverBorder = opts.goldBorder ? 'border-color: var(--gold);' : '';
             return `
-                <div class="story-card" onclick="requireLogin('melihat cerita', 'pratinjau.html?id=${data.id}')">
+                <div class="story-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
                     ${badgeHtml}
                     <div class="story-cover" style="background-image: ${coverBg}; ${coverBorder}"></div>
                     <h3 class="story-title">${data.title}</h3>
@@ -437,10 +328,10 @@
             `;
         }
 
-        // 2. Tarik Data Utama
+        // 2. Tarik Data Utama (Langsung Tampil di Layar Tanpa Overlay)
         async function fetchAllData() {
             try {
-                // Load Banners
+                // A. Load Banners
                 const qBanner = query(collection(db, "app_banners"), where("isActive", "==", true), limit(5));
                 const snapBanner = await getDocs(qBanner);
                 const bannerContainer = document.getElementById('banner-container');
@@ -463,6 +354,7 @@
                     bannerContainer.innerHTML = htmlBanner;
                 }
 
+                // B. Load Stories
                 const qStories = query(collection(db, "published_stories"));
                 const snapStories = await getDocs(qStories);
                 allPublishedStories = [];
@@ -476,22 +368,43 @@
                 const edContainer = document.getElementById('editor-container');
 
                 if (allPublishedStories.length === 0) {
-                    const emptyMsg = `<div class="empty-state">Belum ada karya di database.</div>`;
+                    const emptyMsg = `<div class="empty-state" style="border:none;">Belum ada karya di database.</div>`;
                     recContainer.innerHTML = emptyMsg;
-                    terbaruContainer.innerHTML = `<div class="empty-state">Belum ada cerita baru yang terbit.</div>`;
-                    edContainer.innerHTML = `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
-                    // Hilangkan loading overlay freeze
-                    document.getElementById('loading-overlay').style.display = 'none';
+                    terbaruContainer.innerHTML = emptyMsg;
+                    edContainer.innerHTML = emptyMsg;
                     return;
                 }
 
-                // A. REKOMENDASI UTAMA
+                // FIX NAMA PENULIS: Menarik @username asli dari database users 
+                // agar tidak tampil "Penulis Cendekia" di cerita lama
+                const authorIds = [...new Set(allPublishedStories.map(s => s.authorId).filter(id => id))];
+                const authorMap = {};
+                
+                await Promise.all(authorIds.map(async (uid) => {
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", uid));
+                        if(uSnap.exists()) {
+                            const uData = uSnap.data();
+                            // Prioritaskan username (@...), jika tidak ada pakai nama
+                            authorMap[uid] = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
+                        }
+                    } catch(e) {}
+                }));
+
+                // Timpa nama penulis di cache dengan nama/username asli
+                allPublishedStories.forEach(s => {
+                    if(authorMap[s.authorId]) {
+                        s.authorName = authorMap[s.authorId];
+                    }
+                });
+
+                // C. REKOMENDASI UTAMA (Sort by Views)
                 const recommendedList = [...allPublishedStories]
                     .sort((a, b) => (b.views || 0) - (a.views || 0))
                     .slice(0, 10);
                 recContainer.innerHTML = recommendedList.map(data => buildStoryCard(data)).join('');
 
-                // B. CERITA TERBARU
+                // D. CERITA TERBARU (Sort by Waktu)
                 const latestList = [...allPublishedStories]
                     .sort((a, b) => {
                         const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
@@ -502,26 +415,24 @@
                 terbaruContainer.innerHTML = latestList.length > 0
                     ? latestList.map(data => buildStoryCard(data, {
                         badge: 'Baru', badgeClass: 'badge-new',
-                        metaHtml: `<i class="fa-solid fa-user-pen"></i> ${data.authorName || 'Anonim'}`
+                        metaHtml: `<i class="fa-solid fa-at"></i> ${data.authorName || 'Anonim'}` // Icon @ untuk Penulis
                     })).join('')
-                    : `<div class="empty-state">Belum ada cerita baru yang terbit.</div>`;
+                    : `<div class="empty-state" style="border:none;">Belum ada cerita baru yang terbit.</div>`;
 
-                // C. PILIHAN EDITOR
+                // E. PILIHAN EDITOR (Filter isEditorChoice)
                 const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
                 edContainer.innerHTML = editorList.length > 0
                     ? editorList.map(data => buildStoryCard(data, {
                         goldBorder: true,
                         badge: '<i class="fa-solid fa-award"></i> Sorotan', badgeClass: 'badge-editor',
-                        metaHtml: `<i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'} &middot; <i class="fa-solid fa-eye"></i> ${data.views || 0}`
+                        // FIX: Menggunakan data.votes
+                        metaHtml: `<i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0} &middot; <i class="fa-solid fa-eye"></i> ${data.views || 0}`
                     })).join('')
-                    : `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
-
-                // Hilangkan loading overlay freeze setelah semua data siap
-                document.getElementById('loading-overlay').style.display = 'none';
+                    : `<div class="empty-state" style="border:none;">Editor belum memilih cerita sorotan.</div>`;
 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('rekomendasi-container').innerHTML = `<div class="empty-state" style="border:none; color:#dc2626;">Gagal memuat. Periksa koneksi internet Anda.</div>`;
             }
         }
 
@@ -538,7 +449,7 @@
                         const data = doc.data();
                         const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                         html += `
-                            <div class="continue-card" onclick="window.location.href='pratinjau.html?id=${data.storyId}'">
+                            <div class="continue-card" onclick="window.location.href='read.html?id=${data.storyId}&ch=${data.lastChapterId}'">
                                 <div class="continue-cover" style="background-image: ${coverBg};"></div>
                                 <div class="continue-info">
                                     <h3>${data.title}</h3>
