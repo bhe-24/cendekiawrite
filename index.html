@@ -22,7 +22,7 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Ganti dengan App ID OneSignal Anda
+          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", 
         });
       });
     </script>
@@ -55,7 +55,7 @@
         /* --- 2. WRAPPER & RESPONSIVE GRID --- */
         .app-wrapper {
             width: 100%;
-            max-width: 1280px; /* Lebar maksimal untuk Laptop/PC */
+            max-width: 1280px;
             margin: 0 auto;
             flex: 1;
             display: flex; flex-direction: column;
@@ -176,7 +176,6 @@
 
         .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
 
-        /* Badge kecil untuk kartu (Baru / Pilihan Editor) */
         .story-badge {
             display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700;
             padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; width: fit-content;
@@ -245,24 +244,17 @@
         #install-btn:hover { background: #059669; transform: translateY(-2px); }
         #install-btn.show { display: block; }
 
-        /* --- 9. TABLET TWEAKS --- */
         @media (min-width: 600px) and (max-width: 1023px) {
             .quick-actions { justify-content: center; }
         }
 
-        /* --- 10. DESKTOP / LAPTOP RESPONSIVE TWEAKS --- */
         @media (min-width: 768px) {
             .quick-actions { justify-content: center; padding-top: 20px; padding-bottom: 40px;}
         }
 
-        /* Di layar lebar (laptop/PC), ganti carousel scroll jadi grid melebar agar tidak
-           terlihat kosong/terpotong dan tetap memakai ruang layar dengan baik */
         @media (min-width: 1024px) {
             .story-scroll {
-                flex-wrap: wrap;
-                overflow-x: visible;
-                scroll-snap-type: none;
-                justify-content: flex-start;
+                flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; justify-content: flex-start;
             }
             .continue-container.story-scroll { flex-wrap: nowrap; overflow-x: auto; }
             .banner-container { justify-content: center; }
@@ -296,7 +288,7 @@
             <div class="empty-state" id="banner-loading" style="border:none; margin-top:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
         </div>
 
-        <!-- QUICK ACTIONS ICONS (LINK ASLI) -->
+        <!-- QUICK ACTIONS ICONS -->
         <div class="quick-actions">
             <a href="#" class="action-item" onclick="requireLogin('menulis', 'menulis.html')">
                 <div class="action-icon"><i class="fa-solid fa-pen-nib" style="color: #0ea5e9;"></i></div>
@@ -389,13 +381,13 @@
             <button class="btn-close-search" onclick="toggleSearch()"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="search-input-box">
                 <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
-                <input type="text" id="search-input" placeholder="Cari judul cerita, penulis, atau genre..." oninput="performSearch()">
+                <input type="text" id="search-input" placeholder="Gunakan # untuk tag, @ untuk penulis..." oninput="performSearch()">
             </div>
         </div>
         <div class="search-results" id="search-results">
             <div style="text-align:center; padding: 60px 20px; color: #94a3b8;">
                 <i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 20px; color:#cbd5e1;"></i>
-                <p style="font-size: 1.1rem;">Ketikkan kata kunci untuk mulai mencari karya menakjubkan di Cendekia.</p>
+                <p style="font-size: 1.1rem;">Ketikkan kata kunci.<br><span style="font-size:0.8rem; color:#cbd5e1;">Gunakan <b>#tagar</b> atau <b>@penulis</b> untuk pencarian spesifik.</span></p>
             </div>
         </div>
     </div>
@@ -443,7 +435,6 @@
             }
         });
 
-        // Helper: ambil waktu (ms) dari Firestore Timestamp secara aman
         function toMillisSafe(ts) {
             if (!ts) return 0;
             if (typeof ts.toMillis === 'function') return ts.toMillis();
@@ -451,14 +442,14 @@
             return 0;
         }
 
-        // Helper: bangun kartu cerita, dengan opsi badge kecil (mis. "Baru" / "Pilihan Editor")
+        // PERUBAHAN: Tautan diarahkan ke pratinjau.html, bukan read.html
         function buildStoryCard(data, opts = {}) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
             const metaHtml = opts.metaHtml || `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}`;
             const coverBorder = opts.goldBorder ? 'border-color: var(--gold);' : '';
             return `
-                <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
+                <div class="story-card" onclick="requireLogin('melihat cerita', 'pratinjau.html?id=${data.id}')">
                     <div class="story-cover" style="background-image: ${coverBg}; ${coverBorder}"></div>
                     ${badgeHtml}
                     <h3 class="story-title">${data.title}</h3>
@@ -493,9 +484,6 @@
                     bannerContainer.innerHTML = htmlBanner;
                 }
 
-                // Ambil SEMUA cerita terbit sekali jalan, lalu urutkan di sisi klien
-                // menjadi 3 sudut pandang berbeda (Rekomendasi, Terbaru, Pilihan Editor).
-                // Ini menghindari kebutuhan composite index Firestore untuk tiap urutan.
                 const qStories = query(collection(db, "published_stories"));
                 const snapStories = await getDocs(qStories);
                 allPublishedStories = [];
@@ -516,13 +504,13 @@
                     return;
                 }
 
-                // A. REKOMENDASI UTAMA — diurutkan berdasarkan jumlah pembaca (views) terbanyak
+                // A. REKOMENDASI UTAMA
                 const recommendedList = [...allPublishedStories]
                     .sort((a, b) => (b.views || 0) - (a.views || 0))
                     .slice(0, 10);
                 recContainer.innerHTML = recommendedList.map(data => buildStoryCard(data)).join('');
 
-                // B. CERITA TERBARU — diurutkan berdasarkan waktu terbit terbaru (publishedAt/updatedAt)
+                // B. CERITA TERBARU
                 const latestList = [...allPublishedStories]
                     .sort((a, b) => {
                         const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
@@ -537,7 +525,7 @@
                     })).join('')
                     : `<div class="empty-state">Belum ada cerita baru yang terbit.</div>`;
 
-                // C. PILIHAN EDITOR — hanya cerita yang ditandai isEditorChoice
+                // C. PILIHAN EDITOR
                 const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
                 edContainer.innerHTML = editorList.length > 0
                     ? editorList.map(data => buildStoryCard(data, {
@@ -565,7 +553,7 @@
                         const data = doc.data();
                         const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                         html += `
-                            <div class="continue-card" onclick="window.location.href='read.html?id=${data.storyId}'">
+                            <div class="continue-card" onclick="window.location.href='pratinjau.html?id=${data.storyId}'">
                                 <div class="continue-cover" style="background-image: ${coverBg};"></div>
                                 <div class="continue-info">
                                     <h3>${data.title}</h3>
@@ -582,7 +570,7 @@
 
         window.onload = () => { fetchAllData(); };
 
-        // --- FUNGSI PENCARIAN & MODAL ---
+        // --- FUNGSI PENCARIAN & MODAL (DIPERBARUI) ---
         window.toggleSearch = () => {
             const modal = document.getElementById('search-modal');
             modal.classList.toggle('active');
@@ -596,31 +584,53 @@
             const container = document.getElementById('search-results');
             
             if (queryText === "") {
-                container.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 20px; color:#cbd5e1;"></i><p style="font-size: 1.1rem;">Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 20px; color:#cbd5e1;"></i><p style="font-size: 1.1rem;">Ketikkan kata kunci.<br><span style="font-size:0.8rem; color:#cbd5e1;">Gunakan <b>#tagar</b> atau <b>@penulis</b> untuk pencarian spesifik.</span></p></div>`;
                 return;
             }
 
-            const results = allPublishedStories.filter(story => 
-                (story.title && story.title.toLowerCase().includes(queryText)) ||
-                (story.authorName && story.authorName.toLowerCase().includes(queryText)) ||
-                (story.genre && story.genre.toLowerCase().includes(queryText))
-            );
+            // LOGIKA PENCARIAN BARU (#, @, atau biasa)
+            const results = allPublishedStories.filter(story => {
+                if (queryText.startsWith('#')) {
+                    // Cari di dalam Tagar
+                    const tagQuery = queryText.substring(1).trim();
+                    if (!story.tags || !Array.isArray(story.tags)) return false;
+                    return story.tags.some(tag => tag.toLowerCase().includes(tagQuery));
+                } else if (queryText.startsWith('@')) {
+                    // Cari berdasarkan Penulis
+                    const authorQuery = queryText.substring(1).trim();
+                    return story.authorName && story.authorName.toLowerCase().includes(authorQuery);
+                } else {
+                    // Pencarian Biasa (Judul atau Genre)
+                    return (story.title && story.title.toLowerCase().includes(queryText)) ||
+                           (story.genre && story.genre.toLowerCase().includes(queryText));
+                }
+            });
 
             if (results.length === 0) {
-                container.innerHTML = `<div class="empty-state" style="margin-top:20px;">Maaf, cerita atau penulis "${queryText}" tidak ditemukan.</div>`;
+                container.innerHTML = `<div class="empty-state" style="margin-top:20px;">Maaf, kata kunci "${queryText}" tidak ditemukan.</div>`;
                 return;
             }
 
             let html = '<div style="display:flex; flex-direction:column; gap:20px;">';
             results.forEach(data => {
                 const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                
+                // Jika punya tag, tampilkan 3 tag pertama
+                let tagsHtml = '';
+                if (data.tags && Array.isArray(data.tags)) {
+                    tagsHtml = data.tags.slice(0, 3).map(t => `<span style="font-size:0.65rem; color:var(--primary); margin-right:5px;">#${t}</span>`).join('');
+                }
+
                 html += `
-                    <div style="display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.2s;" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'">
+                    <div style="display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.2s;" onclick="requireLogin('melihat cerita', 'pratinjau.html?id=${data.id}')">
                         <div style="width: 65px; height: 95px; border-radius: 8px; background-color:#cbd5e1; background-image: ${coverBg}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
                         <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
                             <h4 style="margin: 0 0 5px 0; font-size: 1.05rem; color: var(--primary);">${data.title}</h4>
-                            <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
-                            <div><span style="font-size:0.7rem; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1;">${data.genre || 'Umum'}</span></div>
+                            <p style="margin: 0 0 5px 0; font-size: 0.8rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
+                            <div>
+                                <span style="font-size:0.7rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1; margin-right:5px;">${data.genre || 'Umum'}</span>
+                                ${tagsHtml}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -632,10 +642,9 @@
         // --- SISTEM LINK DINAMIS & INTERSEP ---
         window.goToLogin = () => { window.location.href = 'login.html'; };
 
-        // Fungsi canggih: Menerima "Nama Aksi" dan "URL Tujuan Sesungguhnya"
         window.requireLogin = (actionName, targetUrl) => {
             if(isUserLoggedIn) {
-                window.location.href = targetUrl; // Langsung tembus jika sudah login
+                window.location.href = targetUrl; 
             } else {
                 Swal.fire({
                     title: 'Akses Terbatas',
