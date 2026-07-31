@@ -36,6 +36,7 @@
             --bg-color: #f8fafc;
             --text-dark: #1e293b;
             --text-gray: #64748b;
+            --gap-section: clamp(16px, 4vw, 40px);
         }
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -48,15 +49,17 @@
             padding-top: 70px; 
             min-height: 100vh;
             display: flex; flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* --- 2. WRAPPER & RESPONSIVE GRID --- */
         .app-wrapper {
             width: 100%;
-            max-width: 1200px; /* Lebar maksimal untuk Laptop/PC */
+            max-width: 1280px; /* Lebar maksimal untuk Laptop/PC */
             margin: 0 auto;
             flex: 1;
             display: flex; flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* --- 3. FIXED NAVBAR --- */
@@ -68,35 +71,35 @@
             display: flex; justify-content: center;
         }
         .navbar-content {
-            width: 100%; max-width: 1200px;
+            width: 100%; max-width: 1280px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px;
+            padding: 10px clamp(16px, 4vw, 40px);
         }
 
-        .nav-brand { display: flex; align-items: center; gap: 10px; }
-        .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; }
-        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.3rem; color: white; margin: 0; letter-spacing: 0.5px; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; flex-shrink: 0; }
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: clamp(1.05rem, 3vw, 1.4rem); color: white; margin: 0; letter-spacing: 0.5px; white-space: nowrap; }
 
-        .nav-actions { display: flex; align-items: center; gap: 15px; }
+        .nav-actions { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); flex-shrink: 0; }
         .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;}
         .btn-search:hover { color: var(--gold); }
         .btn-login {
             background: linear-gradient(135deg, var(--gold), #b45309);
-            color: white; border: none; padding: 8px 20px; border-radius: 50px;
-            font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s;
+            color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap;
         }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
         /* --- 4. BANNERS --- */
         .banner-container {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: 20px; padding: 20px; scrollbar-width: none;
+            gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none;
         }
         .banner-container::-webkit-scrollbar { display: none; }
         
         .banner-card {
-            min-width: 85vw; height: 180px;
+            min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px);
             border-radius: 16px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center;
             position: relative; overflow: hidden;
@@ -107,63 +110,65 @@
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
+        .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; }
 
         /* --- 5. QUICK ACTION ICONS --- */
         .quick-actions {
-            display: flex; overflow-x: auto; gap: 20px; padding: 10px 20px 30px 20px;
+            display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 10px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px);
             scrollbar-width: none; justify-content: flex-start;
         }
         .quick-actions::-webkit-scrollbar { display: none; }
         
         .action-item {
             display: flex; flex-direction: column; align-items: center; gap: 10px;
-            flex-shrink: 0; cursor: pointer; width: 75px; text-decoration: none;
+            flex-shrink: 0; cursor: pointer; width: clamp(65px, 8vw, 80px); text-decoration: none;
         }
         .action-icon {
-            width: 55px; height: 55px; border-radius: 50%;
+            width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%;
             background: white; border: 1px solid #e2e8f0;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.4rem; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .action-item:hover .action-icon { background: var(--nav-bg); color: white; transform: scale(1.1); }
-        .action-item span { font-size: 0.8rem; font-weight: 600; text-align: center; color: var(--text-dark); }
+        .action-item span { font-size: clamp(0.72rem, 1.6vw, 0.9rem); font-weight: 600; text-align: center; color: var(--text-dark); }
 
         /* --- 6. STORY SECTIONS --- */
-        .section-container { margin-bottom: 40px; }
+        .section-container { margin-bottom: clamp(28px, 5vw, 40px); }
         .section-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; margin-bottom: 15px;
+            padding: 0 clamp(16px, 4vw, 20px); margin-bottom: 15px; gap: 10px;
         }
         .section-header h2 {
-            font-family: 'Playfair Display', serif; font-size: 1.4rem;
+            font-family: 'Playfair Display', serif; font-size: clamp(1.15rem, 2.6vw, 1.4rem);
             color: var(--nav-bg); margin: 0; font-weight: 700;
         }
-        .section-header a { font-size: 0.9rem; color: var(--primary); font-weight: 600; text-decoration: none; transition: 0.2s;}
+        .section-header a { font-size: 0.9rem; color: var(--primary); font-weight: 600; text-decoration: none; transition: 0.2s; white-space: nowrap;}
         .section-header a:hover { color: var(--gold); }
 
         .story-scroll {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: 20px; padding: 0 20px 20px 20px; scrollbar-width: none; min-height: 150px;
+            gap: clamp(14px, 2.5vw, 20px); padding: 0 clamp(16px,4vw,20px) 20px clamp(16px,4vw,20px);
+            scrollbar-width: none; min-height: 150px;
         }
         .story-scroll::-webkit-scrollbar { display: none; }
 
-        .story-card { width: 130px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; }
+        .story-card { width: clamp(120px, 15vw, 165px); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; }
         .story-card:hover { transform: translateY(-5px); }
         .story-cover {
-            width: 100%; height: 190px; border-radius: 12px;
+            width: 100%; height: clamp(170px, 21vw, 235px); border-radius: 12px;
             background-size: cover; background-position: center;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1); margin-bottom: 10px; border: 1px solid #e2e8f0;
             background-color: #cbd5e1;
         }
         .story-title { font-size: 0.9rem; font-weight: 700; margin: 0 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
-        .story-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
+        .story-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 
         /* Lanjutkan Membaca */
-        .continue-card { width: 280px; display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
+        .continue-card { width: clamp(240px, 30vw, 300px); display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
         .continue-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .continue-cover { width: 70px; height: 100px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
-        .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden;}
+        .continue-cover { width: clamp(60px, 8vw, 80px); height: clamp(90px, 11vw, 115px); border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
+        .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden; min-width: 0; }
         .continue-info h3 { font-size: 1rem; margin: 0 0 6px 0; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; color: var(--primary);}
         .continue-info p { font-size: 0.8rem; color: var(--text-gray); margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
@@ -171,9 +176,17 @@
 
         .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
 
+        /* Badge kecil untuk kartu (Baru / Pilihan Editor) */
+        .story-badge {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; width: fit-content;
+        }
+        .badge-new { background: #ecfdf5; color: #059669; }
+        .badge-editor { background: #eff6ff; color: var(--primary); }
+
         /* --- 7. CTA BOTTOM & FOOTER --- */
         .cta-write {
-            margin: 20px; padding: 40px 30px;
+            margin: clamp(16px,3vw,20px); padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px);
             background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
             border-radius: 24px; text-align: center; color: white;
             box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden;
@@ -183,18 +196,18 @@
             position: absolute; right: -20px; bottom: -20px; font-size: 12rem;
             color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
         }
-        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
-        .cta-write p { font-size: 0.95rem; color: #cbd5e1; margin: 0 auto 25px auto; max-width: 600px; line-height: 1.6; position: relative; z-index: 2;}
+        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 4vw, 1.8rem); margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
+        .cta-write p { font-size: clamp(0.85rem, 2vw, 0.95rem); color: #cbd5e1; margin: 0 auto 25px auto; max-width: 600px; line-height: 1.6; position: relative; z-index: 2;}
         .btn-cta {
-            background: var(--gold); color: white; border: none; padding: 12px 30px;
-            border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700;
+            background: var(--gold); color: white; border: none; padding: 12px clamp(22px, 4vw, 30px);
+            border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700;
             cursor: pointer; box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
             display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s;
         }
         .btn-cta:hover { background: #b45309; transform: translateY(-3px); }
 
         .app-footer {
-            margin-top: auto; padding: 30px 20px; text-align: center;
+            margin-top: auto; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center;
             background: var(--nav-bg); color: white;
         }
         .app-footer p { margin: 0 0 10px 0; font-size: 0.85rem; color: #cbd5e1; }
@@ -210,16 +223,16 @@
         }
         .search-modal.active { transform: translateY(0); }
         .search-header {
-            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            display: flex; align-items: center; gap: 15px; padding: 15px clamp(16px,4vw,20px);
             background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .btn-close-search { background: none; border: none; font-size: 1.4rem; color: var(--text-dark); cursor: pointer; }
         .search-input-box {
             flex: 1; display: flex; align-items: center; background: #f1f5f9;
-            border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 20px;
+            border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 20px; min-width: 0;
         }
-        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 1rem; margin-left: 10px; background: transparent;}
-        .search-results { flex: 1; overflow-y: auto; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 1rem; margin-left: 10px; background: transparent; min-width: 0;}
+        .search-results { flex: 1; overflow-y: auto; padding: clamp(16px,4vw,20px); max-width: 800px; margin: 0 auto; width: 100%; }
 
         /* PWA Install Button */
         #install-btn {
@@ -232,18 +245,31 @@
         #install-btn:hover { background: #059669; transform: translateY(-2px); }
         #install-btn.show { display: block; }
 
-        /* --- 9. DESKTOP / LAPTOP RESPONSIVE TWEAKS --- */
+        /* --- 9. TABLET TWEAKS --- */
+        @media (min-width: 600px) and (max-width: 1023px) {
+            .quick-actions { justify-content: center; }
+        }
+
+        /* --- 10. DESKTOP / LAPTOP RESPONSIVE TWEAKS --- */
         @media (min-width: 768px) {
-            .banner-card { min-width: 500px; height: 220px; }
-            .banner-content h3 { font-size: 1.4rem; }
-            .quick-actions { justify-content: center; gap: 40px; padding-top: 20px; padding-bottom: 40px;}
-            .action-icon { width: 70px; height: 70px; font-size: 1.8rem; }
-            .action-item span { font-size: 0.9rem; }
-            .story-card { width: 160px; }
-            .story-cover { height: 240px; }
-            .continue-card { width: 320px; padding: 20px;}
-            .continue-cover { width: 80px; height: 120px; }
-            .cta-write { margin: 20px auto 40px auto; max-width: 900px; padding: 60px 40px; }
+            .quick-actions { justify-content: center; padding-top: 20px; padding-bottom: 40px;}
+        }
+
+        /* Di layar lebar (laptop/PC), ganti carousel scroll jadi grid melebar agar tidak
+           terlihat kosong/terpotong dan tetap memakai ruang layar dengan baik */
+        @media (min-width: 1024px) {
+            .story-scroll {
+                flex-wrap: wrap;
+                overflow-x: visible;
+                scroll-snap-type: none;
+                justify-content: flex-start;
+            }
+            .continue-container.story-scroll { flex-wrap: nowrap; overflow-x: auto; }
+            .banner-container { justify-content: center; }
+        }
+
+        @media (max-width: 359px) {
+            .nav-brand h1 { display: none; }
         }
     </style>
 </head>
@@ -299,12 +325,12 @@
             <div class="section-header">
                 <h2>Lanjutkan Membaca</h2>
             </div>
-            <div class="story-scroll" id="continue-container">
+            <div class="story-scroll continue-container" id="continue-container">
                 <!-- Akan diisi riwayat baca -->
             </div>
         </div>
 
-        <!-- SECTION: REKOMENDASI DINAMIS -->
+        <!-- SECTION: REKOMENDASI UTAMA -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Rekomendasi Utama</h2>
@@ -312,6 +338,17 @@
             </div>
             <div class="story-scroll" id="rekomendasi-container">
                 <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Karya...</div>
+            </div>
+        </div>
+
+        <!-- SECTION: CERITA TERBARU -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Cerita Terbaru</h2>
+                <a href="#" onclick="toggleSearch()">Lihat Semua</a>
+            </div>
+            <div class="story-scroll" id="terbaru-container">
+                <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Cerita Terbaru...</div>
             </div>
         </div>
 
@@ -406,6 +443,30 @@
             }
         });
 
+        // Helper: ambil waktu (ms) dari Firestore Timestamp secara aman
+        function toMillisSafe(ts) {
+            if (!ts) return 0;
+            if (typeof ts.toMillis === 'function') return ts.toMillis();
+            if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+            return 0;
+        }
+
+        // Helper: bangun kartu cerita, dengan opsi badge kecil (mis. "Baru" / "Pilihan Editor")
+        function buildStoryCard(data, opts = {}) {
+            const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+            const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
+            const metaHtml = opts.metaHtml || `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}`;
+            const coverBorder = opts.goldBorder ? 'border-color: var(--gold);' : '';
+            return `
+                <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
+                    <div class="story-cover" style="background-image: ${coverBg}; ${coverBorder}"></div>
+                    ${badgeHtml}
+                    <h3 class="story-title">${data.title}</h3>
+                    <div class="story-meta">${metaHtml}</div>
+                </div>
+            `;
+        }
+
         // 2. Tarik Data Utama
         async function fetchAllData() {
             try {
@@ -432,44 +493,59 @@
                     bannerContainer.innerHTML = htmlBanner;
                 }
 
-                // Load Stories
-                const qStories = query(collection(db, "published_stories"), orderBy("views", "desc"));
+                // Ambil SEMUA cerita terbit sekali jalan, lalu urutkan di sisi klien
+                // menjadi 3 sudut pandang berbeda (Rekomendasi, Terbaru, Pilihan Editor).
+                // Ini menghindari kebutuhan composite index Firestore untuk tiap urutan.
+                const qStories = query(collection(db, "published_stories"));
                 const snapStories = await getDocs(qStories);
                 allPublishedStories = [];
-                
-                const recContainer = document.getElementById('rekomendasi-container');
-                const edContainer = document.getElementById('editor-container');
-                let recHtml = ''; let edHtml = '';
-                let recCount = 0; let edCount = 0;
 
                 snapStories.forEach(doc => {
-                    const data = { id: doc.id, ...doc.data() };
-                    allPublishedStories.push(data);
-                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
-                    
-                    const cardHtml = `
-                        <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
-                            <div class="story-cover" style="background-image: ${coverBg};"></div>
-                            <h3 class="story-title">${data.title}</h3>
-                            <div class="story-meta"><i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</div>
-                        </div>
-                    `;
-
-                    if (recCount < 10) { recHtml += cardHtml; recCount++; }
-                    if (data.isEditorChoice && edCount < 6) {
-                        edHtml += `
-                            <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
-                                <div class="story-cover" style="background-image: ${coverBg}; border-color: var(--gold);"></div>
-                                <h3 class="story-title">${data.title}</h3>
-                                <div class="story-meta"><i class="fa-solid fa-award" style="color:var(--primary)"></i> Pilihan Editor</div>
-                            </div>
-                        `;
-                        edCount++;
-                    }
+                    allPublishedStories.push({ id: doc.id, ...doc.data() });
                 });
 
-                recContainer.innerHTML = recCount > 0 ? recHtml : `<div class="empty-state">Belum ada karya di database.</div>`;
-                edContainer.innerHTML = edCount > 0 ? edHtml : `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
+                const recContainer = document.getElementById('rekomendasi-container');
+                const terbaruContainer = document.getElementById('terbaru-container');
+                const edContainer = document.getElementById('editor-container');
+
+                if (allPublishedStories.length === 0) {
+                    const emptyMsg = `<div class="empty-state">Belum ada karya di database.</div>`;
+                    recContainer.innerHTML = emptyMsg;
+                    terbaruContainer.innerHTML = `<div class="empty-state">Belum ada cerita baru yang terbit.</div>`;
+                    edContainer.innerHTML = `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
+                    return;
+                }
+
+                // A. REKOMENDASI UTAMA — diurutkan berdasarkan jumlah pembaca (views) terbanyak
+                const recommendedList = [...allPublishedStories]
+                    .sort((a, b) => (b.views || 0) - (a.views || 0))
+                    .slice(0, 10);
+                recContainer.innerHTML = recommendedList.map(data => buildStoryCard(data)).join('');
+
+                // B. CERITA TERBARU — diurutkan berdasarkan waktu terbit terbaru (publishedAt/updatedAt)
+                const latestList = [...allPublishedStories]
+                    .sort((a, b) => {
+                        const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
+                        const timeB = toMillisSafe(b.publishedAt) || toMillisSafe(b.updatedAt);
+                        return timeB - timeA;
+                    })
+                    .slice(0, 10);
+                terbaruContainer.innerHTML = latestList.length > 0
+                    ? latestList.map(data => buildStoryCard(data, {
+                        badge: 'Baru Terbit', badgeClass: 'badge-new',
+                        metaHtml: `<i class="fa-solid fa-user-pen"></i> ${data.authorName || 'Anonim'}`
+                    })).join('')
+                    : `<div class="empty-state">Belum ada cerita baru yang terbit.</div>`;
+
+                // C. PILIHAN EDITOR — hanya cerita yang ditandai isEditorChoice
+                const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
+                edContainer.innerHTML = editorList.length > 0
+                    ? editorList.map(data => buildStoryCard(data, {
+                        goldBorder: true,
+                        badge: '<i class="fa-solid fa-award"></i> Pilihan Editor', badgeClass: 'badge-editor',
+                        metaHtml: `<i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'} &middot; <i class="fa-solid fa-eye"></i> ${data.views || 0}`
+                    })).join('')
+                    : `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -541,7 +617,7 @@
                 html += `
                     <div style="display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.2s;" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'">
                         <div style="width: 65px; height: 95px; border-radius: 8px; background-color:#cbd5e1; background-image: ${coverBg}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
-                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
                             <h4 style="margin: 0 0 5px 0; font-size: 1.05rem; color: var(--primary);">${data.title}</h4>
                             <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
                             <div><span style="font-size:0.7rem; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1;">${data.genre || 'Umum'}</span></div>
