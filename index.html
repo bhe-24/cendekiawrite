@@ -5,14 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cendekia Aksara - Platform Membaca & Menulis</title>
     
+    <!-- PWA MANIFEST & THEME -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/5Srjyo4.png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- SweetAlert2 untuk Notifikasi -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+    <!-- ONESIGNAL SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Ganti dengan App ID OneSignal Anda
+        });
+      });
+    </script>
+
     <style>
-        /* --- GLOBAL & COLORS --- */
+        /* --- 1. GLOBAL & COLORS --- */
         :root {
             --nav-bg: #0f172a;       
             --primary: #003366;      
@@ -30,10 +46,28 @@
             color: var(--text-dark);
             margin: 0; padding: 0;
             padding-top: 70px; 
-            padding-bottom: 30px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
-        /* --- FIXED NAVBAR --- */
+        /* --- MOBILE FIRST LOCK UNTUK LAPTOP/PC --- */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px; /* Kunci ukuran maksimal selebar HP */
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } /* Background luar abu-abu jika di PC */
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar, .search-modal { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 2. FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
             background: rgba(15, 23, 42, 0.95);
@@ -48,7 +82,8 @@
         .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
 
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;}
+        .btn-search:hover { color: var(--gold); }
         .btn-login {
             background: linear-gradient(135deg, var(--gold), #b45309);
             color: white; border: none; padding: 6px 16px; border-radius: 50px;
@@ -57,7 +92,7 @@
         }
         .btn-login:active { transform: scale(0.95); }
 
-        /* --- BANNERS (HORIZONTAL SCROLL) --- */
+        /* --- 3. BANNERS (HORIZONTAL SCROLL) --- */
         .banner-container {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
             gap: 15px; padding: 15px 20px; scrollbar-width: none;
@@ -75,11 +110,9 @@
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
-        .banner-content {
-            position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2;
-        }
+        .banner-content { position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2; }
 
-        /* --- QUICK ACTION ICONS --- */
+        /* --- 4. QUICK ACTION ICONS --- */
         .quick-actions {
             display: flex; overflow-x: auto; gap: 20px; padding: 10px 20px 20px 20px;
             scrollbar-width: none;
@@ -95,10 +128,12 @@
             background: white; border: 1px solid #e2e8f0;
             display: flex; justify-content: center; align-items: center;
             font-size: 1.3rem; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: 0.2s;
         }
+        .action-item:hover .action-icon { background: var(--bg-color); transform: scale(1.05); }
         .action-item span { font-size: 0.75rem; font-weight: 500; text-align: center; color: var(--text-dark); line-height: 1.2; }
 
-        /* --- STORY SECTIONS --- */
+        /* --- 5. STORY SECTIONS --- */
         .section-container { margin-bottom: 30px; }
         .section-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -126,17 +161,18 @@
         .story-title { font-size: 0.85rem; font-weight: 700; margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
         .story-meta { font-size: 0.7rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
 
+        /* Lanjutkan Membaca */
         .continue-card { width: 260px; display: flex; gap: 12px; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); flex-shrink: 0; scroll-snap-align: start; cursor: pointer;}
         .continue-cover { width: 60px; height: 90px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
-        .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; }
+        .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden;}
         .continue-info h3 { font-size: 0.9rem; margin: 0 0 5px 0; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
-        .continue-info p { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; }
+        .continue-info p { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .progress-bar { width: 100%; height: 4px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); }
 
         .empty-state { font-size: 0.85rem; color: #94a3b8; text-align: center; width: 100%; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; }
 
-        /* --- CTA BOTTOM --- */
+        /* --- 6. CTA BOTTOM & FOOTER --- */
         .cta-write {
             margin: 10px 20px 20px 20px; padding: 30px 20px;
             background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
@@ -157,93 +193,152 @@
             display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2;
         }
 
-        /* --- MOBILE FIRST TWEAKS --- */
-        @media (min-width: 768px) {
-            body { max-width: 480px; margin: 0 auto; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; background-color: white; min-height: 100vh;}
-            .top-navbar { max-width: 480px; left: 50%; transform: translateX(-50%); }
+        .app-footer {
+            margin-top: auto; padding: 20px; text-align: center;
+            border-top: 1px solid #e2e8f0; background: white;
         }
+        .app-footer p { margin: 0; font-size: 0.75rem; color: var(--text-gray); }
+        .app-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .app-footer .version { font-size: 0.7rem; color: #94a3b8; margin-top: 5px; display: block; }
+
+        /* --- 7. SEARCH OVERLAY MODAL --- */
+        .search-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 2000; display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .search-modal.active { transform: translateY(0); }
+        .search-header {
+            display: flex; align-items: center; gap: 15px; padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0; background: var(--bg-color);
+        }
+        .btn-close-search { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; }
+        .search-input-box {
+            flex: 1; display: flex; align-items: center; background: white;
+            border: 1px solid #cbd5e1; border-radius: 50px; padding: 8px 15px;
+        }
+        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.9rem; margin-left: 8px; }
+        .search-results { flex: 1; overflow-y: auto; padding: 20px; background: white; }
+
+        /* PWA Install Button */
+        #install-btn {
+            display: none; width: calc(100% - 40px); margin: 0 20px 20px 20px;
+            background: #10b981; color: white; border: none; padding: 12px;
+            border-radius: 12px; font-family: 'Poppins'; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+            text-align: center;
+        }
+        #install-btn.show { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <header class="top-navbar">
-        <div class="nav-brand">
-            <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
-            <h1>Cendekia</h1>
-        </div>
-        <div class="nav-actions">
-            <button class="btn-search" onclick="requireLogin('mencari cerita')"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
-        </div>
-    </header>
+    <div class="app-wrapper">
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-brand">
+                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
+                <h1>Cendekia</h1>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-search" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
+            </div>
+        </header>
 
-    <!-- BANNERS DINAMIS -->
-    <div class="banner-container" id="banner-container">
-        <!-- Akan diisi oleh JavaScript dari Firebase -->
-        <div class="empty-state" id="banner-loading"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
+        <!-- BANNERS DINAMIS -->
+        <div class="banner-container" id="banner-container">
+            <div class="empty-state" id="banner-loading" style="border:none; margin-top:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
+        </div>
+
+        <!-- QUICK ACTIONS ICONS -->
+        <div class="quick-actions">
+            <div class="action-item" onclick="requireLogin('menulis cerita')">
+                <div class="action-icon"><i class="fa-solid fa-pen-nib" style="color: #0ea5e9;"></i></div>
+                <span>Menulis</span>
+            </div>
+            <div class="action-item" onclick="window.location.href='genre.html'">
+                <div class="action-icon"><i class="fa-solid fa-layer-group" style="color: #8b5cf6;"></i></div>
+                <span>Genre</span>
+            </div>
+            <div class="action-item" onclick="requireLogin('membuka pustaka')">
+                <div class="action-icon"><i class="fa-solid fa-book-bookmark" style="color: #f59e0b;"></i></div>
+                <span>Pustaka</span>
+            </div>
+            <div class="action-item" onclick="requireLogin('membuka notifikasi')">
+                <div class="action-icon"><i class="fa-solid fa-bell" style="color: #ef4444;"></i></div>
+                <span>Notifikasi</span>
+            </div>
+            <div class="action-item" onclick="requireLogin('membuka profil')">
+                <div class="action-icon"><i class="fa-solid fa-user" style="color: #10b981;"></i></div>
+                <span>Profil</span>
+            </div>
+        </div>
+
+        <!-- SECTION: LANJUTKAN MEMBACA -->
+        <div class="section-container" id="continue-section" style="display: none;">
+            <div class="section-header">
+                <h2>Lanjutkan Membaca</h2>
+            </div>
+            <div class="story-scroll" id="continue-container">
+                <!-- Akan diisi riwayat baca -->
+            </div>
+        </div>
+
+        <!-- SECTION: REKOMENDASI DINAMIS -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Rekomendasi Utama</h2>
+                <a href="#" onclick="toggleSearch()">Lihat Semua</a>
+            </div>
+            <div class="story-scroll" id="rekomendasi-container">
+                <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Karya...</div>
+            </div>
+        </div>
+
+        <!-- SECTION: PILIHAN EDITOR DINAMIS -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Pilihan Editor</h2>
+            </div>
+            <div class="story-scroll" id="editor-container">
+                <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Pilihan Editor...</div>
+            </div>
+        </div>
+
+        <!-- TOMBOL PWA INSTALL -->
+        <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Cendekia</button>
+
+        <!-- CTA MULAI MENULIS -->
+        <div class="cta-write">
+            <h2>Punya Cerita Menarik?</h2>
+            <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
+            <button class="btn-cta" onclick="requireLogin('mulai menulis karya')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis</button>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>&copy; 2026 Cendekia Aksara. Hak Cipta Dilindungi.</p>
+            <p style="margin-top: 5px;"><a href="#" onclick="requireLogin('melihat Kebijakan Privasi')">Kebijakan Privasi</a> &middot; <a href="#" onclick="requireLogin('melihat Syarat & Ketentuan')">Syarat & Ketentuan</a></p>
+            <span class="version">Versi Web Publik v1.0.0</span>
+        </footer>
     </div>
 
-    <!-- QUICK ACTIONS ICONS -->
-    <div class="quick-actions">
-        <div class="action-item" onclick="requireLogin('menelusuri genre Romansa')">
-            <div class="action-icon"><i class="fa-solid fa-heart" style="color: #ef4444;"></i></div>
-            <span>Romansa</span>
+    <!-- SEARCH OVERLAY MODAL -->
+    <div class="search-modal" id="search-modal">
+        <div class="search-header">
+            <button class="btn-close-search" onclick="toggleSearch()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="search-input-box">
+                <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+                <input type="text" id="search-input" placeholder="Cari judul cerita, penulis, atau genre..." oninput="performSearch()">
+            </div>
         </div>
-        <div class="action-item" onclick="requireLogin('menelusuri genre Fantasi')">
-            <div class="action-icon"><i class="fa-solid fa-dragon" style="color: #8b5cf6;"></i></div>
-            <span>Fantasi</span>
+        <div class="search-results" id="search-results">
+            <div style="text-align:center; padding: 40px 20px; color: #94a3b8;">
+                <i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i>
+                <p>Ketikkan kata kunci untuk mulai mencari karya menakjubkan di Cendekia.</p>
+            </div>
         </div>
-        <div class="action-item" onclick="requireLogin('menelusuri genre Fiksi Ilmiah')">
-            <div class="action-icon"><i class="fa-solid fa-rocket" style="color: #3b82f6;"></i></div>
-            <span>Sci-Fi</span>
-        </div>
-        <div class="action-item" onclick="requireLogin('menelusuri genre Misteri')">
-            <div class="action-icon"><i class="fa-solid fa-ghost" style="color: #64748b;"></i></div>
-            <span>Misteri</span>
-        </div>
-        <div class="action-item" onclick="requireLogin('menelusuri genre Religi')">
-            <div class="action-icon"><i class="fa-solid fa-moon" style="color: #059669;"></i></div>
-            <span>Religi</span>
-        </div>
-    </div>
-
-    <!-- SECTION: LANJUTKAN MEMBACA -->
-    <div class="section-container" id="continue-section" style="display: none;">
-        <div class="section-header">
-            <h2>Lanjutkan Membaca</h2>
-        </div>
-        <div class="story-scroll" id="continue-container">
-            <!-- Akan diisi riwayat baca jika user sudah login -->
-        </div>
-    </div>
-
-    <!-- SECTION: REKOMENDASI DINAMIS -->
-    <div class="section-container">
-        <div class="section-header">
-            <h2>Rekomendasi Cendekia</h2>
-            <a href="#" onclick="requireLogin('melihat daftar lengkap')">Lihat Semua</a>
-        </div>
-        <div class="story-scroll" id="rekomendasi-container">
-            <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Karya...</div>
-        </div>
-    </div>
-
-    <!-- SECTION: PILIHAN EDITOR DINAMIS -->
-    <div class="section-container">
-        <div class="section-header">
-            <h2>Pilihan Editor</h2>
-        </div>
-        <div class="story-scroll" id="editor-container">
-            <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Pilihan Editor...</div>
-        </div>
-    </div>
-
-    <!-- CTA MULAI MENULIS -->
-    <div class="cta-write">
-        <h2>Punya Cerita Menarik?</h2>
-        <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
-        <button class="btn-cta" onclick="requireLogin('mulai menulis karya')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis</button>
     </div>
 
     <!-- SweetAlert2 -->
@@ -270,14 +365,19 @@
         const auth = getAuth(app);
 
         let isUserLoggedIn = false;
+        let allPublishedStories = []; // Cache untuk pencarian
 
-        // Cek Status Login
+        // 1. Cek Status Login
         onAuthStateChanged(auth, (user) => {
             const btnLogin = document.getElementById('btn-login-header');
             if (user) {
                 isUserLoggedIn = true;
+                // Identifikasi akun pada OneSignal
+                if(window.OneSignal) {
+                    OneSignal.login(user.uid);
+                }
                 btnLogin.innerText = "Dasbor";
-                btnLogin.onclick = () => window.location.href = "dasbor.html"; // Ubah sesuai rute dashboard nanti
+                btnLogin.onclick = () => window.location.href = "dasbor.html"; 
                 loadContinueReading(user.uid);
             } else {
                 isUserLoggedIn = false;
@@ -286,158 +386,168 @@
             }
         });
 
-        // 1. Fungsi Tarik Data Banner
-        async function loadBanners() {
-            const container = document.getElementById('banner-container');
+        // 2. Fungsi Tarik Data
+        async function fetchAllData() {
             try {
-                const q = query(collection(db, "app_banners"), where("isActive", "==", true), limit(5));
-                const snap = await getDocs(q);
-                
-                if (snap.empty) {
-                    container.innerHTML = `<div class="empty-state">Belum ada event atau rilis terbaru saat ini.</div>`;
-                    return;
-                }
-
-                let html = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    // Mengambil gambar Base64 dari database
-                    const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
-                    const bgColor = data.bgColor || "#0f172a";
-                    const tagColor = data.tagColor || "var(--gold)";
-
-                    html += `
-                        <div class="banner-card" style="background-image: ${bgImage}; background-color: ${bgColor};" onclick="requireLogin('mengakses event ini')">
-                            <div class="banner-content">
-                                <span style="background: ${tagColor}; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color: white;">${data.tag || 'INFO'}</span>
-                                <h3 style="margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'Playfair Display', serif;">${data.title}</h3>
+                // Load Banners
+                const qBanner = query(collection(db, "app_banners"), where("isActive", "==", true), limit(5));
+                const snapBanner = await getDocs(qBanner);
+                const bannerContainer = document.getElementById('banner-container');
+                if (snapBanner.empty) {
+                    bannerContainer.innerHTML = `<div class="empty-state" style="margin-top:15px; width:100%; border:none;">Belum ada event atau rilis terbaru saat ini.</div>`;
+                } else {
+                    let htmlBanner = '';
+                    snapBanner.forEach(doc => {
+                        const data = doc.data();
+                        const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
+                        htmlBanner += `
+                            <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};" onclick="requireLogin('mengakses event')">
+                                <div class="banner-content">
+                                    <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color: white;">${data.tag || 'INFO'}</span>
+                                    <h3 style="margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'Playfair Display', serif;">${data.title}</h3>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (error) {
-                console.error("Error fetching banners:", error);
-                container.innerHTML = `<div class="empty-state">Gagal memuat banner.</div>`;
-            }
-        }
-
-        // 2. Fungsi Tarik Data Cerita (Rekomendasi)
-        async function loadRecommendations() {
-            const container = document.getElementById('rekomendasi-container');
-            try {
-                // Asumsi nama koleksi untuk cerita publik adalah 'published_stories'
-                const q = query(collection(db, "published_stories"), orderBy("views", "desc"), limit(6));
-                const snap = await getDocs(q);
-                
-                if (snap.empty) {
-                    container.innerHTML = `<div class="empty-state">Belum ada karya yang diterbitkan.</div>`;
-                    return;
+                        `;
+                    });
+                    bannerContainer.innerHTML = htmlBanner;
                 }
 
-                let html = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
+                // Load Stories for Recommendations, Editor Picks, and Search Cache
+                const qStories = query(collection(db, "published_stories"), orderBy("views", "desc"));
+                const snapStories = await getDocs(qStories);
+                allPublishedStories = [];
+                
+                const recContainer = document.getElementById('rekomendasi-container');
+                const edContainer = document.getElementById('editor-container');
+                let recHtml = '';
+                let edHtml = '';
+                let recCount = 0;
+                let edCount = 0;
+
+                snapStories.forEach(doc => {
+                    const data = { id: doc.id, ...doc.data() };
+                    allPublishedStories.push(data);
                     const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                     
-                    html += `
+                    const cardHtml = `
                         <div class="story-card" onclick="requireLogin('membaca cerita ini')">
                             <div class="story-cover" style="background-image: ${coverBg};"></div>
                             <h3 class="story-title">${data.title}</h3>
                             <div class="story-meta"><i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</div>
                         </div>
                     `;
+
+                    if (recCount < 6) { recHtml += cardHtml; recCount++; }
+                    if (data.isEditorChoice && edCount < 4) {
+                        edHtml += `
+                            <div class="story-card" onclick="requireLogin('membaca cerita ini')">
+                                <div class="story-cover" style="background-image: ${coverBg}; border-color: var(--gold);"></div>
+                                <h3 class="story-title">${data.title}</h3>
+                                <div class="story-meta"><i class="fa-solid fa-award" style="color:var(--primary)"></i> Pilihan Editor</div>
+                            </div>
+                        `;
+                        edCount++;
+                    }
                 });
-                container.innerHTML = html;
+
+                recContainer.innerHTML = recCount > 0 ? recHtml : `<div class="empty-state">Belum ada karya di database.</div>`;
+                edContainer.innerHTML = edCount > 0 ? edHtml : `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
+
             } catch (error) {
-                console.error("Error fetching recommendations:", error);
-                container.innerHTML = `<div class="empty-state">Belum ada karya di database.</div>`;
+                console.error("Error fetching data:", error);
             }
         }
 
-        // 3. Fungsi Tarik Data Pilihan Editor
-        async function loadEditorPicks() {
-            const container = document.getElementById('editor-container');
-            try {
-                const q = query(collection(db, "published_stories"), where("isEditorChoice", "==", true), limit(4));
-                const snap = await getDocs(q);
-                
-                if (snap.empty) {
-                    container.innerHTML = `<div class="empty-state">Editor belum memilih cerita sorotan.</div>`;
-                    return;
-                }
-
-                let html = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
-                    
-                    html += `
-                        <div class="story-card" onclick="requireLogin('membaca cerita ini')">
-                            <div class="story-cover" style="background-image: ${coverBg}; border-color: var(--gold);"></div>
-                            <h3 class="story-title">${data.title}</h3>
-                            <div class="story-meta"><i class="fa-solid fa-award" style="color:var(--primary)"></i> Editor's Choice</div>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (error) {
-                console.error("Error fetching editor picks:", error);
-                container.innerHTML = `<div class="empty-state">Belum ada karya pilihan editor.</div>`;
-            }
-        }
-
-        // 4. Fungsi Lanjutkan Membaca (Hanya muncul jika login)
         async function loadContinueReading(uid) {
             const section = document.getElementById('continue-section');
             const container = document.getElementById('continue-container');
-            
             try {
                 const q = query(collection(db, "users", uid, "read_history"), orderBy("lastReadAt", "desc"), limit(2));
                 const snap = await getDocs(q);
-                
                 if (!snap.empty) {
                     section.style.display = 'block';
                     let html = '';
                     snap.forEach(doc => {
                         const data = doc.data();
                         const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
-                        const progress = data.progressPercentage || 0;
-                        
                         html += `
                             <div class="continue-card" onclick="window.location.href='read.html?id=${data.storyId}'">
                                 <div class="continue-cover" style="background-image: ${coverBg};"></div>
                                 <div class="continue-info">
                                     <h3>${data.title}</h3>
                                     <p>${data.lastChapterTitle || 'Lanjutkan membaca'}</p>
-                                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width: ${data.progressPercentage || 0}%;"></div></div>
                                 </div>
                             </div>
                         `;
                     });
                     container.innerHTML = html;
                 }
-            } catch (error) {
-                console.error("Error fetching read history:", error);
-            }
+            } catch (error) { console.error("Error fetching read history:", error); }
         }
 
-        // Eksekusi penarikan data
-        window.onload = () => {
-            loadBanners();
-            loadRecommendations();
-            loadEditorPicks();
+        window.onload = () => { fetchAllData(); };
+
+        // --- FUNGSI PENCARIAN (SEARCH) ---
+        window.toggleSearch = () => {
+            const modal = document.getElementById('search-modal');
+            modal.classList.toggle('active');
+            if(modal.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+                document.getElementById('search-results').innerHTML = `<div style="text-align:center; padding: 40px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i><p>Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
+            }
+        };
+
+        window.performSearch = () => {
+            const queryText = document.getElementById('search-input').value.toLowerCase().trim();
+            const container = document.getElementById('search-results');
+            
+            if (queryText === "") {
+                container.innerHTML = `<div style="text-align:center; padding: 40px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i><p>Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
+                return;
+            }
+
+            const results = allPublishedStories.filter(story => 
+                (story.title && story.title.toLowerCase().includes(queryText)) ||
+                (story.authorName && story.authorName.toLowerCase().includes(queryText)) ||
+                (story.genre && story.genre.toLowerCase().includes(queryText))
+            );
+
+            if (results.length === 0) {
+                container.innerHTML = `<div class="empty-state">Maaf, cerita "${queryText}" tidak ditemukan.</div>`;
+                return;
+            }
+
+            let html = '<div style="display:flex; flex-direction:column; gap:15px;">';
+            results.forEach(data => {
+                const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                html += `
+                    <div style="display:flex; gap:15px; cursor:pointer; padding-bottom:15px; border-bottom:1px solid #e2e8f0;" onclick="requireLogin('membaca cerita ini')">
+                        <div style="width: 50px; height: 75px; border-radius: 6px; background-color:#cbd5e1; background-image: ${coverBg}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                        <div>
+                            <h4 style="margin: 0 0 5px 0; font-size: 0.95rem; color: var(--primary);">${data.title}</h4>
+                            <p style="margin: 0 0 5px 0; font-size: 0.75rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
+                            <span style="font-size:0.65rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600;">${data.genre || 'Umum'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
         };
 
         // --- FUNGSI INTERSEP GLOBAL ---
-        window.goToLogin = () => {
-            window.location.href = 'login.html';
-        };
+        window.goToLogin = () => { window.location.href = 'login.html'; };
 
         window.requireLogin = (action) => {
             if(isUserLoggedIn) {
-                // Jika sudah login, abaikan intersep (Fitur ini nanti disesuaikan jalurnya)
-                Swal.fire('Fitur Segera Hadir', 'Halaman ' + action + ' sedang dalam tahap pengembangan.', 'info');
+                // Jika sudah login namun ini adalah action khusus yang belum dibuat halamannya
+                if(['menulis cerita', 'membuka pustaka', 'membuka notifikasi', 'membuka profil', 'mulai menulis karya'].includes(action)) {
+                    Swal.fire('Fitur Segera Hadir', 'Halaman ' + action + ' sedang dalam tahap pengembangan.', 'info');
+                } else {
+                    // Jika klik cerita/genre, izinkan tembus. Di pengembangan lanjut akan diarahkan ke detail cerita.
+                    Swal.fire('Fitur Sedang Dibangun', 'Akan dialihkan ke rute cerita/genre terkait...', 'success');
+                }
                 return;
             }
 
@@ -452,11 +562,38 @@
                 cancelButtonText: 'Nanti Saja',
                 reverseButtons: true
             }).then((result) => {
-                if (result.isConfirmed) {
-                    goToLogin();
-                }
+                if (result.isConfirmed) { goToLogin(); }
             });
         };
+
+        // --- PWA INSTALLATION LOGIC ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Registration Failed', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') { installBtn.classList.remove('show'); }
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installBtn.classList.remove('show');
+        });
     </script>
 </body>
 </html>
