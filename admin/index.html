@@ -181,32 +181,32 @@
             <h3 class="section-title">Manajemen Utama</h3>
             <div class="module-list">
                 
-                <!-- KELOLA PENGGUNA -->
-                <div class="module-card" onclick="requireModule('Kelola Pengguna', 'users.html')">
+                <!-- KELOLA PENGGUNA (Gunakan path sejajar dalam folder admin) -->
+                <div class="module-card" onclick="requireModule('users.html')">
                     <div class="module-icon ic-users"><i class="fa-solid fa-user-gear"></i></div>
                     <div class="module-info">
                         <h3>Pengguna & Akses</h3>
-                        <p>Atur *role* (Admin/Penulis), blokir akun, dan reset sandi pengguna.</p>
+                        <p>Atur <i>role</i> (Admin/Penulis), blokir akun, dan reset sandi pengguna.</p>
                     </div>
                     <i class="fa-solid fa-chevron-right module-arrow"></i>
                 </div>
 
                 <!-- KELOLA KARYA & EDITOR'S CHOICE -->
-                <div class="module-card" onclick="requireModule('Moderasi Karya', 'stories.html')">
+                <div class="module-card" onclick="requireModule('stories.html')">
                     <div class="module-icon ic-stories"><i class="fa-solid fa-book-open-reader"></i></div>
                     <div class="module-info">
                         <h3>Moderasi & Pilihan Editor</h3>
-                        <p>Pantau semua cerita, *take-down* naskah, & atur *Editor's Choice* beranda.</p>
+                        <p>Pantau semua cerita, <i>take-down</i> naskah, & atur <i>Editor's Choice</i>.</p>
                     </div>
                     <i class="fa-solid fa-chevron-right module-arrow"></i>
                 </div>
 
                 <!-- KELOLA BANNER -->
-                <div class="module-card" onclick="requireModule('Kelola Banner', 'banners.html')">
+                <div class="module-card" onclick="requireModule('banners.html')">
                     <div class="module-icon ic-banners"><i class="fa-solid fa-panorama"></i></div>
                     <div class="module-info">
                         <h3>Etalase Banner Beranda</h3>
-                        <p>Tambah, edit, atau hapus *banner slider* (Promo/Event) di halaman utama.</p>
+                        <p>Tambah, edit, atau hapus <i>banner slider</i> event di halaman utama.</p>
                     </div>
                     <i class="fa-solid fa-chevron-right module-arrow"></i>
                 </div>
@@ -216,21 +216,21 @@
             <div class="module-list">
                 
                 <!-- BROADCAST NOTIFIKASI ONESIGNAL -->
-                <div class="module-card" onclick="requireModule('Broadcast Notifikasi', 'broadcast.html')">
+                <div class="module-card" onclick="requireModule('broadcast.html')">
                     <div class="module-icon ic-broadcast"><i class="fa-solid fa-bullhorn"></i></div>
                     <div class="module-info">
                         <h3>Pusat Siaran Notifikasi</h3>
-                        <p>Kirim *Push Notification* ke seluruh HP pengguna via sistem OneSignal.</p>
+                        <p>Kirim <i>Push Notification</i> ke seluruh HP pengguna via sistem OneSignal.</p>
                     </div>
                     <i class="fa-solid fa-chevron-right module-arrow"></i>
                 </div>
 
                 <!-- LAPORAN & LOG -->
-                <div class="module-card" onclick="requireModule('Pusat Laporan', 'reports.html')">
+                <div class="module-card" onclick="requireModule('reports.html')">
                     <div class="module-icon ic-reports"><i class="fa-solid fa-shield-virus"></i></div>
                     <div class="module-info">
                         <h3>Laporan Pelanggaran</h3>
-                        <p>Tinjau laporan komentar toksik atau konten plagiasi dari komunitas.</p>
+                        <p>Tinjau laporan komentar toksik atau indikasi konten plagiasi.</p>
                     </div>
                     <i class="fa-solid fa-chevron-right module-arrow"></i>
                 </div>
@@ -249,7 +249,6 @@
         import { getFirestore, doc, getDoc, collection, getCountFromServer, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
             authDomain: "mading-cf676.firebaseapp.com",
@@ -289,6 +288,7 @@
                     kickOutHacker();
                 }
             } else {
+                // Gunakan ../ untuk mundur ke folder root
                 window.location.href = '../login.html';
             }
         });
@@ -302,6 +302,7 @@
                 confirmButtonColor: '#dc2626',
                 allowOutsideClick: false
             }).then(() => {
+                // Keluar dari folder admin menuju beranda publik
                 window.location.href = '../index.html';
             });
         }
@@ -344,24 +345,16 @@
         }
 
         // 3. Sistem Navigasi Modul Admin
-        window.requireModule = (moduleName, targetUrl) => {
-            // Ini akan dipanggil saat kita membuat modul-modul turunan admin di tahap selanjutnya.
-            // Untuk saat ini, kita berikan SweetAlert info bahwa modul siap dibangun.
-            Swal.fire({
-                title: `Akses Modul: ${moduleName}`,
-                text: `Sistem siap mengarahkan Anda ke file ${targetUrl}. Namun file tersebut belum dibuat.`,
-                icon: 'info',
-                confirmButtonColor: '#003366'
-            });
-            // Jika file sudah dibuat, cukup aktifkan baris ini:
-            // window.location.href = targetUrl;
+        window.requireModule = (targetUrl) => {
+            // Ini akan membuka file yang sejajar di dalam folder admin/
+            window.location.href = targetUrl;
         };
 
         // 4. Logout Admin
         window.confirmLogout = () => {
             Swal.fire({
                 title: 'Tutup Sesi Admin?',
-                text: 'Anda akan keluar dari Pusat Komando.',
+                text: 'Anda akan kembali sebagai pengguna biasa.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
@@ -372,6 +365,7 @@
                 if (result.isConfirmed) {
                     document.getElementById('loading-overlay').style.display = 'flex';
                     await signOut(auth);
+                    // Setelah logout, lempar keluar folder admin ke halaman login
                     window.location.href = '../login.html';
                 }
             });
