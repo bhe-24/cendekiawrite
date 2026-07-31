@@ -134,7 +134,8 @@
     <!-- OVERLAY LOADING AWAL -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyiapkan Draf...</div>
+        <!-- PERBAIKAN: Menambahkan id="loading-msg" yang terlewat -->
+        <div id="loading-msg" style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyiapkan Draf...</div>
     </div>
 
     <div class="app-wrapper">
@@ -429,7 +430,6 @@
                 });
 
                 // Update jumlah chapter di dokumen utama cerita
-                // (Agar mudah dihitung di beranda tanpa query semua bab)
                 const docRef = doc(db, "stories", storyId);
                 const snap = await getDoc(docRef);
                 const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 0;
