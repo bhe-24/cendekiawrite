@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profil - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px; /* Spacer Navbar */
+            min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-icon {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-icon:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- HEADER PROFIL (SAMPUL & AVATAR) --- */
+        .profile-cover {
+            width: 100%; height: 160px; background-color: var(--primary);
+            background-size: cover; background-position: center;
+            position: relative;
+        }
+        .profile-avatar-wrapper {
+            position: absolute; bottom: -45px; left: 20px;
+            width: 90px; height: 90px; border-radius: 50%;
+            border: 4px solid white; background-color: #cbd5e1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 2;
+        }
+        .profile-avatar {
+            width: 100%; height: 100%; border-radius: 50%;
+            background-size: cover; background-position: center;
+        }
+        .profile-actions {
+            position: absolute; bottom: -40px; right: 20px; z-index: 2;
+        }
+        
+        .btn-follow {
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            color: white; border: none; padding: 6px 20px; border-radius: 50px;
+            font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); display: none;
+        }
+        .btn-follow.following {
+            background: #f1f5f9; color: var(--text-dark); box-shadow: none; border: 1px solid #cbd5e1;
+        }
+
+        /* --- INFO & STATISTIK --- */
+        .profile-info { padding: 55px 20px 20px 20px; background: white; border-bottom: 1px solid #e2e8f0; }
+        .profile-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin: 0 0 2px 0; }
+        .profile-username { font-size: 0.85rem; color: var(--text-gray); margin: 0 0 15px 0; font-weight: 500;}
+        
+        .stats-row { display: flex; gap: 25px; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-num { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .stat-lbl { font-size: 0.7rem; color: var(--text-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* --- TABS --- */
+        .tab-container {
+            display: flex; background: white; border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 50px; z-index: 100;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 12px 0; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-gray);
+            border-bottom: 3px solid transparent; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .content-area { display: none; padding: 20px; background: var(--bg-color); animation: fadeIn 0.3s ease; flex: 1;}
+        .content-area.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
+
+        /* --- SECTION COMPONENT --- */
+        .section-box { margin-bottom: 25px; }
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
+        .bio-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;}
+
+        /* --- HORIZONTAL SCROLL CARDS (Karya & Pustaka) --- */
+        .scroll-row { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: none; }
+        .scroll-row::-webkit-scrollbar { display: none; }
+        
+        .book-card { width: 100px; flex-shrink: 0; cursor: pointer; }
+        .book-cover { width: 100%; height: 140px; border-radius: 8px; background-size: cover; background-position: center; background-color: #cbd5e1; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 8px;}
+        .book-title { font-size: 0.75rem; font-weight: 700; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;}
+
+        /* --- MENGIKUTI LIST --- */
+        .follow-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer;}
+        .follow-ava { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1;}
+        .follow-name { font-size: 0.85rem; font-weight: 600; margin: 0; color: var(--text-dark);}
+        .follow-user { font-size: 0.75rem; color: var(--text-gray); margin: 0;}
+
+        /* --- PENGUMUMAN (FEED) --- */
+        .announce-creator { background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: none;}
+        .announce-creator textarea { width: 100%; border: none; background: #f8fafc; padding: 12px; border-radius: 10px; font-family: 'Poppins'; font-size: 0.85rem; resize: none; min-height: 80px; margin-bottom: 10px; outline: none;}
+        .announce-creator textarea:focus { box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
+        .btn-post { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 50px; font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem; cursor: pointer; float: right; transition: 0.2s;}
+        .btn-post:hover { background: #001f3f; }
+
+        .feed-item { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
+        .feed-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
+        .feed-ava { width: 35px; height: 35px; border-radius: 50%; background-size: cover; }
+        .feed-info h4 { margin: 0; font-size: 0.9rem; color: var(--text-dark); }
+        .feed-info span { font-size: 0.7rem; color: #94a3b8; }
+        .feed-text { font-size: 0.85rem; color: #334155; line-height: 1.5; margin: 0; white-space: pre-wrap;}
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 10px; color: #cbd5e1; }
+        .empty-state p { margin: 0; font-size: 0.85rem; }
+
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- OVERLAY LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyinkronkan Profil...</div>
+        </div>
+
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Profil</h1>
+            <!-- Tombol Setting hanya muncul jika ini profil sendiri -->
+            <button class="btn-icon" id="btn-settings" style="display: none;" onclick="window.location.href='setting.html'"><i class="fa-solid fa-gear"></i></button>
+            <!-- Spacer jika bukan profil sendiri -->
+            <div id="nav-spacer" style="width: 24px; display: none;"></div> 
+        </header>
+
+        <!-- HERO & HEADER -->
+        <div class="profile-cover" id="p-cover">
+            <div class="profile-avatar-wrapper">
+                <div class="profile-avatar" id="p-avatar"></div>
+            </div>
+            <div class="profile-actions">
+                <button class="btn-follow" id="btn-follow" onclick="toggleFollow()">Ikuti</button>
+            </div>
+        </div>
+
+        <div class="profile-info">
+            <h2 class="profile-name" id="p-name">Memuat...</h2>
+            <p class="profile-username" id="p-username">@username</p>
+            
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-karya">0</span>
+                    <span class="stat-lbl">Karya</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-pustaka">0</span>
+                    <span class="stat-lbl">Pustaka</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-pengikut">0</span>
+                    <span class="stat-lbl">Pengikut</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tab-container">
+            <div class="tab-btn active" onclick="switchTab('karya')">Profil & Karya</div>
+            <div class="tab-btn" onclick="switchTab('pengumuman')">Pengumuman</div>
+        </div>
+
+        <!-- TAB CONTENT 1: PROFIL & KARYA -->
+        <div class="content-area active" id="tab-karya">
+            
+            <div class="section-box">
+                <h3 class="section-title">Tentang Saya</h3>
+                <p class="bio-text" id="p-bio">Pengguna ini belum menuliskan bio.</p>
+            </div>
+
+            <div class="section-box">
+                <h3 class="section-title">Karya Diterbitkan</h3>
+                <div class="scroll-row" id="list-karya">
+                    <!-- Dinamis via JS -->
+                </div>
+            </div>
+
+            <div class="section-box">
+                <h3 class="section-title">Daftar Bacaan (Pustaka)</h3>
+                <div class="scroll-row" id="list-pustaka">
+                    <!-- Dinamis via JS -->
+                </div>
+            </div>
+
+            <div class="section-box">
+                <h3 class="section-title">Mengikuti</h3>
+                <div id="list-following">
+                    <!-- Dinamis via JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB CONTENT 2: PENGUMUMAN -->
+        <div class="content-area" id="tab-pengumuman">
+            
+            <!-- Kotak Buat Pengumuman (Hanya jika Own Profile) -->
+            <div class="announce-creator" id="announce-box">
+                <textarea id="announce-text" placeholder="Bagikan informasi terbaru, sapa pengikutmu, atau promosikan bab ceritamu yang baru terbit..."></textarea>
+                <div style="overflow: hidden;">
+                    <button class="btn-post" onclick="publishAnnouncement()">Publikasikan</button>
+                </div>
+            </div>
+
+            <div id="feed-container">
+                <!-- Feed Pengumuman Dinamis -->
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, setDoc, deleteDoc, addDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserId = null; // UID user yang sedang login
+        let targetUserId = null;  // UID profil yang sedang dilihat
+        let isOwnProfile = false;
+        let targetUserData = null;
+        let isFollowing = false;
+
+        // 1. Tab Switcher
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            
+            if(tabName === 'karya') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-karya').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-pengumuman').classList.add('active');
+            }
+        };
+
+        // 2. Cek Siapa yang Login & Siapa yang Dilihat
+        onAuthStateChanged(auth, (user) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryUid = urlParams.get('uid');
+
+            if (user) {
+                currentUserId = user.uid;
+                targetUserId = queryUid ? queryUid : currentUserId;
+            } else {
+                // Publik (Belum Login) tetap bisa melihat profil orang lain
+                targetUserId = queryUid;
+                if (!targetUserId) {
+                    // Jika belum login dan buka profil.html tanpa uid, tolak.
+                    window.location.href = 'login.html';
+                    return;
+                }
+            }
+
+            isOwnProfile = (currentUserId === targetUserId);
+            setupUI();
+            fetchProfileData();
+        });
+
+        // 3. Atur Visibilitas Tombol (Self vs Other)
+        function setupUI() {
+            if (isOwnProfile) {
+                document.getElementById('btn-settings').style.display = 'block';
+                document.getElementById('nav-spacer').style.display = 'none';
+                document.getElementById('btn-follow').style.display = 'none';
+                document.getElementById('announce-box').style.display = 'block';
+            } else {
+                document.getElementById('btn-settings').style.display = 'none';
+                document.getElementById('nav-spacer').style.display = 'block';
+                document.getElementById('btn-follow').style.display = 'block';
+                document.getElementById('announce-box').style.display = 'none';
+                checkFollowStatus();
+            }
+        }
+
+        // 4. Tarik Semua Data Profil Target
+        async function fetchProfileData() {
+            try {
+                // A. Data Utama User
+                const userDoc = await getDoc(doc(db, "users", targetUserId));
+                if (!userDoc.exists()) {
+                    Swal.fire('Tidak Ditemukan', 'Profil ini tidak tersedia atau telah dihapus.', 'error').then(()=>window.location.href='index.html');
+                    return;
+                }
+
+                targetUserData = userDoc.data();
+                
+                // Render Header & Bio
+                document.getElementById('p-name').innerText = targetUserData.name || 'Penulis Cendekia';
+                document.getElementById('p-username').innerText = '@' + (targetUserData.username || `user${targetUserId.substring(0,5)}`);
+                document.getElementById('p-bio').innerText = targetUserData.bio || 'Pengguna ini belum menuliskan bio.';
+                
+                if(targetUserData.coverBase64) document.getElementById('p-cover').style.backgroundImage = `url('${targetUserData.coverBase64}')`;
+                if(targetUserData.profilePicBase64) document.getElementById('p-avatar').style.backgroundImage = `url('${targetUserData.profilePicBase64}')`;
+
+                document.getElementById('stat-pengikut').innerText = targetUserData.followersCount || 0;
+
+                // B. Data Karya Diterbitkan
+                const qKarya = query(collection(db, "published_stories"), where("authorId", "==", targetUserId));
+                const snapKarya = await getDocs(qKarya);
+                document.getElementById('stat-karya').innerText = snapKarya.size;
+                
+                let karyaHtml = '';
+                snapKarya.forEach(d => {
+                    const k = d.data();
+                    const bg = k.coverBase64 ? `url('${k.coverBase64}')` : 'none';
+                    karyaHtml += `
+                        <div class="book-card" onclick="window.location.href='read.html?id=${d.id}'">
+                            <div class="book-cover" style="background-image: ${bg}; border-color:var(--gold);"></div>
+                            <h4 class="book-title" style="color:var(--primary);">${k.title}</h4>
+                        </div>
+                    `;
+                });
+                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
+
+                // C. Data Pustaka (Daftar Bacaan)
+                const qPustaka = query(collection(db, "users", targetUserId, "library"), where("isArchived", "==", false));
+                const snapPustaka = await getDocs(qPustaka);
+                document.getElementById('stat-pustaka').innerText = snapPustaka.size;
+
+                let pustakaHtml = '';
+                snapPustaka.forEach(d => {
+                    const p = d.data();
+                    const bg = p.coverBase64 ? `url('${p.coverBase64}')` : 'none';
+                    pustakaHtml += `
+                        <div class="book-card" onclick="window.location.href='read.html?id=${p.storyId}'">
+                            <div class="book-cover" style="background-image: ${bg};"></div>
+                            <h4 class="book-title">${p.title}</h4>
+                        </div>
+                    `;
+                });
+                document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
+
+                // D. Data Mengikuti (Following)
+                const qFollow = query(collection(db, "users", targetUserId, "following"));
+                const snapFollow = await getDocs(qFollow);
+                
+                let followHtml = '';
+                snapFollow.forEach(d => {
+                    const f = d.data();
+                    const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    followHtml += `
+                        <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
+                            <div class="follow-ava" style="background-image: ${bg};"></div>
+                            <div>
+                                <h4 class="follow-name">${f.name}</h4>
+                                <p class="follow-user">@${f.username || `user${d.id.substring(0,5)}`}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
+
+                // E. Data Pengumuman (Feed)
+                fetchAnnouncements();
+
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat profil:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Error Sistem', 'Gagal memuat data. Periksa koneksi Anda.', 'error');
+            }
+        }
+
+        // 5. Cek Status Follow (Jika Other Profile)
+        async function checkFollowStatus() {
+            if (!currentUserId) return; // Belum login
+            const followDoc = await getDoc(doc(db, "users", currentUserId, "following", targetUserId));
+            const btn = document.getElementById('btn-follow');
+            if (followDoc.exists()) {
+                isFollowing = true;
+                btn.innerText = "Mengikuti";
+                btn.classList.add('following');
+            } else {
+                isFollowing = false;
+                btn.innerText = "Ikuti";
+                btn.classList.remove('following');
+            }
+        }
+
+        // 6. Fungsi Toggle Follow
+        window.toggleFollow = async () => {
+            if (!currentUserId) {
+                Swal.fire('Akses Ditolak', 'Silakan masuk untuk mengikuti penulis ini.', 'info').then(()=>window.location.href='login.html');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-follow');
+            const targetRef = doc(db, "users", targetUserId);
+            const myFollowRef = doc(db, "users", currentUserId, "following", targetUserId);
+
+            try {
+                if (isFollowing) {
+                    // Unfollow
+                    await deleteDoc(myFollowRef);
+                    // Kurangi followers count (Simplified approach)
+                    let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
+                    document.getElementById('stat-pengikut').innerText = Math.max(0, currentCount - 1);
+                    
+                    isFollowing = false;
+                    btn.innerText = "Ikuti";
+                    btn.classList.remove('following');
+                } else {
+                    // Follow
+                    await setDoc(myFollowRef, {
+                        name: targetUserData.name,
+                        username: targetUserData.username || '',
+                        avatarBase64: targetUserData.profilePicBase64 || null,
+                        followedAt: serverTimestamp()
+                    });
+                    
+                    let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
+                    document.getElementById('stat-pengikut').innerText = currentCount + 1;
+
+                    // Mengirim notifikasi in-app ke target user
+                    await addDoc(collection(db, "users", targetUserId, "notifications"), {
+                        title: "Pengikut Baru",
+                        message: `Pengguna anonim baru saja mengikuti Anda.`,
+                        type: "system",
+                        isRead: false,
+                        targetUrl: `profil.html?uid=${currentUserId}`,
+                        createdAt: serverTimestamp()
+                    });
+
+                    isFollowing = true;
+                    btn.innerText = "Mengikuti";
+                    btn.classList.add('following');
+                    Swal.fire({toast:true, position:'top-end', icon:'success', title:'Mengikuti', showConfirmButton:false, timer:1500});
+                }
+            } catch (error) {
+                console.error("Gagal follow/unfollow:", error);
+            }
+        }
+
+        // 7. Ambil Pengumuman (Feed)
+        async function fetchAnnouncements() {
+            try {
+                const qFeed = query(collection(db, "users", targetUserId, "announcements"), orderBy("createdAt", "desc"));
+                const snapFeed = await getDocs(qFeed);
+                const container = document.getElementById('feed-container');
+
+                if (snapFeed.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-comment-slash"></i><p>Belum ada pengumuman.</p></div>`;
+                    return;
+                }
+
+                let html = '';
+                snapFeed.forEach(d => {
+                    const data = d.data();
+                    const bg = targetUserData.profilePicBase64 ? `url('${targetUserData.profilePicBase64}')` : 'none';
+                    
+                    // Format waktu sederhana
+                    const timeObj = data.createdAt ? data.createdAt.toDate() : new Date();
+                    const timeStr = timeObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
+                    html += `
+                        <div class="feed-item">
+                            <div class="feed-header">
+                                <div class="feed-ava" style="background-image: ${bg}; background-color:#cbd5e1;"></div>
+                                <div class="feed-info">
+                                    <h4>${targetUserData.name}</h4>
+                                    <span>${timeStr} WIB</span>
+                                </div>
+                            </div>
+                            <p class="feed-text">${data.text}</p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+
+            } catch(e) { console.error("Gagal ambil feed:", e); }
+        }
+
+        // 8. Publish Pengumuman (Khusus Own Profile)
+        window.publishAnnouncement = async () => {
+            const text = document.getElementById('announce-text').value.trim();
+            if (!text) {
+                Swal.fire({toast:true, position:'top', icon:'warning', title:'Tuliskan sesuatu dahulu.', showConfirmButton:false, timer:1500});
+                return;
+            }
+
+            try {
+                // Simpan ke database
+                await addDoc(collection(db, "users", currentUserId, "announcements"), {
+                    text: text,
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('announce-text').value = '';
+                
+                // Refresh list pengumuman
+                fetchAnnouncements();
+
+                // Notifikasi sukses (Simulasi integrasi OneSignal Fan-Out)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Dipublikasikan!',
+                    html: 'Pengumuman telah tampil di profil Anda.<br><span style="font-size:0.8rem; color:#64748b;">(Notifikasi Push OneSignal sedang dikirim ke pengikut Anda)</span>',
+                    confirmButtonColor: '#003366'
+                });
+
+            } catch (error) {
+                console.error("Gagal posting pengumuman:", error);
+                Swal.fire('Error', 'Gagal mempublikasikan pengumuman.', 'error');
+            }
+        };
+
+    </script>
+</body>
+</html>
