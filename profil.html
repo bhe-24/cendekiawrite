@@ -91,6 +91,7 @@
         .btn-follow.following {
             background: #f1f5f9; color: var(--text-dark); box-shadow: none; border: 1px solid #cbd5e1;
         }
+        .btn-follow:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* --- INFO & STATISTIK --- */
         .profile-info { padding: 55px 20px 20px 20px; background: white; border-bottom: 1px solid #e2e8f0; }
@@ -98,7 +99,7 @@
         .profile-username { font-size: 0.85rem; color: var(--text-gray); margin: 0 0 15px 0; font-weight: 500;}
         
         .stats-row { display: flex; gap: 25px; }
-        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .stat-num { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
         .stat-lbl { font-size: 0.7rem; color: var(--text-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
 
@@ -135,7 +136,7 @@
             font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; z-index: 2;
         }
 
-        /* --- MENGIKUTI LIST --- */
+        /* --- MENGIKUTI / PENGIKUT LIST --- */
         .follow-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer;}
         .follow-ava { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1;}
         .follow-name { font-size: 0.85rem; font-weight: 600; margin: 0; color: var(--text-dark);}
@@ -166,6 +167,13 @@
         }
         .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- MODAL LIST PENGIKUT/MENGIKUTI (via SweetAlert2) --- */
+        .modal-follow-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px;
+            border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer; text-align: left;
+        }
+        .modal-follow-ava { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -209,7 +217,7 @@
                     <span class="stat-num" id="stat-pustaka">0</span>
                     <span class="stat-lbl">Pustaka</span>
                 </div>
-                <div class="stat-item">
+                <div class="stat-item" id="stat-pengikut-container" onclick="openFollowersModal()">
                     <span class="stat-num" id="stat-pengikut">0</span>
                     <span class="stat-lbl">Pengikut</span>
                 </div>
@@ -279,7 +287,10 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, setDoc, deleteDoc, addDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import {
+            getFirestore, doc, getDoc, collection, query, where, getDocs,
+            setDoc, deleteDoc, addDoc, serverTimestamp, orderBy, writeBatch, increment
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -300,6 +311,7 @@
         let isOwnProfile = false;
         let targetUserData = null;
         let isFollowing = false;
+        let isFollowActionPending = false; // Cegah tap ganda / race condition
 
         function toMillisSafe(ts) {
             if (!ts) return 0;
@@ -393,6 +405,8 @@
                 if(targetUserData.coverBase64) document.getElementById('p-cover').style.backgroundImage = `url('${targetUserData.coverBase64}')`;
                 if(targetUserData.profilePicBase64) document.getElementById('p-avatar').style.backgroundImage = `url('${targetUserData.profilePicBase64}')`;
 
+                // Tampilkan angka cache dulu (biar tidak kelihatan "0" sesaat), nanti akan
+                // ditimpa oleh loadFollowersCount() dengan hitungan asli dari database.
                 document.getElementById('stat-pengikut').innerText = targetUserData.followersCount || 0;
             } catch (error) {
                 console.error("Gagal memuat data utama profil:", error);
@@ -401,18 +415,33 @@
                 return; 
             }
 
-            // Load bagian turunan secara bersamaan
+            // Load bagian turunan secara bersamaan, masing-masing independen
+            // (satu gagal, tidak menjatuhkan bagian lain).
             await Promise.allSettled([
                 loadKarya(),
                 (isOwnProfile ? loadPustaka() : Promise.resolve()), // Hanya diload jika profil sendiri
                 loadFollowing(),
+                loadFollowersCount(),
                 fetchAnnouncements()
             ]);
 
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
-        // --- CEK STATUS FOLLOW BUG FIXED ---
+        // --- HITUNG PENGIKUT DARI SUMBER ASLI (subkoleksi "followers") ---
+        // Ini yang membuat angka pengikut TETAP AKURAT walau di-refresh berkali-kali,
+        // karena tidak bergantung pada counter cache yang bisa lupa diperbarui.
+        async function loadFollowersCount() {
+            try {
+                const snapFollowers = await getDocs(collection(db, "users", targetUserId, "followers"));
+                document.getElementById('stat-pengikut').innerText = snapFollowers.size;
+            } catch (error) {
+                console.error("Gagal menghitung pengikut:", error);
+                // Kalau gagal, biarkan angka cache (followersCount) yang sudah tampil sebelumnya.
+            }
+        }
+
+        // --- CEK STATUS FOLLOW ---
         async function checkFollowStatus() {
             if (!currentUserId) return; 
             try {
@@ -432,62 +461,124 @@
             }
         }
 
+        // --- TOGGLE FOLLOW (DIPERBAIKI: transaksi batch dua arah) ---
         window.toggleFollow = async () => {
             if (!currentUserId) {
                 Swal.fire('Akses Ditolak', 'Silakan masuk untuk mengikuti penulis ini.', 'info').then(()=>window.location.href='login.html');
                 return;
             }
-            
+            if (isFollowActionPending) return; // Cegah klik ganda saat masih diproses
+            isFollowActionPending = true;
+
             const btn = document.getElementById('btn-follow');
-            const myFollowRef = doc(db, "users", currentUserId, "following", targetUserId);
-            
-            // Nonaktifkan tombol sementara untuk menghindari double klik
             btn.disabled = true;
+
+            const targetRef = doc(db, "users", targetUserId);
+            const followingRef = doc(db, "users", currentUserId, "following", targetUserId);
+            const followerRef = doc(db, "users", targetUserId, "followers", currentUserId);
 
             try {
                 if (isFollowing) {
-                    // Proses Unfollow
-                    await deleteDoc(myFollowRef);
-                    
-                    let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
-                    document.getElementById('stat-pengikut').innerText = Math.max(0, currentCount - 1);
-                    
+                    // --- PROSES UNFOLLOW (batch: hapus dua sisi + turunkan counter cache) ---
+                    const batch = writeBatch(db);
+                    batch.delete(followingRef);
+                    batch.delete(followerRef);
+                    batch.update(targetRef, { followersCount: increment(-1) });
+                    await batch.commit();
+
                     isFollowing = false;
                     btn.innerText = "Ikuti";
                     btn.classList.remove('following');
                 } else {
-                    // Proses Follow
-                    await setDoc(myFollowRef, {
-                        name: targetUserData.name,
+                    // Ambil data profil diri sendiri (dibutuhkan agar target bisa melihat
+                    // siapa saja yang mengikutinya di daftar "Pengikut").
+                    let myProfileData = {};
+                    try {
+                        const mySnap = await getDoc(doc(db, "users", currentUserId));
+                        if (mySnap.exists()) myProfileData = mySnap.data();
+                    } catch (e) {
+                        console.error("Gagal mengambil data profil sendiri:", e);
+                    }
+
+                    // --- PROSES FOLLOW (batch: tulis dua sisi + naikkan counter cache) ---
+                    const batch = writeBatch(db);
+                    batch.set(followingRef, {
+                        name: targetUserData.name || 'Penulis Cendekia',
                         username: targetUserData.username || '',
                         avatarBase64: targetUserData.profilePicBase64 || null,
                         followedAt: serverTimestamp()
                     });
-                    
-                    let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
-                    document.getElementById('stat-pengikut').innerText = currentCount + 1;
-
-                    // Mengirim notifikasi in-app
-                    await addDoc(collection(db, "users", targetUserId, "notifications"), {
-                        title: "Pengikut Baru",
-                        message: `Seseorang baru saja mengikuti Anda.`,
-                        type: "system",
-                        isRead: false,
-                        targetUrl: `profil.html?uid=${currentUserId}`,
-                        createdAt: serverTimestamp()
+                    batch.set(followerRef, {
+                        name: myProfileData.name || 'Penulis Cendekia',
+                        username: myProfileData.username || '',
+                        avatarBase64: myProfileData.profilePicBase64 || null,
+                        followedAt: serverTimestamp()
                     });
+                    batch.update(targetRef, { followersCount: increment(1) });
+                    await batch.commit();
 
                     isFollowing = true;
                     btn.innerText = "Mengikuti";
                     btn.classList.add('following');
+
+                    // Notifikasi in-app (di luar batch, boleh gagal tanpa membatalkan proses follow)
+                    try {
+                        await addDoc(collection(db, "users", targetUserId, "notifications"), {
+                            title: "Pengikut Baru",
+                            message: `${myProfileData.name || 'Seseorang'} baru saja mengikuti Anda.`,
+                            type: "system",
+                            isRead: false,
+                            targetUrl: `profil.html?uid=${currentUserId}`,
+                            createdAt: serverTimestamp()
+                        });
+                    } catch (e) {
+                        console.error("Gagal mengirim notifikasi follow:", e);
+                    }
+
                     Swal.fire({toast:true, position:'top-end', icon:'success', title:'Mengikuti', showConfirmButton:false, timer:1500});
                 }
+
+                // Sinkronkan angka tampilan dengan jumlah asli di database
+                await loadFollowersCount();
+
             } catch (error) {
                 console.error("Gagal follow/unfollow:", error);
-                Swal.fire('Error', 'Gagal memproses permintaan.', 'error');
+                Swal.fire('Error', 'Gagal memproses permintaan. Coba lagi.', 'error');
             }
             
             btn.disabled = false;
+            isFollowActionPending = false;
+        };
+
+        // --- MODAL DAFTAR PENGIKUT (dari subkoleksi followers yang sudah akurat) ---
+        window.openFollowersModal = async () => {
+            Swal.fire({ title: 'Memuat Pengikut...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const snap = await getDocs(collection(db, "users", targetUserId, "followers"));
+                if (snap.empty) {
+                    Swal.fire('Belum Ada Pengikut', 'Profil ini belum memiliki pengikut.', 'info');
+                    return;
+                }
+                let listHtml = '<div style="max-height: 320px; overflow-y: auto; text-align:left;">';
+                snap.forEach(d => {
+                    const f = d.data();
+                    const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    listHtml += `
+                        <div class="modal-follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
+                            <div class="modal-follow-ava" style="background-image: ${bg};"></div>
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:600; color:var(--text-dark);">${f.name || 'Penulis Cendekia'}</div>
+                                <div style="font-size:0.75rem; color:var(--text-gray);">@${f.username || `user${d.id.substring(0,5)}`}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                listHtml += '</div>';
+                Swal.fire({ title: 'Pengikut', html: listHtml, showConfirmButton: false, showCloseButton: true });
+            } catch (error) {
+                console.error("Gagal memuat daftar pengikut:", error);
+                Swal.fire('Error', 'Gagal memuat daftar pengikut.', 'error');
+            }
         };
 
         // LOAD KARYA
@@ -527,7 +618,10 @@
                 });
 
                 document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
-            } catch (error) { console.error("Error Karya:", error); }
+            } catch (error) {
+                console.error("Error Karya:", error);
+                document.getElementById('list-karya').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat karya.</p></div>`;
+            }
         }
 
         // LOAD PUSTAKA
@@ -549,7 +643,10 @@
                     `;
                 });
                 document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
-            } catch (error) { console.error("Error Pustaka:", error); }
+            } catch (error) {
+                console.error("Error Pustaka:", error);
+                document.getElementById('list-pustaka').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat pustaka.</p></div>`;
+            }
         }
 
         // LOAD MENGIKUTI
@@ -573,7 +670,10 @@
                     `;
                 });
                 document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
-            } catch (error) { console.error("Error Follow:", error); }
+            } catch (error) {
+                console.error("Error Follow:", error);
+                document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat daftar mengikuti.</p></div>`;
+            }
         }
 
         // LOAD FEED PENGUMUMAN
@@ -610,7 +710,10 @@
                 });
                 container.innerHTML = html;
 
-            } catch(e) { console.error("Error Feed:", e); }
+            } catch(e) {
+                console.error("Error Feed:", e);
+                document.getElementById('feed-container').innerHTML = `<div class="empty-state"><p>Gagal memuat pengumuman.</p></div>`;
+            }
         }
 
         // PUBLISH PENGUMUMAN
