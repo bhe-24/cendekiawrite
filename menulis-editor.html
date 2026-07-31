@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Editor Naskah - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-left { display: flex; align-items: center; gap: 10px; }
+        .btn-icon { background: none; border: none; color: var(--text-dark); font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .btn-icon:hover { color: var(--primary); }
+        
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .btn-publish {
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            color: white; border: none; padding: 6px 16px; border-radius: 50px;
+            font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s;
+        }
+        .btn-publish:hover { transform: translateY(-2px); }
+
+        /* Dropdown Opsi (Titik Tiga) */
+        .dropdown-menu {
+            position: absolute; top: 50px; right: 15px; background: white;
+            border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 200px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+        }
+        .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
+        @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+        
+        .dropdown-item {
+            padding: 12px 15px; font-size: 0.85rem; color: var(--text-dark);
+            background: none; border: none; text-align: left; font-family: 'Poppins';
+            cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s;
+        }
+        .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
+        .dropdown-item.danger { color: #dc2626; border-top: 1px solid #f1f5f9; }
+        .dropdown-item.danger:hover { background: #fef2f2; color: #b91c1c; }
+
+        /* --- EDITOR AREA --- */
+        .editor-container { flex: 1; display: flex; flex-direction: column; }
+        
+        .chapter-title-input {
+            width: 100%; padding: 20px 20px 10px 20px; border: none; outline: none;
+            font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700;
+            color: var(--primary); background: transparent;
+        }
+        .chapter-title-input::placeholder { color: #cbd5e1; }
+
+        .editor-toolbar {
+            display: flex; gap: 5px; padding: 10px 20px; border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc; position: sticky; top: 55px; z-index: 99; overflow-x: auto; scrollbar-width: none;
+        }
+        .editor-toolbar::-webkit-scrollbar { display: none; }
+        .tool-btn {
+            width: 35px; height: 35px; border: none; background: white; border-radius: 6px;
+            color: var(--text-dark); cursor: pointer; font-size: 1rem; flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; transition: 0.2s;
+        }
+        .tool-btn:hover { background: #e2e8f0; color: var(--primary); }
+
+        .rich-editor {
+            flex: 1; padding: 20px; font-family: 'Lora', serif; font-size: 1.05rem;
+            line-height: 1.8; color: #334155; outline: none; overflow-y: auto;
+            min-height: 50vh;
+        }
+        .rich-editor[empty="true"]::before {
+            content: attr(placeholder); color: #94a3b8; pointer-events: none; display: block;
+        }
+        .rich-editor img {
+            max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0;
+            display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- FOOTER STATUS --- */
+        .editor-footer {
+            padding: 10px 20px; background: white; border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.75rem; color: #94a3b8; position: sticky; bottom: 0; z-index: 99;
+        }
+        .save-status { display: flex; align-items: center; gap: 5px; font-weight: 600;}
+        .save-status.saving { color: #f59e0b; }
+        .save-status.saved { color: #10b981; }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyiapkan Ruang Editor...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <button class="btn-icon" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+            <div class="nav-right">
+                <button class="btn-publish" id="btn-publish" onclick="publishChapter()">Publikasi</button>
+                <button class="btn-icon" onclick="toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            </div>
+
+            <!-- MENU DROPDOWN -->
+            <div class="dropdown-menu" id="dropdown-menu">
+                <button class="dropdown-item" onclick="forceSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan Pratinjau</button>
+                <button class="dropdown-item" onclick="viewRevisions()"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Revisi</button>
+                <button class="dropdown-item danger" onclick="deleteChapter()"><i class="fa-solid fa-trash-can"></i> Hapus Bab Ini</button>
+            </div>
+        </header>
+
+        <div class="editor-container">
+            
+            <input type="text" id="chapter-title" class="chapter-title-input" placeholder="Judul Bab" oninput="triggerAutoSave()">
+
+            <!-- TOOLBAR RICH TEXT -->
+            <div class="editor-toolbar">
+                <button class="tool-btn" onclick="formatText('bold')" title="Tebal"><i class="fa-solid fa-bold"></i></button>
+                <button class="tool-btn" onclick="formatText('italic')" title="Miring"><i class="fa-solid fa-italic"></i></button>
+                <button class="tool-btn" onclick="formatText('underline')" title="Garis Bawah"><i class="fa-solid fa-underline"></i></button>
+                <div style="width: 1px; background: #cbd5e1; margin: 0 5px;"></div>
+                <button class="tool-btn" onclick="document.getElementById('image-upload').click()" title="Sisipkan Gambar"><i class="fa-regular fa-image"></i></button>
+                <input type="file" id="image-upload" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="insertImage(event)">
+            </div>
+
+            <!-- AREA MENGETIK NASKAH -->
+            <div id="editor" class="rich-editor" contenteditable="true" placeholder="Tuliskan naskahmu di sini..." oninput="handleEditorInput()"></div>
+
+        </div>
+
+        <!-- FOOTER STATUS -->
+        <div class="editor-footer">
+            <span id="word-count"><i class="fa-solid fa-file-word"></i> 0 Kata</span>
+            <div class="save-status" id="save-indicator">
+                <i class="fa-solid fa-check"></i> Tersimpan
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Ambil Parameter URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('storyId');
+        const chapterId = urlParams.get('chapterId');
+
+        let currentUser = null;
+        let saveTimeout;
+        let isPublished = false;
+
+        if (!storyId || !chapterId) {
+            window.location.href = 'menulis.html';
+        }
+
+        // Cek Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadChapterData();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // 1. Fungsi Utama: Load Data Bab
+        async function loadChapterData() {
+            try {
+                const chapterRef = doc(db, "stories", storyId, "chapters", chapterId);
+                const snap = await getDoc(chapterRef);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    
+                    document.getElementById('chapter-title').value = data.title || '';
+                    const editor = document.getElementById('editor');
+                    editor.innerHTML = data.content || '';
+                    
+                    isPublished = (data.status === 'published');
+                    if (isPublished) {
+                        const btnPub = document.getElementById('btn-publish');
+                        btnPub.innerText = "Telah Rilis";
+                        btnPub.style.background = "#10b981"; // Warna hijau
+                    }
+
+                    checkEditorEmpty();
+                    countWords();
+                    document.getElementById('loading-overlay').style.display = 'none';
+
+                } else {
+                    Swal.fire('Error', 'Bab tidak ditemukan.', 'error').then(()=>window.location.href = `menulis-info.html?id=${storyId}`);
+                }
+            } catch (error) {
+                console.error("Gagal memuat bab:", error);
+                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            }
+        }
+
+        // 2. Editor Formatting & Utils
+        window.formatText = (command) => {
+            document.execCommand(command, false, null);
+            document.getElementById('editor').focus();
+            triggerAutoSave();
+        };
+
+        window.insertImage = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire('Ukuran Terlalu Besar', 'Gambar di dalam naskah maksimal 2MB.', 'warning');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                document.getElementById('editor').focus();
+                // Sisipkan tag img dengan Base64
+                document.execCommand('insertImage', false, base64String);
+                triggerAutoSave();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.handleEditorInput = () => {
+            checkEditorEmpty();
+            countWords();
+            triggerAutoSave();
+        };
+
+        function checkEditorEmpty() {
+            const editor = document.getElementById('editor');
+            if (editor.innerHTML.trim() === '' || editor.innerHTML === '<br>') {
+                editor.setAttribute('empty', 'true');
+            } else {
+                editor.removeAttribute('empty');
+            }
+        }
+
+        function countWords() {
+            const text = document.getElementById('editor').innerText || "";
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            document.getElementById('word-count').innerHTML = `<i class="fa-solid fa-file-word"></i> ${words.length} Kata`;
+            return words.length;
+        }
+
+        // 3. Auto-Save System
+        window.triggerAutoSave = () => {
+            const indicator = document.getElementById('save-indicator');
+            indicator.className = 'save-status saving';
+            indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveChapterData, 2000); // Tunggu 2 detik setelah berhenti mengetik
+        };
+
+        async function saveChapterData(logRevision = false) {
+            const title = document.getElementById('chapter-title').value;
+            const content = document.getElementById('editor').innerHTML;
+            const wordCount = countWords();
+            const indicator = document.getElementById('save-indicator');
+
+            try {
+                const chapterRef = doc(db, "stories", storyId, "chapters", chapterId);
+                
+                await updateDoc(chapterRef, {
+                    title: title,
+                    content: content,
+                    wordCount: wordCount,
+                    updatedAt: serverTimestamp()
+                });
+
+                // Update juga status waktu di dokumen utama cerita
+                await updateDoc(doc(db, "stories", storyId), {
+                    updatedAt: serverTimestamp()
+                });
+
+                indicator.className = 'save-status saved';
+                indicator.innerHTML = '<i class="fa-solid fa-check"></i> Tersimpan';
+
+                // Jika diminta menyimpan ke riwayat revisi (oleh fungsi Simpan Pratinjau)
+                if (logRevision) {
+                    await addDoc(collection(db, "stories", storyId, "chapters", chapterId, "revisions"), {
+                        contentSnapshot: content,
+                        wordCount: wordCount,
+                        savedAt: serverTimestamp()
+                    });
+                }
+
+            } catch (error) {
+                console.error("Auto-save gagal:", error);
+                indicator.innerHTML = '<span style="color:#dc2626;"><i class="fa-solid fa-xmark"></i> Gagal</span>';
+            }
+        }
+
+        // 4. Fitur Dropdown Menu & Eksekusi Tombol
+        window.toggleMenu = () => {
+            document.getElementById('dropdown-menu').classList.toggle('active');
+        };
+
+        // Tutup menu jika klik di luar
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-right')) {
+                document.getElementById('dropdown-menu').classList.remove('active');
+            }
+        });
+
+        window.goBack = () => {
+            window.location.href = `menulis-info.html?id=${storyId}`;
+        };
+
+        window.forceSave = async () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+            Swal.fire({ title: 'Menyimpan Draf & Revisi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            await saveChapterData(true); // true = Simpan snapshot ke history
+            
+            Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Naskah saat ini telah disimpan ke Riwayat Revisi.', timer: 1500, showConfirmButton: false });
+        };
+
+        window.viewRevisions = () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+            Swal.fire('Fitur Segera Hadir', 'Fitur membaca ulang Riwayat Revisi naskah sedang dalam tahap pengembangan.', 'info');
+        };
+
+        window.deleteChapter = async () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+            const konfirmasi = await Swal.fire({
+                title: 'Hapus Bab Ini?',
+                text: 'Naskah yang dihapus tidak dapat dikembalikan lagi!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus Permanen'
+            });
+
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Menghapus Bab...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                try {
+                    // Hapus Dokumen Bab
+                    await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
+                    
+                    // Kurangi hitungan bab di tabel Master Cerita
+                    const storyRef = doc(db, "stories", storyId);
+                    const snap = await getDoc(storyRef);
+                    const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 1;
+                    await updateDoc(storyRef, { chapterCount: Math.max(0, currentCount - 1) });
+
+                    Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false }).then(() => {
+                        goBack();
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'Gagal menghapus bab.', 'error');
+                }
+            }
+        };
+
+        // 5. Publikasi Bab
+        window.publishChapter = async () => {
+            if (isPublished) {
+                Swal.fire('Sudah Rilis', 'Bab ini sudah dipublikasikan. Perubahan naskah akan otomatis tersimpan dan diperbarui ke pembaca.', 'info');
+                return;
+            }
+
+            const title = document.getElementById('chapter-title').value.trim();
+            if (!title) {
+                Swal.fire('Judul Kosong', 'Harap beri judul bab sebelum mempublikasikannya.', 'warning');
+                return;
+            }
+
+            const konfirmasi = await Swal.fire({
+                title: 'Publikasikan Bab?',
+                text: 'Bab ini akan bisa dibaca oleh semua pengguna Cendekia Aksara.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Rilis Sekarang!'
+            });
+
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Memproses Publikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                try {
+                    // Pastikan draf terakhir tersimpan
+                    await saveChapterData(false);
+
+                    // Ubah Status Bab
+                    await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
+                        status: 'published',
+                        publishedAt: serverTimestamp()
+                    });
+
+                    // Cek jika status Cerita Induk masih draft, jadikan published
+                    const storyRef = doc(db, "stories", storyId);
+                    const storySnap = await getDoc(storyRef);
+                    if (storySnap.exists() && storySnap.data().status === 'draft') {
+                        await updateDoc(storyRef, { status: 'published', publishedAt: serverTimestamp() });
+                    }
+
+                    // Opsional: Buat Notifikasi ke Database untuk semua pengikut (Bisa lewat Cloud Function di real-app)
+                    
+                    isPublished = true;
+                    const btnPub = document.getElementById('btn-publish');
+                    btnPub.innerText = "Telah Rilis";
+                    btnPub.style.background = "#10b981";
+
+                    Swal.fire({ icon: 'success', title: 'Berhasil Dirilis!', text: 'Bab Anda telah dipublikasikan ke publik.', confirmButtonColor: '#003366' });
+
+                } catch (error) {
+                    console.error("Gagal rilis:", error);
+                    Swal.fire('Error', 'Gagal mempublikasikan bab.', 'error');
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
