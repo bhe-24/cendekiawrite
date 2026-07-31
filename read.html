@@ -119,7 +119,7 @@
         
         <!-- NAVBAR -->
         <header class="top-navbar" id="top-navbar">
-            <button class="btn-icon" id="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-icon" id="btn-back"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="nav-title-group" onclick="toggleDrawer('toc-drawer')">
                 <h2 class="nav-story-title" id="nav-story-title">Memuat...</h2>
                 <p class="nav-chapter-title" id="nav-chapter-title">Bab - <i class="fa-solid fa-angle-down" style="font-size:0.6rem;"></i></p>
@@ -215,8 +215,14 @@
         // Redirect jika URL tidak valid
         if (!storyId) { window.location.href = 'index.html'; }
 
-        // Tombol Back ke Halaman Pratinjau
-        document.getElementById('btn-back').onclick = () => { window.location.href = `pratinjau.html?id=${storyId}`; };
+        // --- SMART BACK BUTTON (Perbaikan History Trap) ---
+        document.getElementById('btn-back').onclick = () => { 
+            if (document.referrer && !document.referrer.includes('read.html')) {
+                history.back(); 
+            } else {
+                window.location.replace(`pratinjau.html?id=${storyId}`); 
+            }
+        };
 
         onAuthStateChanged(auth, (user) => { 
             currentUser = user; 
