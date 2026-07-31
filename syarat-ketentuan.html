@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Syarat & Ketentuan - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #475569;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .btn-back { background: none; border: none; color: var(--text-dark); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-back:hover { color: var(--primary); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: var(--primary); margin: 0; }
+
+        /* --- HERO HEADER --- */
+        .doc-header {
+            background: linear-gradient(135deg, #0f172a 0%, var(--primary) 100%);
+            padding: 40px 25px; text-align: center; color: white;
+            position: relative; overflow: hidden;
+        }
+        .doc-header::after {
+            content: '\f24e'; /* Scale Balanced Icon */
+            font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -20px; bottom: -30px; font-size: 10rem;
+            color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
+        }
+        .doc-icon {
+            width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 16px;
+            display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
+            color: var(--gold); margin: 0 auto 15px auto; border: 1px solid rgba(255,255,255,0.2);
+            position: relative; z-index: 2;
+        }
+        .doc-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 10px 0; position: relative; z-index: 2;}
+        .doc-meta { font-size: 0.8rem; color: #cbd5e1; position: relative; z-index: 2;}
+
+        /* --- CONTENT AREA --- */
+        .doc-content { padding: 30px 25px; font-family: 'Lora', serif; line-height: 1.8; color: #334155; }
+        .doc-intro { font-size: 0.95rem; margin-bottom: 30px; text-align: justify; }
+
+        /* --- BAB & PASAL STYLING --- */
+        .chapter-container { margin-bottom: 40px; }
+        .chapter-title {
+            font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 700;
+            color: var(--primary); margin: 0 0 20px 0; text-align: center;
+            border-bottom: 2px solid var(--gold); padding-bottom: 10px; text-transform: uppercase;
+        }
+        
+        .article-block { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start; }
+        .article-num {
+            font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700;
+            background: #f1f5f9; color: var(--primary); padding: 5px 12px;
+            border-radius: 8px; flex-shrink: 0; min-width: 80px; text-align: center;
+            border: 1px solid #cbd5e1;
+        }
+        .article-text { font-size: 0.95rem; margin: 0; text-align: justify; }
+        .article-text b { color: var(--text-dark); font-weight: 600; }
+        .article-text i { color: var(--primary); font-weight: 500;}
+
+        /* SCROLL TO TOP */
+        .btn-top {
+            position: fixed; bottom: 30px; right: 20px; width: 45px; height: 45px;
+            background: var(--gold); color: white; border: none; border-radius: 50%;
+            font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            opacity: 0; visibility: hidden; transition: 0.3s; z-index: 100;
+        }
+        .btn-top.show { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Dokumen Hukum</h1>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <div class="doc-header">
+            <div class="doc-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            <h2 class="doc-title">Syarat & Ketentuan</h2>
+            <p class="doc-meta">Efektif mulai: 1 Agustus 2026<br>Versi Dokumen: 1.0.0</p>
+        </div>
+
+        <div class="doc-content">
+            <p class="doc-intro">
+                Syarat dan Ketentuan (*Terms of Service*) ini adalah **perjanjian hukum yang mengikat** antara Anda ("Pengguna") dan **Cendekia Aksara**. Dengan mengakses, mendaftar, membaca, atau menerbitkan karya di platform kami, Anda menyatakan secara sadar bahwa Anda telah membaca, memahami, dan menyetujui seluruh pasal yang tertulis di bawah ini.
+            </p>
+
+            <!-- BAB I -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab I: Definisi & Akses Layanan</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 1</div>
+                    <p class="article-text"><b>Platform</b> merujuk pada situs web, aplikasi *Progressive Web App* (PWA), dan seluruh infrastruktur digital yang dioperasikan di bawah nama <b>Cendekia Aksara</b>.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 2</div>
+                    <p class="article-text">Pengguna <b>wajib berusia minimal 13 tahun</b>. Jika Anda berusia di bawah batas tersebut, Anda wajib mendapatkan pengawasan dan persetujuan dari orang tua atau wali sah sebelum menggunakan Platform.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 3</div>
+                    <p class="article-text">Kami memberikan Anda lisensi yang <i>terbatas, non-eksklusif, dan dapat dicabut sewaktu-waktu</i> untuk mengakses Platform murni untuk keperluan penggunaan pribadi dan non-komersial.</p>
+                </div>
+            </div>
+
+            <!-- BAB II -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab II: Pendaftaran & Keamanan Akun</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 4</div>
+                    <p class="article-text">Pengguna wajib memberikan informasi pendaftaran yang <b>akurat, terkini, dan valid</b>. Pemalsuan identitas yang merugikan pihak lain dapat ditindak secara hukum.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 5</div>
+                    <p class="article-text">Pengguna <b>bertanggung jawab penuh</b> atas kerahasiaan kata sandi (*password*) akunnya. Segala aktivitas yang terjadi di bawah akun Anda dianggap sebagai tindakan sah yang Anda lakukan.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 6</div>
+                    <p class="article-text">Anda dilarang keras mengalihkan, menyewakan, atau menjual akun Cendekia Aksara Anda kepada entitas pihak ketiga mana pun dengan dalih apa pun.</p>
+                </div>
+            </div>
+
+            <!-- BAB III -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab III: Hak Kekayaan Intelektual</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 7</div>
+                    <p class="article-text"><b>Hak Cipta Mutlak.</b> Penulis mempertahankan seluruh Hak Cipta (*Copyright*) atas karya orisinal yang mereka unggah. Cendekia Aksara <b>tidak mengklaim kepemilikan</b> atas naskah Anda.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 8</div>
+                    <p class="article-text">Dengan memublikasikan cerita di Platform, Anda memberikan kami lisensi <i>bebas royalti, dapat disublisensikan, dan berlaku di seluruh dunia</i> untuk menyimpan, menampilkan, dan mendistribusikan karya Anda kepada pembaca melalui sistem kami.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 9</div>
+                    <p class="article-text"><b>Toleransi Nol Terhadap Plagiarisme.</b> Pengguna dilarang mengunggah karya modifikasi, terjemahan tanpa izin, atau salinan dari karya orang lain. Pelanggaran atas pasal ini akan mengakibatkan <i>banned permanen</i> secara sepihak.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 10</div>
+                    <p class="article-text">Segala aset bawaan Platform (logo, antarmuka, *source code*) adalah <b>Hak Milik Eksklusif</b> Cendekia Aksara dan dilindungi oleh Undang-Undang Hak Cipta Nasional maupun Internasional.</p>
+                </div>
+            </div>
+
+            <!-- BAB IV -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab IV: Konten & Perilaku Terlarang</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 11</div>
+                    <p class="article-text">Pengguna dilarang mempublikasikan cerita, gambar sampul, komentar, atau pengumuman yang mengandung elemen <b>pornografi eksplisit, eksploitasi anak, atau kekerasan ekstrem yang melanggar hukum</b>.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 12</div>
+                    <p class="article-text">Dilarang keras menyebarkan ujaran kebencian (*hate speech*), pelecehan, diskriminasi SARA, atau melakukan doxing (membuka data pribadi orang lain) di kolom komentar maupun profil.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 13</div>
+                    <p class="article-text">Tindakan memanipulasi statistik (*vote manipulation*, *view botting*), eksploitasi celah sistem (*bug abuse*), atau menyisipkan skrip peretas (seperti injeksi XSS) adalah tindakan ilegal dan dapat <b>diproses ke ranah pidana siber</b>.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 14</div>
+                    <p class="article-text">Dilarang menggunakan Platform untuk mengirimkan tautan promosi komersial eksternal (*spam*) tanpa persetujuan administratif tertulis dari pihak Cendekia Aksara.</p>
+                </div>
+            </div>
+
+            <!-- BAB V -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab V: Moderasi & Pemutusan Akses</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 15</div>
+                    <p class="article-text">Kami memiliki kewenangan penuh (*sole discretion*) untuk memantau, menyembunyikan, mengubah status menjadi draf, atau menghapus konten (*UGC*) tanpa pemberitahuan sebelumnya jika terindikasi melanggar pedoman.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 16</div>
+                    <p class="article-text">Platform berhak melakukan <i>suspend</i> (penangguhan sementara) atau pemutusan akun secara permanen terhadap pengguna yang menjadi residivis pelanggaran pedoman komunitas.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 17</div>
+                    <p class="article-text">Pengguna yang akunnya dibekukan karena sanksi administratif <b>tidak berhak menuntut pemulihan data</b> berupa naskah atau pengikut (*followers*) yang hangus akibat pemutusan tersebut.</p>
+                </div>
+            </div>
+
+            <!-- BAB VI -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VI: Penafian Jaminan (Disclaimer)</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 18</div>
+                    <p class="article-text">Layanan disediakan dengan dasar <i>"Sebagaimana Adanya" (As-Is)</i> dan <i>"Sebagaimana Tersedia" (As-Available)</i>. Kami <b>tidak menjamin</b> bahwa Platform akan 100% bebas dari interupsi, kesalahan server (*downtime*), atau celah perangkat lunak.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 19</div>
+                    <p class="article-text">Kami <b>tidak memikul tanggung jawab</b> atas kerugian emosional, kerusakan reputasi, atau konflik yang timbul akibat membaca karya fiksi yang dipublikasikan oleh penulis eksternal di dalam platform ini.</p>
+                </div>
+            </div>
+
+            <!-- BAB VII -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VII: Batasan Tanggung Jawab</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 20</div>
+                    <p class="article-text">Dalam batasan maksimal yang diizinkan hukum, Cendekia Aksara beserta direktur, pengembang, dan afiliasinya <b>tidak dapat dituntut atau diminta ganti rugi finansial</b> atas kehilangan data naskah (*data loss*) akibat kegagalan sinkronisasi atau bencana server (*force majeure*).</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 21</div>
+                    <p class="article-text">Penulis sangat dianjurkan untuk memiliki <b>salinan cadangan independen</b> (di luar platform) untuk setiap mahakarya sastra yang mereka ciptakan.</p>
+                </div>
+            </div>
+
+            <!-- BAB VIII -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VIII: Ketentuan Lain-Lain</h3>
+                <div class="article-block">
+                    <div class="article-num">Pasal 22</div>
+                    <p class="article-text">Syarat & Ketentuan ini dapat diperbarui sewaktu-waktu. Perubahan material akan diberitahukan melalui *Push Notification* atau spanduk pengumuman di beranda.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 23</div>
+                    <p class="article-text">Jika terdapat satu pasal dalam perjanjian ini yang dianggap tidak sah atau tidak dapat dilaksanakan oleh pengadilan, pasal lainnya akan <b>tetap berlaku sepenuhnya</b>.</p>
+                </div>
+                <div class="article-block">
+                    <div class="article-num">Pasal 24</div>
+                    <p class="article-text">Seluruh perjanjian ini tunduk dan ditafsirkan berdasarkan <b>Yurisdiksi Hukum Republik Indonesia</b>.</p>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <!-- TOMBOL SCROLL TO TOP -->
+    <button class="btn-top" id="btn-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Logika memunculkan tombol Scroll to Top
+        const btnTop = document.getElementById('btn-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btnTop.classList.add('show');
+            } else {
+                btnTop.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
