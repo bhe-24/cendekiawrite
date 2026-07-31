@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pusat Bantuan - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .search-box { padding: 20px 20px 0 20px; }
+        .search-input-wrapper { position: relative; }
+        .search-input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+        .search-input-wrapper input {
+            width: 100%; padding: 12px 14px 12px 40px; border-radius: 50px; border: 1px solid #e2e8f0;
+            background: white; font-family: 'Poppins'; font-size: 0.85rem;
+        }
+        .search-input-wrapper input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+
+        .section-box { padding: 20px; }
+        .group-title { font-size: 0.78rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 4px; }
+
+        .faq-list { margin-bottom: 24px; }
+        .faq-item { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 10px; overflow: hidden; }
+        .faq-question { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.87rem; font-weight: 600; color: var(--text-dark); }
+        .faq-question i { color: var(--gold); transition: 0.3s; }
+        .faq-item.open .faq-question i { transform: rotate(180deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 16px; }
+        .faq-item.open .faq-answer { max-height: 300px; padding: 0 16px 16px 16px; }
+        .faq-answer p { margin: 0; font-size: 0.82rem; color: #475569; line-height: 1.6; }
+        .faq-item[data-hidden="true"] { display: none; }
+
+        .contact-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text-dark); transition: 0.2s;}
+        .contact-card:hover { border-color: var(--gold); }
+        .contact-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.15rem; flex-shrink: 0; }
+        .ic-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); }
+        .ic-email { background: linear-gradient(135deg, var(--primary), #001f3f); }
+        .contact-text h4 { margin: 0 0 3px 0; font-size: 0.9rem; }
+        .contact-text p { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+
+        .empty-faq { text-align: center; padding: 30px 20px; color: #94a3b8; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Pusat Bantuan</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="faq-search" placeholder="Cari pertanyaan..." oninput="filterFaq()">
+            </div>
+        </div>
+
+        <div class="section-box">
+            <h3 class="group-title">Pertanyaan yang Sering Diajukan</h3>
+            <div class="faq-list" id="faq-list">
+                <div class="faq-item" data-keywords="daftar akun registrasi baru">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Bagaimana cara mendaftar akun baru?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Buka halaman daftar, isi nama, email, dan kata sandi Anda, lalu verifikasi email yang dikirimkan sebelum masuk ke akun.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-keywords="lupa kata sandi password reset">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Saya lupa kata sandi, bagaimana solusinya?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Pada halaman masuk, pilih "Lupa Kata Sandi" dan ikuti tautan yang dikirimkan ke email terdaftar Anda untuk membuat kata sandi baru.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-keywords="terbitkan karya naskah publikasi">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Bagaimana cara menerbitkan karya saya?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Naskah yang telah selesai melalui proses evaluasi dan monitoring akan tersedia untuk diterbitkan melalui menu karya pada profil Anda.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-keywords="evaluasi naskah nilai skor penilaian">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Bagaimana sistem evaluasi naskah bekerja?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Naskah Anda akan dianalisis untuk memberikan skor kesiapan beserta masukan yang membangun agar dapat terus diperbaiki sebelum diterbitkan.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-keywords="ikuti mengikuti pengikut follow">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Apa fungsi fitur "Mengikuti"?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Dengan mengikuti penulis lain, Anda akan menerima pembaruan karya dan pengumuman terbaru dari mereka langsung di beranda Anda.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-keywords="hapus akun keluar nonaktif">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Bagaimana cara menghapus atau menonaktifkan akun?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Untuk permintaan penghapusan akun, silakan hubungi tim dukungan kami melalui kontak di bawah agar dapat diproses dengan aman.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="empty-faq" id="faq-empty" style="display:none;">Tidak ada hasil yang cocok dengan pencarian Anda.</div>
+
+            <h3 class="group-title">Hubungi Kami</h3>
+            <a href="https://wa.me/628895615630" target="_blank" class="contact-card">
+                <div class="contact-icon ic-whatsapp"><i class="fa-brands fa-whatsapp"></i></div>
+                <div class="contact-text">
+                    <h4>WhatsApp Dukungan</h4>
+                    <p>Respon cepat untuk kendala teknis.</p>
+                </div>
+            </a>
+            <a href="mailto:cendekia.aksara25@gmail.com" class="contact-card">
+                <div class="contact-icon ic-email"><i class="fa-solid fa-envelope"></i></div>
+                <div class="contact-text">
+                    <h4>Email Dukungan</h4>
+                    <p>cendekia.aksara25@gmail.com</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            const wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+            if (!wasOpen) item.classList.add('open');
+        }
+
+        function filterFaq() {
+            const term = document.getElementById('faq-search').value.trim().toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            let visibleCount = 0;
+            items.forEach(item => {
+                const question = item.querySelector('.faq-question span').innerText.toLowerCase();
+                const keywords = item.dataset.keywords.toLowerCase();
+                const match = !term || question.includes(term) || keywords.includes(term);
+                item.dataset.hidden = match ? "false" : "true";
+                if (match) visibleCount++;
+            });
+            document.getElementById('faq-empty').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
