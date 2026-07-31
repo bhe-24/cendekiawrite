@@ -136,7 +136,7 @@
         .dropdown-menu {
             position: absolute; top: 50px; right: 15px; background: white;
             border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 180px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+            width: 200px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
         }
         .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
         @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
@@ -159,7 +159,7 @@
         
         <!-- NAVBAR -->
         <header class="top-navbar">
-            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-icon" onclick="goBackToHome()"><i class="fa-solid fa-arrow-left"></i></button>
             <h1 class="nav-title">Pratinjau</h1>
             <div>
                 <button class="btn-icon" onclick="toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -167,7 +167,7 @@
 
             <!-- DROPDOWN 3 TITIK -->
             <div class="dropdown-menu" id="dropdown-menu">
-                <button class="dropdown-item" onclick="archiveStory()"><i class="fa-solid fa-box-archive"></i> Arsipkan Cerita</button>
+                <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka</button>
                 <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan</button>
             </div>
         </header>
@@ -238,7 +238,8 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where, limit, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
@@ -251,17 +252,36 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
+        
+        let currentUser = null;
+        let storyDataCache = null; 
         let currentGenre = '';
-        let firstChapterId = null; // Menyimpan id bab 1 untuk tombol "Mulai Membaca"
+        let firstChapterId = null; 
+        let isSavedInLibrary = false; 
 
         if (!storyId) { window.location.href = 'index.html'; }
 
+        // CEK LOGIN
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) checkLibraryStatus(); 
+        });
+
+        // TANGGULANGI HISTORY TRAP
+        window.goBackToHome = () => {
+            if (document.referrer && !document.referrer.includes('read.html')) {
+                history.back();
+            } else {
+                window.location.replace('index.html');
+            }
+        };
+
         async function loadPreview() {
             try {
-                // Ambil Data Utama dari koleksi Publik
                 const storyRef = doc(db, "published_stories", storyId);
                 const snap = await getDoc(storyRef);
 
@@ -271,10 +291,10 @@
                 }
 
                 const data = snap.data();
+                storyDataCache = data; 
                 currentGenre = data.genre || 'Umum';
 
-                // NAMA PENULIS CERDAS: 
-                // Sistem memaksa mengambil data real-time dari koleksi 'users'
+                // Fetch Author Real Name
                 let realAuthorName = data.authorName || 'Anonim';
                 if(data.authorId) {
                     try {
@@ -283,7 +303,7 @@
                             const uData = authorSnap.data();
                             realAuthorName = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
                         }
-                    } catch(e) { console.error("Gagal menarik nama penulis:", e); }
+                    } catch(e) {}
                 }
 
                 // Render UI Header
@@ -291,7 +311,6 @@
                 document.getElementById('p-author').innerHTML = `<i class="fa-solid fa-at"></i> ${realAuthorName}`;
                 document.getElementById('p-author').href = `profil.html?uid=${data.authorId}`;
                 document.getElementById('p-desc').innerText = data.synopsis || data.description || 'Penulis belum memberikan sinopsis untuk karya ini.';
-                
                 document.getElementById('p-views').innerText = data.views || 0;
                 document.getElementById('p-votes').innerText = data.votes || 0;
 
@@ -308,7 +327,6 @@
                 }
                 document.getElementById('p-tags').innerHTML = tagsHtml;
 
-                // Load Daftar Bab dan Rekomendasi
                 loadChapters();
                 loadSimilarStories();
 
@@ -318,7 +336,6 @@
             }
         }
 
-        // LOAD DAFTAR BAB INTERAKTIF
         async function loadChapters() {
             try {
                 const qChaps = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
@@ -331,7 +348,7 @@
                     const cData = c.data();
                     if(cData.status === 'published') {
                         chapCount++;
-                        if(!firstChapterId) firstChapterId = c.id; // Simpan bab paling awal
+                        if(!firstChapterId) firstChapterId = c.id; 
                         
                         chapHtml += `
                             <div class="chapter-item-preview" onclick="window.location.href='read.html?id=${storyId}&ch=${c.id}'">
@@ -348,7 +365,6 @@
                 document.getElementById('p-chapters').innerText = chapCount; 
                 document.getElementById('p-chapter-list').innerHTML = chapHtml || '<div class="empty-state">Penulis belum merilis bab satupun.</div>';
 
-                // Set fungsi tombol Mulai Membaca agar lompat ke Bab 1 (jika ada)
                 if(firstChapterId) {
                     document.getElementById('btn-read-main').onclick = () => {
                         window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
@@ -365,7 +381,6 @@
             try {
                 const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(5));
                 const snap = await getDocs(q);
-                
                 let html = '';
                 snap.forEach(d => {
                     if(d.id !== storyId) { 
@@ -379,25 +394,18 @@
                         `;
                     }
                 });
-
                 document.getElementById('similar-container').innerHTML = html || `<div class="empty-state" style="padding:0;">Belum ada cerita lain di genre ini.</div>`;
-            } catch (e) {
-                console.error("Gagal load similar:", e);
-            }
+            } catch (e) {}
         }
 
         window.onload = loadPreview;
 
-        // Fallback jika tombol baca ditekan tapi bab belum termuat
         window.startReading = () => {
-            if(firstChapterId) {
-                window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
-            } else {
-                window.location.href = `read.html?id=${storyId}`; // Biarkan read.html yang menangani error jika kosong
-            }
+            if(firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
+            else window.location.href = `read.html?id=${storyId}`; 
         };
 
-        // --- SISTEM DROPDOWN ---
+        // --- SISTEM DROPDOWN & PUSTAKA ---
         window.toggleMenu = () => {
             document.getElementById('dropdown-menu').classList.toggle('active');
             event.stopPropagation();
@@ -407,18 +415,64 @@
             document.getElementById('dropdown-menu').classList.remove('active');
         });
 
-        window.archiveStory = () => {
-            Swal.fire({
-                title: 'Arsipkan?',
-                text: 'Algoritma akan berhenti merekomendasikan karya serupa jika Anda mengarsipkan cerita ini.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Arsipkan',
-                confirmButtonColor: '#003366',
-                cancelButtonColor: '#64748b'
-            }).then((res) => {
-                if(res.isConfirmed) { Swal.fire({toast:true, position:'top', icon:'success', title:'Cerita diarsipkan.', showConfirmButton:false, timer:1500}); }
-            });
+        // Cek Status Pustaka
+        async function checkLibraryStatus() {
+            try {
+                const libSnap = await getDoc(doc(db, "users", currentUser.uid, "library", storyId));
+                if (libSnap.exists() && libSnap.data().isArchived === false) {
+                    isSavedInLibrary = true;
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan di Pustaka`;
+                }
+            } catch(e) {}
+        }
+
+        // FUNGSI TAMBAH KE PUSTAKA
+        window.toggleLibrary = async () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+            
+            if (!currentUser) {
+                Swal.fire({
+                    title: 'Login Diperlukan',
+                    text: 'Silakan masuk ke akun Anda untuk menyimpan cerita ke Pustaka pribadi.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login Sekarang',
+                    confirmButtonColor: '#003366'
+                }).then((res) => { if(res.isConfirmed) window.location.href = 'login.html'; });
+                return;
+            }
+
+            if (!storyDataCache) return; // Mencegah klik cepat jika data belum load
+
+            try {
+                const libRef = doc(db, "users", currentUser.uid, "library", storyId);
+                
+                if (isSavedInLibrary) {
+                    // Jika sudah ada, hapus dari pustaka
+                    await deleteDoc(libRef);
+                    isSavedInLibrary = false;
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka`;
+                    Swal.fire({toast:true, position:'top', icon:'info', title:'Dihapus dari Pustaka', showConfirmButton:false, timer:1500});
+                } else {
+                    // Jika belum ada, masukkan ke pustaka (simpan seperti history awal)
+                    await setDoc(libRef, {
+                        storyId: storyId,
+                        title: storyDataCache.title || 'Tanpa Judul',
+                        coverBase64: storyDataCache.coverBase64 || null,
+                        lastChapterId: firstChapterId || null,
+                        lastChapterTitle: 'Belum dibaca',
+                        progressPercentage: 0,
+                        isArchived: false,
+                        lastReadAt: serverTimestamp()
+                    });
+                    isSavedInLibrary = true;
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan di Pustaka`;
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Ditambahkan ke Pustaka', showConfirmButton:false, timer:1500});
+                }
+            } catch (error) {
+                console.error("Gagal update pustaka:", error);
+                Swal.fire('Error', 'Gagal memperbarui pustaka. Coba lagi nanti.', 'error');
+            }
         };
 
         window.reportStory = () => {
