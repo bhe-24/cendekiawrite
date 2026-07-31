@@ -50,192 +50,208 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- MOBILE FIRST LOCK UNTUK LAPTOP/PC --- */
+        /* --- 2. WRAPPER & RESPONSIVE GRID --- */
         .app-wrapper {
             width: 100%;
-            max-width: 480px; /* Kunci ukuran maksimal selebar HP */
+            max-width: 1200px; /* Lebar maksimal untuk Laptop/PC */
             margin: 0 auto;
-            background-color: var(--bg-color);
-            min-height: 100vh;
+            flex: 1;
             display: flex; flex-direction: column;
-            position: relative;
         }
 
-        @media (min-width: 768px) {
-            body { background-color: #e2e8f0; } /* Background luar abu-abu jika di PC */
-            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
-            .top-navbar, .search-modal { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
-        }
-
-        /* --- 2. FIXED NAVBAR --- */
+        /* --- 3. FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: center;
+        }
+        .navbar-content {
+            width: 100%; max-width: 1200px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 10px 20px;
         }
 
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; }
-        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.3rem; color: white; margin: 0; letter-spacing: 0.5px; }
 
         .nav-actions { display: flex; align-items: center; gap: 15px; }
         .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;}
         .btn-search:hover { color: var(--gold); }
         .btn-login {
             background: linear-gradient(135deg, var(--gold), #b45309);
-            color: white; border: none; padding: 6px 16px; border-radius: 50px;
-            font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            color: white; border: none; padding: 8px 20px; border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer;
             box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s;
         }
-        .btn-login:active { transform: scale(0.95); }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
-        /* --- 3. BANNERS (HORIZONTAL SCROLL) --- */
+        /* --- 4. BANNERS --- */
         .banner-container {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: 15px; padding: 15px 20px; scrollbar-width: none;
+            gap: 20px; padding: 20px; scrollbar-width: none;
         }
         .banner-container::-webkit-scrollbar { display: none; }
         
         .banner-card {
-            min-width: 85vw; max-width: 400px; height: 160px;
+            min-width: 85vw; height: 180px;
             border-radius: 16px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center;
             position: relative; overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a;
         }
         .banner-card::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
-        .banner-content { position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2; }
+        .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
 
-        /* --- 4. QUICK ACTION ICONS --- */
+        /* --- 5. QUICK ACTION ICONS --- */
         .quick-actions {
-            display: flex; overflow-x: auto; gap: 20px; padding: 10px 20px 20px 20px;
-            scrollbar-width: none;
+            display: flex; overflow-x: auto; gap: 20px; padding: 10px 20px 30px 20px;
+            scrollbar-width: none; justify-content: flex-start;
         }
         .quick-actions::-webkit-scrollbar { display: none; }
         
         .action-item {
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-            flex-shrink: 0; cursor: pointer; width: 65px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            flex-shrink: 0; cursor: pointer; width: 75px; text-decoration: none;
         }
         .action-icon {
-            width: 50px; height: 50px; border-radius: 50%;
+            width: 55px; height: 55px; border-radius: 50%;
             background: white; border: 1px solid #e2e8f0;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.3rem; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: 0.2s;
+            font-size: 1.4rem; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .action-item:hover .action-icon { background: var(--bg-color); transform: scale(1.05); }
-        .action-item span { font-size: 0.75rem; font-weight: 500; text-align: center; color: var(--text-dark); line-height: 1.2; }
+        .action-item:hover .action-icon { background: var(--nav-bg); color: white; transform: scale(1.1); }
+        .action-item span { font-size: 0.8rem; font-weight: 600; text-align: center; color: var(--text-dark); }
 
-        /* --- 5. STORY SECTIONS --- */
-        .section-container { margin-bottom: 30px; }
+        /* --- 6. STORY SECTIONS --- */
+        .section-container { margin-bottom: 40px; }
         .section-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; margin-bottom: 12px;
+            padding: 0 20px; margin-bottom: 15px;
         }
         .section-header h2 {
-            font-family: 'Playfair Display', serif; font-size: 1.2rem;
+            font-family: 'Playfair Display', serif; font-size: 1.4rem;
             color: var(--nav-bg); margin: 0; font-weight: 700;
         }
-        .section-header a { font-size: 0.8rem; color: var(--primary); font-weight: 600; text-decoration: none; }
+        .section-header a { font-size: 0.9rem; color: var(--primary); font-weight: 600; text-decoration: none; transition: 0.2s;}
+        .section-header a:hover { color: var(--gold); }
 
         .story-scroll {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: 15px; padding: 0 20px 15px 20px; scrollbar-width: none; min-height: 150px;
+            gap: 20px; padding: 0 20px 20px 20px; scrollbar-width: none; min-height: 150px;
         }
         .story-scroll::-webkit-scrollbar { display: none; }
 
-        .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
+        .story-card { width: 130px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; }
+        .story-card:hover { transform: translateY(-5px); }
         .story-cover {
-            width: 100%; height: 180px; border-radius: 12px;
+            width: 100%; height: 190px; border-radius: 12px;
             background-size: cover; background-position: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1); margin-bottom: 10px; border: 1px solid #e2e8f0;
             background-color: #cbd5e1;
         }
-        .story-title { font-size: 0.85rem; font-weight: 700; margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
-        .story-meta { font-size: 0.7rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
+        .story-title { font-size: 0.9rem; font-weight: 700; margin: 0 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
+        .story-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
 
         /* Lanjutkan Membaca */
-        .continue-card { width: 260px; display: flex; gap: 12px; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); flex-shrink: 0; scroll-snap-align: start; cursor: pointer;}
-        .continue-cover { width: 60px; height: 90px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
+        .continue-card { width: 280px; display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
+        .continue-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .continue-cover { width: 70px; height: 100px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; background-color: #cbd5e1;}
         .continue-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden;}
-        .continue-info h3 { font-size: 0.9rem; margin: 0 0 5px 0; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
-        .continue-info p { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .progress-bar { width: 100%; height: 4px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .continue-info h3 { font-size: 1rem; margin: 0 0 6px 0; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; color: var(--primary);}
+        .continue-info p { font-size: 0.8rem; color: var(--text-gray); margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); }
 
-        .empty-state { font-size: 0.85rem; color: #94a3b8; text-align: center; width: 100%; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; }
+        .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
 
-        /* --- 6. CTA BOTTOM & FOOTER --- */
+        /* --- 7. CTA BOTTOM & FOOTER --- */
         .cta-write {
-            margin: 10px 20px 20px 20px; padding: 30px 20px;
+            margin: 20px; padding: 40px 30px;
             background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
-            border-radius: 16px; text-align: center; color: white;
-            box-shadow: 0 10px 25px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden;
+            border-radius: 24px; text-align: center; color: white;
+            box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden;
         }
         .cta-write::after {
             content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: -20px; bottom: -20px; font-size: 8rem;
+            position: absolute; right: -20px; bottom: -20px; font-size: 12rem;
             color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
         }
-        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
-        .cta-write p { font-size: 0.85rem; color: #cbd5e1; margin: 0 0 20px 0; line-height: 1.5; position: relative; z-index: 2;}
+        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
+        .cta-write p { font-size: 0.95rem; color: #cbd5e1; margin: 0 auto 25px auto; max-width: 600px; line-height: 1.6; position: relative; z-index: 2;}
         .btn-cta {
-            background: var(--gold); color: white; border: none; padding: 10px 25px;
-            border-radius: 50px; font-family: 'Poppins'; font-size: 0.9rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-            display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2;
+            background: var(--gold); color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+            display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s;
         }
+        .btn-cta:hover { background: #b45309; transform: translateY(-3px); }
 
         .app-footer {
-            margin-top: auto; padding: 20px; text-align: center;
-            border-top: 1px solid #e2e8f0; background: white;
+            margin-top: auto; padding: 30px 20px; text-align: center;
+            background: var(--nav-bg); color: white;
         }
-        .app-footer p { margin: 0; font-size: 0.75rem; color: var(--text-gray); }
-        .app-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
-        .app-footer .version { font-size: 0.7rem; color: #94a3b8; margin-top: 5px; display: block; }
+        .app-footer p { margin: 0 0 10px 0; font-size: 0.85rem; color: #cbd5e1; }
+        .app-footer a { color: var(--gold); text-decoration: none; font-weight: 600; margin: 0 10px; transition: 0.2s;}
+        .app-footer a:hover { color: white; }
+        .app-footer .version { font-size: 0.75rem; color: #64748b; margin-top: 15px; display: block; }
 
-        /* --- 7. SEARCH OVERLAY MODAL --- */
+        /* --- 8. SEARCH OVERLAY MODAL --- */
         .search-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 2000; display: flex; flex-direction: column;
+            background: var(--bg-color); z-index: 2000; display: flex; flex-direction: column;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .search-modal.active { transform: translateY(0); }
         .search-header {
             display: flex; align-items: center; gap: 15px; padding: 15px 20px;
-            border-bottom: 1px solid #e2e8f0; background: var(--bg-color);
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .btn-close-search { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; }
+        .btn-close-search { background: none; border: none; font-size: 1.4rem; color: var(--text-dark); cursor: pointer; }
         .search-input-box {
-            flex: 1; display: flex; align-items: center; background: white;
-            border: 1px solid #cbd5e1; border-radius: 50px; padding: 8px 15px;
+            flex: 1; display: flex; align-items: center; background: #f1f5f9;
+            border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 20px;
         }
-        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.9rem; margin-left: 8px; }
-        .search-results { flex: 1; overflow-y: auto; padding: 20px; background: white; }
+        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 1rem; margin-left: 10px; background: transparent;}
+        .search-results { flex: 1; overflow-y: auto; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
 
         /* PWA Install Button */
         #install-btn {
-            display: none; width: calc(100% - 40px); margin: 0 20px 20px 20px;
-            background: #10b981; color: white; border: none; padding: 12px;
-            border-radius: 12px; font-family: 'Poppins'; font-weight: 600; font-size: 0.9rem;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-            text-align: center;
+            display: none; width: calc(100% - 40px); margin: 0 auto 30px auto; max-width: 600px;
+            background: #10b981; color: white; border: none; padding: 15px;
+            border-radius: 16px; font-family: 'Poppins'; font-weight: 600; font-size: 1rem;
+            cursor: pointer; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+            text-align: center; transition: 0.3s;
         }
+        #install-btn:hover { background: #059669; transform: translateY(-2px); }
         #install-btn.show { display: block; }
+
+        /* --- 9. DESKTOP / LAPTOP RESPONSIVE TWEAKS --- */
+        @media (min-width: 768px) {
+            .banner-card { min-width: 500px; height: 220px; }
+            .banner-content h3 { font-size: 1.4rem; }
+            .quick-actions { justify-content: center; gap: 40px; padding-top: 20px; padding-bottom: 40px;}
+            .action-icon { width: 70px; height: 70px; font-size: 1.8rem; }
+            .action-item span { font-size: 0.9rem; }
+            .story-card { width: 160px; }
+            .story-cover { height: 240px; }
+            .continue-card { width: 320px; padding: 20px;}
+            .continue-cover { width: 80px; height: 120px; }
+            .cta-write { margin: 20px auto 40px auto; max-width: 900px; padding: 60px 40px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="app-wrapper">
-        <!-- NAVBAR -->
-        <header class="top-navbar">
+    <!-- NAVBAR -->
+    <header class="top-navbar">
+        <div class="navbar-content">
             <div class="nav-brand">
                 <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
                 <h1>Cendekia</h1>
@@ -244,35 +260,38 @@
                 <button class="btn-search" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
             </div>
-        </header>
+        </div>
+    </header>
 
+    <div class="app-wrapper">
+        
         <!-- BANNERS DINAMIS -->
         <div class="banner-container" id="banner-container">
             <div class="empty-state" id="banner-loading" style="border:none; margin-top:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Banner...</div>
         </div>
 
-        <!-- QUICK ACTIONS ICONS -->
+        <!-- QUICK ACTIONS ICONS (LINK ASLI) -->
         <div class="quick-actions">
-            <div class="action-item" onclick="requireLogin('menulis cerita')">
+            <a href="#" class="action-item" onclick="requireLogin('menulis', 'menulis.html')">
                 <div class="action-icon"><i class="fa-solid fa-pen-nib" style="color: #0ea5e9;"></i></div>
                 <span>Menulis</span>
-            </div>
-            <div class="action-item" onclick="window.location.href='genre.html'">
+            </a>
+            <a href="genre.html" class="action-item">
                 <div class="action-icon"><i class="fa-solid fa-layer-group" style="color: #8b5cf6;"></i></div>
                 <span>Genre</span>
-            </div>
-            <div class="action-item" onclick="requireLogin('membuka pustaka')">
+            </a>
+            <a href="#" class="action-item" onclick="requireLogin('pustaka', 'pustaka.html')">
                 <div class="action-icon"><i class="fa-solid fa-book-bookmark" style="color: #f59e0b;"></i></div>
                 <span>Pustaka</span>
-            </div>
-            <div class="action-item" onclick="requireLogin('membuka notifikasi')">
+            </a>
+            <a href="#" class="action-item" onclick="requireLogin('notifikasi', 'notifikasi.html')">
                 <div class="action-icon"><i class="fa-solid fa-bell" style="color: #ef4444;"></i></div>
                 <span>Notifikasi</span>
-            </div>
-            <div class="action-item" onclick="requireLogin('membuka profil')">
+            </a>
+            <a href="#" class="action-item" onclick="requireLogin('profil', 'profil.html')">
                 <div class="action-icon"><i class="fa-solid fa-user" style="color: #10b981;"></i></div>
                 <span>Profil</span>
-            </div>
+            </a>
         </div>
 
         <!-- SECTION: LANJUTKAN MEMBACA -->
@@ -307,19 +326,22 @@
         </div>
 
         <!-- TOMBOL PWA INSTALL -->
-        <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Cendekia</button>
+        <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Cendekia Aksara</button>
 
         <!-- CTA MULAI MENULIS -->
         <div class="cta-write">
             <h2>Punya Cerita Menarik?</h2>
             <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
-            <button class="btn-cta" onclick="requireLogin('mulai menulis karya')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis</button>
+            <button class="btn-cta" onclick="requireLogin('menulis', 'menulis.html')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis Karya</button>
         </div>
 
-        <!-- FOOTER -->
+        <!-- FOOTER PROFESIONAL -->
         <footer class="app-footer">
-            <p>&copy; 2026 Cendekia Aksara. Hak Cipta Dilindungi.</p>
-            <p style="margin-top: 5px;"><a href="#" onclick="requireLogin('melihat Kebijakan Privasi')">Kebijakan Privasi</a> &middot; <a href="#" onclick="requireLogin('melihat Syarat & Ketentuan')">Syarat & Ketentuan</a></p>
+            <p>&copy; 2026 Cendekia Aksara. Seluruh Hak Cipta Dilindungi.</p>
+            <p>
+                <a href="kebijakan-privasi.html">Kebijakan Privasi</a> &middot; 
+                <a href="syarat-ketentuan.html">Syarat & Ketentuan</a>
+            </p>
             <span class="version">Versi Web Publik v1.0.0</span>
         </footer>
     </div>
@@ -334,9 +356,9 @@
             </div>
         </div>
         <div class="search-results" id="search-results">
-            <div style="text-align:center; padding: 40px 20px; color: #94a3b8;">
-                <i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i>
-                <p>Ketikkan kata kunci untuk mulai mencari karya menakjubkan di Cendekia.</p>
+            <div style="text-align:center; padding: 60px 20px; color: #94a3b8;">
+                <i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 20px; color:#cbd5e1;"></i>
+                <p style="font-size: 1.1rem;">Ketikkan kata kunci untuk mulai mencari karya menakjubkan di Cendekia.</p>
             </div>
         </div>
     </div>
@@ -365,19 +387,17 @@
         const auth = getAuth(app);
 
         let isUserLoggedIn = false;
-        let allPublishedStories = []; // Cache untuk pencarian
+        let allPublishedStories = []; // Cache pencarian
 
         // 1. Cek Status Login
         onAuthStateChanged(auth, (user) => {
             const btnLogin = document.getElementById('btn-login-header');
             if (user) {
                 isUserLoggedIn = true;
-                // Identifikasi akun pada OneSignal
-                if(window.OneSignal) {
-                    OneSignal.login(user.uid);
-                }
-                btnLogin.innerText = "Dasbor";
-                btnLogin.onclick = () => window.location.href = "dasbor.html"; 
+                if(window.OneSignal) OneSignal.login(user.uid);
+                
+                btnLogin.innerText = "Profil";
+                btnLogin.onclick = () => window.location.href = "profil.html"; 
                 loadContinueReading(user.uid);
             } else {
                 isUserLoggedIn = false;
@@ -386,7 +406,7 @@
             }
         });
 
-        // 2. Fungsi Tarik Data
+        // 2. Tarik Data Utama
         async function fetchAllData() {
             try {
                 // Load Banners
@@ -401,10 +421,10 @@
                         const data = doc.data();
                         const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
                         htmlBanner += `
-                            <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};" onclick="requireLogin('mengakses event')">
+                            <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};">
                                 <div class="banner-content">
-                                    <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color: white;">${data.tag || 'INFO'}</span>
-                                    <h3 style="margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'Playfair Display', serif;">${data.title}</h3>
+                                    <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; color: white;">${data.tag || 'INFO'}</span>
+                                    <h3 style="margin: 8px 0 0 0; font-family: 'Playfair Display', serif;">${data.title}</h3>
                                 </div>
                             </div>
                         `;
@@ -412,17 +432,15 @@
                     bannerContainer.innerHTML = htmlBanner;
                 }
 
-                // Load Stories for Recommendations, Editor Picks, and Search Cache
+                // Load Stories
                 const qStories = query(collection(db, "published_stories"), orderBy("views", "desc"));
                 const snapStories = await getDocs(qStories);
                 allPublishedStories = [];
                 
                 const recContainer = document.getElementById('rekomendasi-container');
                 const edContainer = document.getElementById('editor-container');
-                let recHtml = '';
-                let edHtml = '';
-                let recCount = 0;
-                let edCount = 0;
+                let recHtml = ''; let edHtml = '';
+                let recCount = 0; let edCount = 0;
 
                 snapStories.forEach(doc => {
                     const data = { id: doc.id, ...doc.data() };
@@ -430,17 +448,17 @@
                     const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                     
                     const cardHtml = `
-                        <div class="story-card" onclick="requireLogin('membaca cerita ini')">
+                        <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
                             <div class="story-cover" style="background-image: ${coverBg};"></div>
                             <h3 class="story-title">${data.title}</h3>
                             <div class="story-meta"><i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</div>
                         </div>
                     `;
 
-                    if (recCount < 6) { recHtml += cardHtml; recCount++; }
-                    if (data.isEditorChoice && edCount < 4) {
+                    if (recCount < 10) { recHtml += cardHtml; recCount++; }
+                    if (data.isEditorChoice && edCount < 6) {
                         edHtml += `
-                            <div class="story-card" onclick="requireLogin('membaca cerita ini')">
+                            <div class="story-card" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
                                 <div class="story-cover" style="background-image: ${coverBg}; border-color: var(--gold);"></div>
                                 <h3 class="story-title">${data.title}</h3>
                                 <div class="story-meta"><i class="fa-solid fa-award" style="color:var(--primary)"></i> Pilihan Editor</div>
@@ -462,7 +480,7 @@
             const section = document.getElementById('continue-section');
             const container = document.getElementById('continue-container');
             try {
-                const q = query(collection(db, "users", uid, "read_history"), orderBy("lastReadAt", "desc"), limit(2));
+                const q = query(collection(db, "users", uid, "read_history"), orderBy("lastReadAt", "desc"), limit(4));
                 const snap = await getDocs(q);
                 if (!snap.empty) {
                     section.style.display = 'block';
@@ -488,13 +506,12 @@
 
         window.onload = () => { fetchAllData(); };
 
-        // --- FUNGSI PENCARIAN (SEARCH) ---
+        // --- FUNGSI PENCARIAN & MODAL ---
         window.toggleSearch = () => {
             const modal = document.getElementById('search-modal');
             modal.classList.toggle('active');
             if(modal.classList.contains('active')) {
                 document.getElementById('search-input').focus();
-                document.getElementById('search-results').innerHTML = `<div style="text-align:center; padding: 40px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i><p>Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
             }
         };
 
@@ -503,7 +520,7 @@
             const container = document.getElementById('search-results');
             
             if (queryText === "") {
-                container.innerHTML = `<div style="text-align:center; padding: 40px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 3rem; margin-bottom: 15px; color:#cbd5e1;"></i><p>Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 60px 20px; color: #94a3b8;"><i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 20px; color:#cbd5e1;"></i><p style="font-size: 1.1rem;">Ketikkan kata kunci untuk mencari cerita, penulis, atau genre.</p></div>`;
                 return;
             }
 
@@ -514,20 +531,20 @@
             );
 
             if (results.length === 0) {
-                container.innerHTML = `<div class="empty-state">Maaf, cerita "${queryText}" tidak ditemukan.</div>`;
+                container.innerHTML = `<div class="empty-state" style="margin-top:20px;">Maaf, cerita atau penulis "${queryText}" tidak ditemukan.</div>`;
                 return;
             }
 
-            let html = '<div style="display:flex; flex-direction:column; gap:15px;">';
+            let html = '<div style="display:flex; flex-direction:column; gap:20px;">';
             results.forEach(data => {
                 const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                 html += `
-                    <div style="display:flex; gap:15px; cursor:pointer; padding-bottom:15px; border-bottom:1px solid #e2e8f0;" onclick="requireLogin('membaca cerita ini')">
-                        <div style="width: 50px; height: 75px; border-radius: 6px; background-color:#cbd5e1; background-image: ${coverBg}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
-                        <div>
-                            <h4 style="margin: 0 0 5px 0; font-size: 0.95rem; color: var(--primary);">${data.title}</h4>
-                            <p style="margin: 0 0 5px 0; font-size: 0.75rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
-                            <span style="font-size:0.65rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600;">${data.genre || 'Umum'}</span>
+                    <div style="display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: 0.2s;" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'">
+                        <div style="width: 65px; height: 95px; border-radius: 8px; background-color:#cbd5e1; background-image: ${coverBg}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 1.05rem; color: var(--primary);">${data.title}</h4>
+                            <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-gray);"><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
+                            <div><span style="font-size:0.7rem; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1;">${data.genre || 'Umum'}</span></div>
                         </div>
                     </div>
                 `;
@@ -536,34 +553,30 @@
             container.innerHTML = html;
         };
 
-        // --- FUNGSI INTERSEP GLOBAL ---
+        // --- SISTEM LINK DINAMIS & INTERSEP ---
         window.goToLogin = () => { window.location.href = 'login.html'; };
 
-        window.requireLogin = (action) => {
+        // Fungsi canggih: Menerima "Nama Aksi" dan "URL Tujuan Sesungguhnya"
+        window.requireLogin = (actionName, targetUrl) => {
             if(isUserLoggedIn) {
-                // Jika sudah login namun ini adalah action khusus yang belum dibuat halamannya
-                if(['menulis cerita', 'membuka pustaka', 'membuka notifikasi', 'membuka profil', 'mulai menulis karya'].includes(action)) {
-                    Swal.fire('Fitur Segera Hadir', 'Halaman ' + action + ' sedang dalam tahap pengembangan.', 'info');
-                } else {
-                    // Jika klik cerita/genre, izinkan tembus. Di pengembangan lanjut akan diarahkan ke detail cerita.
-                    Swal.fire('Fitur Sedang Dibangun', 'Akan dialihkan ke rute cerita/genre terkait...', 'success');
-                }
-                return;
+                window.location.href = targetUrl; // Langsung tembus jika sudah login
+            } else {
+                Swal.fire({
+                    title: 'Akses Terbatas',
+                    text: `Silakan masuk atau buat akun terlebih dahulu untuk ${actionName}. Gratis dan cepat!`,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#003366',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Masuk / Daftar',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        goToLogin();
+                    }
+                });
             }
-
-            Swal.fire({
-                title: 'Akses Terbatas',
-                text: `Silakan masuk atau buat akun terlebih dahulu untuk ${action}. Gratis dan cepat!`,
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#003366',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Masuk / Daftar',
-                cancelButtonText: 'Nanti Saja',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) { goToLogin(); }
-            });
         };
 
         // --- PWA INSTALLATION LOGIC ---
