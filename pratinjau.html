@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detail Cerita - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .btn-icon { background: none; border: none; color: var(--text-dark); font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .btn-icon:hover { color: var(--primary); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: var(--primary); margin: 0; }
+
+        /* --- HERO PREVIEW --- */
+        .preview-header {
+            position: relative;
+            background: linear-gradient(to bottom, #0f172a 0%, var(--primary) 100%);
+            padding: 40px 20px 30px 20px; text-align: center; color: white;
+            border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+        }
+        /* Efek latar blur dari cover */
+        .cover-blur-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            opacity: 0.2; filter: blur(15px); z-index: 1; pointer-events: none;
+        }
+
+        .cover-image {
+            width: 130px; height: 190px; margin: 0 auto 15px auto;
+            border-radius: 12px; background-size: cover; background-position: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2);
+            position: relative; z-index: 2; background-color: #cbd5e1;
+        }
+
+        .story-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; position: relative; z-index: 2; line-height: 1.2;}
+        .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 15px 0; position: relative; z-index: 2; text-decoration: none;}
+        .story-author:hover { color: var(--gold); }
+
+        .stats-row {
+            display: flex; justify-content: center; gap: 25px; margin-bottom: 20px;
+            position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;
+        }
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-item i { font-size: 1.2rem; color: var(--gold); margin-bottom: 5px; }
+        .stat-val { font-size: 1.1rem; font-weight: 700; line-height: 1;}
+        .stat-lbl { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;}
+
+        .btn-read {
+            background: var(--gold); color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; width: 100%; justify-content: center; transition: 0.3s;
+        }
+        .btn-read:hover { background: #b45309; transform: translateY(-2px); }
+
+        /* --- SYNOPSIS & TAGS --- */
+        .info-section { padding: 25px 20px; background: white; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
+        
+        .synopsis-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; text-align: justify; white-space: pre-wrap;}
+        
+        .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .badge-genre { background: var(--nav-bg); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .badge-tag { background: #f1f5f9; color: var(--primary); border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+
+        /* --- REKOMENDASI --- */
+        .similar-section { padding: 25px 20px; background: var(--bg-color); }
+        .story-scroll {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            gap: 15px; padding-bottom: 15px; scrollbar-width: none;
+        }
+        .story-scroll::-webkit-scrollbar { display: none; }
+        .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
+        .story-cover-sim {
+            width: 100%; height: 180px; border-radius: 12px; background-size: cover; background-position: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0; background-color: #cbd5e1;
+        }
+        .story-title-sim { font-size: 0.85rem; font-weight: 700; margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
+
+        /* --- DROPDOWN 3 TITIK --- */
+        .dropdown-menu {
+            position: absolute; top: 50px; right: 15px; background: white;
+            border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 180px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+        }
+        .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
+        @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+        
+        .dropdown-item {
+            padding: 12px 15px; font-size: 0.85rem; color: var(--text-dark);
+            background: none; border: none; text-align: left; font-family: 'Poppins';
+            cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s;
+        }
+        .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Data Cerita...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Pratinjau</h1>
+            <div>
+                <button class="btn-icon" onclick="toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            </div>
+
+            <!-- DROPDOWN 3 TITIK -->
+            <div class="dropdown-menu" id="dropdown-menu">
+                <button class="dropdown-item" onclick="archiveStory()"><i class="fa-solid fa-box-archive"></i> Arsipkan Cerita</button>
+                <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan</button>
+            </div>
+        </header>
+
+        <!-- HERO BAGIAN ATAS -->
+        <div class="preview-header">
+            <div class="cover-blur-bg" id="blur-bg"></div>
+            <div class="cover-image" id="p-cover"></div>
+            
+            <h2 class="story-title" id="p-title">Judul Cerita</h2>
+            <a href="#" class="story-author" id="p-author"><i class="fa-solid fa-pen-nib"></i> Memuat...</a>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <i class="fa-solid fa-eye"></i>
+                    <span class="stat-val" id="p-views">0</span>
+                    <span class="stat-lbl">Dibaca</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span class="stat-val" id="p-votes">0</span>
+                    <span class="stat-lbl">Vote</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-list-ol"></i>
+                    <span class="stat-val" id="p-chapters">0</span>
+                    <span class="stat-lbl">Bab</span>
+                </div>
+            </div>
+
+            <button class="btn-read" onclick="startReading()"><i class="fa-solid fa-book-open"></i> Mulai Membaca</button>
+        </div>
+
+        <!-- SINOPSIS & TAGS -->
+        <div class="info-section">
+            <h3 class="section-title">Sinopsis</h3>
+            <p class="synopsis-text" id="p-desc">Memuat deskripsi cerita...</p>
+            
+            <div class="tags-container" id="p-tags">
+                <!-- Diisi oleh JS -->
+            </div>
+        </div>
+
+        <!-- REKOMENDASI SERUPA -->
+        <div class="similar-section">
+            <h3 class="section-title">Mungkin Anda Suka</h3>
+            <div class="story-scroll" id="similar-container">
+                <div style="font-size: 0.8rem; color: #94a3b8;">Memuat rekomendasi...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('id');
+        let currentGenre = '';
+
+        if (!storyId) { window.location.href = 'index.html'; }
+
+        async function loadPreview() {
+            try {
+                // Ambil Data Utama dari koleksi Publik
+                const storyRef = doc(db, "published_stories", storyId);
+                const snap = await getDoc(storyRef);
+
+                if (!snap.exists()) {
+                    Swal.fire('Tidak Ditemukan', 'Cerita tidak ditemukan atau telah ditarik oleh penulis.', 'error').then(()=>window.location.href='index.html');
+                    return;
+                }
+
+                const data = snap.data();
+                currentGenre = data.genre || 'Umum';
+
+                // Render UI
+                document.getElementById('p-title').innerText = data.title || 'Tanpa Judul';
+                document.getElementById('p-author').innerHTML = `<i class="fa-solid fa-pen-nib"></i> ${data.authorName || 'Anonim'}`;
+                document.getElementById('p-author').href = `profil.html?uid=${data.authorId}`;
+                document.getElementById('p-desc').innerText = data.synopsis || data.description || 'Penulis belum memberikan sinopsis untuk karya ini.';
+                
+                document.getElementById('p-views').innerText = data.views || 0;
+                document.getElementById('p-votes').innerText = data.votes || 0;
+                document.getElementById('p-chapters').innerText = data.chapterCount || 1; // Asumsi ada 1 jika tidak ada data
+
+                if (data.coverBase64) {
+                    const coverUrl = `url('${data.coverBase64}')`;
+                    document.getElementById('p-cover').style.backgroundImage = coverUrl;
+                    document.getElementById('blur-bg').style.backgroundImage = coverUrl;
+                }
+
+                // Render Tags & Genre
+                let tagsHtml = `<span class="badge-genre">${currentGenre}</span>`;
+                if (data.tags && Array.isArray(data.tags)) {
+                    data.tags.forEach(t => { tagsHtml += `<span class="badge-tag">#${t}</span>`; });
+                }
+                document.getElementById('p-tags').innerHTML = tagsHtml;
+
+                // Load Similar Stories
+                loadSimilarStories();
+
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            }
+        }
+
+        async function loadSimilarStories() {
+            try {
+                const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(5));
+                const snap = await getDocs(q);
+                
+                let html = '';
+                snap.forEach(d => {
+                    if(d.id !== storyId) { // Jangan tampilkan cerita yang sedang dilihat
+                        const sd = d.data();
+                        const bg = sd.coverBase64 ? `url('${sd.coverBase64}')` : 'none';
+                        html += `
+                            <div class="story-card" onclick="window.location.href='pratinjau.html?id=${d.id}'">
+                                <div class="story-cover-sim" style="background-image: ${bg};"></div>
+                                <h3 class="story-title-sim">${sd.title}</h3>
+                            </div>
+                        `;
+                    }
+                });
+
+                document.getElementById('similar-container').innerHTML = html || `<div style="font-size:0.8rem; color:#94a3b8; padding:10px;">Belum ada cerita lain di genre ini.</div>`;
+            } catch (e) {
+                console.error("Gagal load similar:", e);
+            }
+        }
+
+        window.onload = loadPreview;
+
+        window.startReading = () => {
+            window.location.href = `read.html?id=${storyId}`;
+        };
+
+        // --- SISTEM DROPDOWN ---
+        window.toggleMenu = () => {
+            document.getElementById('dropdown-menu').classList.toggle('active');
+            event.stopPropagation();
+        };
+
+        document.addEventListener('click', () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+        });
+
+        window.archiveStory = () => {
+            Swal.fire({
+                title: 'Arsipkan?',
+                text: 'Algoritma akan berhenti merekomendasikan karya serupa jika Anda mengarsipkan cerita ini.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Arsipkan'
+            }).then((res) => {
+                if(res.isConfirmed) { Swal.fire('Berhasil', 'Cerita ditambahkan ke arsip.', 'success'); }
+            });
+        };
+
+        window.reportStory = () => {
+            Swal.fire({
+                title: 'Laporkan Cerita',
+                input: 'select',
+                inputOptions: { 'plagiasi': 'Plagiasi / Pelanggaran Hak Cipta', 'toksik': 'Konten Kekerasan / Toksik', 'spam': 'Spam / Iklan' },
+                inputPlaceholder: 'Pilih alasan...',
+                showCancelButton: true,
+                confirmButtonText: 'Kirim Laporan'
+            }).then((res) => {
+                if(res.isConfirmed && res.value) { Swal.fire('Terkirim', 'Laporan Anda akan ditinjau oleh Admin.', 'success'); }
+            });
+        };
+    </script>
+</body>
+</html>
