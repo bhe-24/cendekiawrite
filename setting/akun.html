@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keamanan Akun - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .section-box { padding: 20px; }
+        .card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 20px; }
+        .card h3 { font-size: 0.95rem; font-weight: 700; margin: 0 0 4px 0; color: var(--text-dark); }
+        .card p.desc { font-size: 0.78rem; color: var(--text-gray); margin: 0 0 15px 0; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-gray); margin-bottom: 6px; }
+        .form-group input {
+            width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: 'Poppins'; font-size: 0.88rem; color: var(--text-dark);
+        }
+        .form-group input:focus { border-color: var(--gold); background: white; box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+
+        .btn-action {
+            width: 100%; padding: 12px; border-radius: 10px; border: none;
+            background: var(--primary); color: white; font-family: 'Poppins'; font-weight: 600;
+            font-size: 0.88rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-action:hover { background: #001f3f; }
+        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .current-email-box { background: #f1f5f9; border-radius: 10px; padding: 10px 14px; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;}
+        .current-email-box i { color: var(--gold); }
+
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Data Akun...</div>
+        </div>
+
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Keamanan Akun</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="section-box">
+            <div class="current-email-box">
+                <i class="fa-solid fa-envelope"></i>
+                <span id="current-email">Memuat...</span>
+            </div>
+
+            <div class="card">
+                <h3>Ubah Email</h3>
+                <p class="desc">Perubahan email memerlukan verifikasi kata sandi saat ini.</p>
+                <div class="form-group">
+                    <label>Email Baru</label>
+                    <input type="email" id="new-email" placeholder="email.baru@contoh.com">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi Saat Ini</label>
+                    <input type="password" id="pass-for-email" placeholder="Masukkan kata sandi Anda">
+                </div>
+                <button class="btn-action" id="btn-change-email" onclick="changeEmail()">Perbarui Email</button>
+            </div>
+
+            <div class="card">
+                <h3>Ganti Kata Sandi</h3>
+                <p class="desc">Gunakan kombinasi yang kuat agar akun tetap aman.</p>
+                <div class="form-group">
+                    <label>Kata Sandi Saat Ini</label>
+                    <input type="password" id="pass-current" placeholder="Kata sandi saat ini">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi Baru</label>
+                    <input type="password" id="pass-new" placeholder="Minimal 6 karakter">
+                </div>
+                <div class="form-group">
+                    <label>Konfirmasi Kata Sandi Baru</label>
+                    <input type="password" id="pass-new-confirm" placeholder="Ulangi kata sandi baru">
+                </div>
+                <button class="btn-action" id="btn-change-pass" onclick="changePassword()">Perbarui Kata Sandi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth, onAuthStateChanged, EmailAuthProvider,
+            reauthenticateWithCredential, updateEmail, updatePassword
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+            document.getElementById('current-email').innerText = user.email;
+            document.getElementById('loading-overlay').style.display = 'none';
+        });
+
+        async function reauth(password) {
+            const cred = EmailAuthProvider.credential(currentUser.email, password);
+            await reauthenticateWithCredential(currentUser, cred);
+        }
+
+        window.changeEmail = async () => {
+            const newEmail = document.getElementById('new-email').value.trim();
+            const pass = document.getElementById('pass-for-email').value;
+            if (!newEmail || !pass) {
+                Swal.fire('Lengkapi Data', 'Isi email baru dan kata sandi Anda.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('btn-change-email');
+            btn.disabled = true; btn.innerText = 'Memproses...';
+            try {
+                await reauth(pass);
+                await updateEmail(currentUser, newEmail);
+                await updateDoc(doc(db, "users", currentUser.uid), { email: newEmail });
+                Swal.fire('Berhasil', 'Email berhasil diperbarui.', 'success');
+                document.getElementById('current-email').innerText = newEmail;
+                document.getElementById('new-email').value = '';
+                document.getElementById('pass-for-email').value = '';
+            } catch (e) {
+                console.error(e);
+                let msg = 'Gagal memperbarui email.';
+                if (e.code === 'auth/wrong-password') msg = 'Kata sandi salah.';
+                if (e.code === 'auth/email-already-in-use') msg = 'Email sudah digunakan akun lain.';
+                if (e.code === 'auth/requires-recent-login') msg = 'Sesi terlalu lama, silakan masuk kembali.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+            btn.disabled = false; btn.innerText = 'Perbarui Email';
+        };
+
+        window.changePassword = async () => {
+            const current = document.getElementById('pass-current').value;
+            const next = document.getElementById('pass-new').value;
+            const confirm = document.getElementById('pass-new-confirm').value;
+
+            if (!current || !next || !confirm) {
+                Swal.fire('Lengkapi Data', 'Isi semua kolom kata sandi.', 'warning');
+                return;
+            }
+            if (next.length < 6) {
+                Swal.fire('Terlalu Pendek', 'Kata sandi baru minimal 6 karakter.', 'warning');
+                return;
+            }
+            if (next !== confirm) {
+                Swal.fire('Tidak Cocok', 'Konfirmasi kata sandi baru tidak sama.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btn-change-pass');
+            btn.disabled = true; btn.innerText = 'Memproses...';
+            try {
+                await reauth(current);
+                await updatePassword(currentUser, next);
+                Swal.fire('Berhasil', 'Kata sandi berhasil diperbarui.', 'success');
+                document.getElementById('pass-current').value = '';
+                document.getElementById('pass-new').value = '';
+                document.getElementById('pass-new-confirm').value = '';
+            } catch (e) {
+                console.error(e);
+                let msg = 'Gagal memperbarui kata sandi.';
+                if (e.code === 'auth/wrong-password') msg = 'Kata sandi saat ini salah.';
+                if (e.code === 'auth/requires-recent-login') msg = 'Sesi terlalu lama, silakan masuk kembali.';
+                Swal.fire('Gagal', msg, 'error');
+            }
+            btn.disabled = false; btn.innerText = 'Perbarui Kata Sandi';
+        };
+    </script>
+</body>
+</html>
