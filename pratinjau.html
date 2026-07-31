@@ -71,7 +71,7 @@
         }
 
         .story-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; position: relative; z-index: 2; line-height: 1.2;}
-        .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 15px 0; position: relative; z-index: 2; text-decoration: none;}
+        .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 15px 0; position: relative; z-index: 2; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;}
         .story-author:hover { color: var(--gold); }
 
         .stats-row {
@@ -93,13 +93,29 @@
 
         /* --- SYNOPSIS & TAGS --- */
         .info-section { padding: 25px 20px; background: white; border-bottom: 1px solid #e2e8f0; }
-        .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 10px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
         
         .synopsis-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; text-align: justify; white-space: pre-wrap;}
         
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
         .badge-genre { background: var(--nav-bg); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
         .badge-tag { background: #f1f5f9; color: var(--primary); border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+
+        /* --- DAFTAR BAB --- */
+        .chapter-list-preview { display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px;}
+        .chapter-item-preview { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; 
+            cursor: pointer; transition: 0.2s; font-size: 0.9rem; color: var(--text-dark); font-weight: 600;
+            background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .chapter-item-preview:hover { border-color: var(--primary); color: var(--primary); transform: translateX(4px); box-shadow: 0 4px 10px rgba(0,51,102,0.05); }
+        .chapter-title-wrapper { display: flex; align-items: center; gap: 12px; }
+        .chapter-number {
+            background: #f1f5f9; color: var(--primary); width: 30px; height: 30px; 
+            display: flex; justify-content: center; align-items: center; 
+            border-radius: 50%; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+        }
 
         /* --- REKOMENDASI --- */
         .similar-section { padding: 25px 20px; background: var(--bg-color); }
@@ -108,7 +124,8 @@
             gap: 15px; padding-bottom: 15px; scrollbar-width: none;
         }
         .story-scroll::-webkit-scrollbar { display: none; }
-        .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
+        .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
+        .story-card:hover { transform: translateY(-3px); }
         .story-cover-sim {
             width: 100%; height: 180px; border-radius: 12px; background-size: cover; background-position: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0; background-color: #cbd5e1;
@@ -131,21 +148,12 @@
         }
         .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
 
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        .spinner { width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px auto;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; }
     </style>
 </head>
 <body>
-
-    <!-- OVERLAY LOADING -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Data Cerita...</div>
-    </div>
 
     <div class="app-wrapper">
         
@@ -169,7 +177,7 @@
             <div class="cover-blur-bg" id="blur-bg"></div>
             <div class="cover-image" id="p-cover"></div>
             
-            <h2 class="story-title" id="p-title">Judul Cerita</h2>
+            <h2 class="story-title" id="p-title">Memuat...</h2>
             <a href="#" class="story-author" id="p-author"><i class="fa-solid fa-pen-nib"></i> Memuat...</a>
 
             <div class="stats-row">
@@ -190,7 +198,7 @@
                 </div>
             </div>
 
-            <button class="btn-read" onclick="startReading()"><i class="fa-solid fa-book-open"></i> Mulai Membaca</button>
+            <button class="btn-read" id="btn-read-main" onclick="startReading()"><i class="fa-solid fa-book-open"></i> Mulai Membaca</button>
         </div>
 
         <!-- SINOPSIS & TAGS -->
@@ -203,11 +211,22 @@
             </div>
         </div>
 
+        <!-- DAFTAR BAB INTERAKTIF -->
+        <div class="info-section">
+            <h3 class="section-title">Daftar Bab</h3>
+            <div class="chapter-list-preview" id="p-chapter-list">
+                <div class="empty-state">
+                    <div class="spinner"></div>
+                    <p>Memuat daftar bab...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- REKOMENDASI SERUPA -->
         <div class="similar-section">
             <h3 class="section-title">Mungkin Anda Suka</h3>
             <div class="story-scroll" id="similar-container">
-                <div style="font-size: 0.8rem; color: #94a3b8;">Memuat rekomendasi...</div>
+                <div class="empty-state" style="padding:0;">Memuat rekomendasi...</div>
             </div>
         </div>
 
@@ -219,7 +238,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
@@ -236,6 +255,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
         let currentGenre = '';
+        let firstChapterId = null; // Menyimpan id bab 1 untuk tombol "Mulai Membaca"
 
         if (!storyId) { window.location.href = 'index.html'; }
 
@@ -253,15 +273,27 @@
                 const data = snap.data();
                 currentGenre = data.genre || 'Umum';
 
-                // Render UI
+                // NAMA PENULIS CERDAS: 
+                // Sistem memaksa mengambil data real-time dari koleksi 'users'
+                let realAuthorName = data.authorName || 'Anonim';
+                if(data.authorId) {
+                    try {
+                        const authorSnap = await getDoc(doc(db, "users", data.authorId));
+                        if(authorSnap.exists()) {
+                            const uData = authorSnap.data();
+                            realAuthorName = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
+                        }
+                    } catch(e) { console.error("Gagal menarik nama penulis:", e); }
+                }
+
+                // Render UI Header
                 document.getElementById('p-title').innerText = data.title || 'Tanpa Judul';
-                document.getElementById('p-author').innerHTML = `<i class="fa-solid fa-pen-nib"></i> ${data.authorName || 'Anonim'}`;
+                document.getElementById('p-author').innerHTML = `<i class="fa-solid fa-at"></i> ${realAuthorName}`;
                 document.getElementById('p-author').href = `profil.html?uid=${data.authorId}`;
                 document.getElementById('p-desc').innerText = data.synopsis || data.description || 'Penulis belum memberikan sinopsis untuk karya ini.';
                 
                 document.getElementById('p-views').innerText = data.views || 0;
                 document.getElementById('p-votes').innerText = data.votes || 0;
-                document.getElementById('p-chapters').innerText = data.chapterCount || 1; // Asumsi ada 1 jika tidak ada data
 
                 if (data.coverBase64) {
                     const coverUrl = `url('${data.coverBase64}')`;
@@ -276,14 +308,56 @@
                 }
                 document.getElementById('p-tags').innerHTML = tagsHtml;
 
-                // Load Similar Stories
+                // Load Daftar Bab dan Rekomendasi
+                loadChapters();
                 loadSimilarStories();
-
-                document.getElementById('loading-overlay').style.display = 'none';
 
             } catch (error) {
                 console.error(error);
-                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+                Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data.', 'error');
+            }
+        }
+
+        // LOAD DAFTAR BAB INTERAKTIF
+        async function loadChapters() {
+            try {
+                const qChaps = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
+                const snapChaps = await getDocs(qChaps);
+                
+                let chapHtml = ''; 
+                let chapCount = 0;
+
+                snapChaps.forEach(c => {
+                    const cData = c.data();
+                    if(cData.status === 'published') {
+                        chapCount++;
+                        if(!firstChapterId) firstChapterId = c.id; // Simpan bab paling awal
+                        
+                        chapHtml += `
+                            <div class="chapter-item-preview" onclick="window.location.href='read.html?id=${storyId}&ch=${c.id}'">
+                                <div class="chapter-title-wrapper">
+                                    <div class="chapter-number">${chapCount}</div>
+                                    <span>${cData.title || 'Tanpa Judul'}</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
+                            </div>
+                        `;
+                    }
+                });
+                
+                document.getElementById('p-chapters').innerText = chapCount; 
+                document.getElementById('p-chapter-list').innerHTML = chapHtml || '<div class="empty-state">Penulis belum merilis bab satupun.</div>';
+
+                // Set fungsi tombol Mulai Membaca agar lompat ke Bab 1 (jika ada)
+                if(firstChapterId) {
+                    document.getElementById('btn-read-main').onclick = () => {
+                        window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
+                    };
+                }
+
+            } catch(e) { 
+                console.error("Gagal load bab:", e); 
+                document.getElementById('p-chapter-list').innerHTML = '<div class="empty-state" style="color:#dc2626;">Gagal memuat daftar bab.</div>';
             }
         }
 
@@ -294,7 +368,7 @@
                 
                 let html = '';
                 snap.forEach(d => {
-                    if(d.id !== storyId) { // Jangan tampilkan cerita yang sedang dilihat
+                    if(d.id !== storyId) { 
                         const sd = d.data();
                         const bg = sd.coverBase64 ? `url('${sd.coverBase64}')` : 'none';
                         html += `
@@ -306,7 +380,7 @@
                     }
                 });
 
-                document.getElementById('similar-container').innerHTML = html || `<div style="font-size:0.8rem; color:#94a3b8; padding:10px;">Belum ada cerita lain di genre ini.</div>`;
+                document.getElementById('similar-container').innerHTML = html || `<div class="empty-state" style="padding:0;">Belum ada cerita lain di genre ini.</div>`;
             } catch (e) {
                 console.error("Gagal load similar:", e);
             }
@@ -314,8 +388,13 @@
 
         window.onload = loadPreview;
 
+        // Fallback jika tombol baca ditekan tapi bab belum termuat
         window.startReading = () => {
-            window.location.href = `read.html?id=${storyId}`;
+            if(firstChapterId) {
+                window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
+            } else {
+                window.location.href = `read.html?id=${storyId}`; // Biarkan read.html yang menangani error jika kosong
+            }
         };
 
         // --- SISTEM DROPDOWN ---
@@ -334,9 +413,11 @@
                 text: 'Algoritma akan berhenti merekomendasikan karya serupa jika Anda mengarsipkan cerita ini.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Arsipkan'
+                confirmButtonText: 'Ya, Arsipkan',
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#64748b'
             }).then((res) => {
-                if(res.isConfirmed) { Swal.fire('Berhasil', 'Cerita ditambahkan ke arsip.', 'success'); }
+                if(res.isConfirmed) { Swal.fire({toast:true, position:'top', icon:'success', title:'Cerita diarsipkan.', showConfirmButton:false, timer:1500}); }
             });
         };
 
@@ -344,12 +425,14 @@
             Swal.fire({
                 title: 'Laporkan Cerita',
                 input: 'select',
-                inputOptions: { 'plagiasi': 'Plagiasi / Pelanggaran Hak Cipta', 'toksik': 'Konten Kekerasan / Toksik', 'spam': 'Spam / Iklan' },
+                inputOptions: { 'plagiasi': 'Plagiasi / Hak Cipta', 'toksik': 'Konten Kekerasan / Toksik', 'spam': 'Spam / Iklan' },
                 inputPlaceholder: 'Pilih alasan...',
                 showCancelButton: true,
-                confirmButtonText: 'Kirim Laporan'
+                confirmButtonText: 'Kirim Laporan',
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b'
             }).then((res) => {
-                if(res.isConfirmed && res.value) { Swal.fire('Terkirim', 'Laporan Anda akan ditinjau oleh Admin.', 'success'); }
+                if(res.isConfirmed && res.value) { Swal.fire({toast:true, position:'top', icon:'success', title:'Laporan terkirim ke Admin.', showConfirmButton:false, timer:1500}); }
             });
         };
     </script>
