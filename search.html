@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pencarian - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #003366; --gold: #d4af37; --bg-color: #f8fafc; --text-dark: #1e293b; --text-gray: #64748b; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; min-height: 100vh; }
+        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } }
+
+        .search-header { display: flex; align-items: center; gap: 15px; padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100;}
+        .btn-back { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; }
+        .search-input-box { flex: 1; display: flex; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 15px; }
+        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.95rem; margin-left: 10px; background: transparent; }
+        
+        .search-body { padding: 20px; flex: 1; overflow-y: auto; }
+        .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; display: flex; justify-content: space-between;}
+        .clear-btn { color: #dc2626; font-size: 0.75rem; cursor: pointer; border: none; background: none; font-family: 'Poppins'; font-weight: 600;}
+
+        .history-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+        .history-chip { background: white; border: 1px solid #cbd5e1; padding: 6px 15px; border-radius: 50px; font-size: 0.8rem; color: var(--text-gray); cursor: pointer; display: flex; align-items: center; gap: 8px;}
+        .history-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+        .recommend-list { display: flex; flex-direction: column; gap: 12px; }
+        .rec-item { font-size: 0.9rem; color: var(--primary); padding: 10px; border-radius: 8px; background: #f8fafc; font-weight: 500; cursor: pointer;}
+        .rec-item i { color: var(--gold); margin-right: 10px; }
+
+        /* Hasil Pencarian */
+        .story-card { display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; margin-bottom: 15px;}
+        .story-cover { width: 65px; height: 95px; border-radius: 8px; background-color:#cbd5e1; background-size: cover; background-position: center; flex-shrink: 0; }
+        .story-info h4 { margin: 0 0 5px 0; font-size: 1.05rem; color: var(--primary); }
+        .story-info p { margin: 0 0 5px 0; font-size: 0.8rem; color: var(--text-gray); }
+
+        .empty-state { text-align:center; padding: 40px 20px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="search-header">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="search-input-box">
+                <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+                <input type="text" id="search-input" placeholder="Gunakan #tagar, @penulis..." autofocus>
+            </div>
+        </div>
+
+        <div class="search-body" id="search-body">
+            <!-- Tampilan Awal (Riwayat & Rekomendasi) -->
+            <div id="default-view">
+                <h3 class="section-title">Riwayat Pencarian <button class="clear-btn" onclick="clearHistory()">Hapus Semua</button></h3>
+                <div class="history-list" id="history-list"></div>
+
+                <h3 class="section-title">Rekomendasi Populer</h3>
+                <div class="recommend-list">
+                    <div class="rec-item" onclick="triggerSearch('#lombamenulis')"><i class="fa-solid fa-fire"></i> #lombamenulis</div>
+                    <div class="rec-item" onclick="triggerSearch('Romansa')"><i class="fa-solid fa-heart"></i> Romansa</div>
+                    <div class="rec-item" onclick="triggerSearch('#fantasiepic')"><i class="fa-solid fa-wand-magic-sparkles"></i> #fantasiepic</div>
+                </div>
+            </div>
+
+            <!-- Tempat Hasil Pencarian -->
+            <div id="results-view" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0", authDomain: "mading-cf676.firebaseapp.com", projectId: "mading-cf676", storageBucket: "mading-cf676.firebasestorage.app", messagingSenderId: "72175203671", appId: "1:72175203671:web:7a0676a55beb64bc96ba12" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        let allStories = [];
+        let searchTimer;
+
+        // Load semua data di awal untuk pencarian lokal instan
+        async function loadStories() {
+            const snap = await getDocs(collection(db, "published_stories"));
+            snap.forEach(d => allStories.push({ id: d.id, ...d.data() }));
+        }
+        loadStories();
+
+        // Riwayat Pencarian (LocalStorage)
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+            const container = document.getElementById('history-list');
+            if(history.length === 0) { container.innerHTML = '<div style="font-size:0.8rem; color:#94a3b8;">Belum ada riwayat.</div>'; return; }
+            
+            container.innerHTML = history.map(h => `<div class="history-chip" onclick="triggerSearch('${h}')"><i class="fa-solid fa-clock-rotate-left"></i> ${h}</div>`).join('');
+        }
+        
+        window.clearHistory = () => { localStorage.removeItem('searchHistory'); loadHistory(); };
+        window.triggerSearch = (val) => { document.getElementById('search-input').value = val; executeSearch(val); };
+
+        function saveHistory(term) {
+            if(!term) return;
+            let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+            if(!history.includes(term)) { history.unshift(term); if(history.length > 5) history.pop(); localStorage.setItem('searchHistory', JSON.stringify(history)); loadHistory(); }
+        }
+
+        // Logika Eksekusi Pencarian
+        document.getElementById('search-input').addEventListener('keyup', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            clearTimeout(searchTimer);
+            
+            if(val === '') {
+                document.getElementById('default-view').style.display = 'block';
+                document.getElementById('results-view').style.display = 'none';
+                return;
+            }
+
+            if(e.key === 'Enter') saveHistory(val);
+            
+            searchTimer = setTimeout(() => { executeSearch(val); }, 300);
+        });
+
+        function executeSearch(queryText) {
+            document.getElementById('default-view').style.display = 'none';
+            const resView = document.getElementById('results-view');
+            resView.style.display = 'block';
+            resView.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Mencari...</p></div>';
+
+            setTimeout(() => {
+                const results = allStories.filter(story => {
+                    if (queryText.startsWith('#')) {
+                        const tQuery = queryText.substring(1).trim();
+                        return story.tags && Array.isArray(story.tags) && story.tags.some(t => t.toLowerCase().includes(tQuery));
+                    } else if (queryText.startsWith('@')) {
+                        const aQuery = queryText.substring(1).trim();
+                        return story.authorName && story.authorName.toLowerCase().includes(aQuery);
+                    } else {
+                        return (story.title && story.title.toLowerCase().includes(queryText)) || (story.genre && story.genre.toLowerCase().includes(queryText));
+                    }
+                });
+
+                if (results.length === 0) { resView.innerHTML = `<div class="empty-state"><p>Maaf, kata kunci "<b>${queryText}</b>" tidak ditemukan.</p></div>`; return; }
+
+                let html = '';
+                results.forEach(data => {
+                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                    let tagsHtml = data.tags ? data.tags.slice(0,3).map(t => `<span style="font-size:0.65rem; color:var(--primary); margin-right:5px;">#${t}</span>`).join('') : '';
+                    
+                    html += `
+                        <div class="story-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
+                            <div class="story-cover" style="background-image: ${coverBg};"></div>
+                            <div class="story-info">
+                                <h4>${data.title}</h4>
+                                <p><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
+                                <div><span style="font-size:0.7rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1; margin-right:5px;">${data.genre || 'Umum'}</span>${tagsHtml}</div>
+                            </div>
+                        </div>`;
+                });
+                resView.innerHTML = html;
+            }, 300);
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
