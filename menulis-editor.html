@@ -64,7 +64,7 @@
         .dropdown-menu {
             position: absolute; top: 50px; right: 15px; background: white;
             border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 200px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+            width: 210px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
         }
         .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
         @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
@@ -132,6 +132,16 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* MODAL CUSTOM REVISI */
+        .revision-item {
+            padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; text-align: left;
+        }
+        .revision-info { font-size: 0.8rem; color: #64748b; }
+        .btn-restore-rev {
+            background: var(--primary); color: white; border: none; padding: 6px 12px;
+            border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -197,7 +207,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -289,7 +299,6 @@
             reader.onload = function(e) {
                 const base64String = e.target.result;
                 document.getElementById('editor').focus();
-                // Sisipkan tag img dengan Base64
                 document.execCommand('insertImage', false, base64String);
                 triggerAutoSave();
             };
@@ -325,7 +334,7 @@
             indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
             
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveChapterData, 2000); // Tunggu 2 detik setelah berhenti mengetik
+            saveTimeout = setTimeout(saveChapterData, 2000);
         };
 
         async function saveChapterData(logRevision = false) {
@@ -344,7 +353,6 @@
                     updatedAt: serverTimestamp()
                 });
 
-                // Update juga status waktu di dokumen utama cerita
                 await updateDoc(doc(db, "stories", storyId), {
                     updatedAt: serverTimestamp()
                 });
@@ -352,7 +360,7 @@
                 indicator.className = 'save-status saved';
                 indicator.innerHTML = '<i class="fa-solid fa-check"></i> Tersimpan';
 
-                // Jika diminta menyimpan ke riwayat revisi (oleh fungsi Simpan Pratinjau)
+                // Simpan snapshot revisi
                 if (logRevision) {
                     await addDoc(collection(db, "stories", storyId, "chapters", chapterId, "revisions"), {
                         contentSnapshot: content,
@@ -372,7 +380,6 @@
             document.getElementById('dropdown-menu').classList.toggle('active');
         };
 
-        // Tutup menu jika klik di luar
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.nav-right')) {
                 document.getElementById('dropdown-menu').classList.remove('active');
@@ -387,14 +394,62 @@
             document.getElementById('dropdown-menu').classList.remove('active');
             Swal.fire({ title: 'Menyimpan Draf & Revisi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
-            await saveChapterData(true); // true = Simpan snapshot ke history
+            await saveChapterData(true);
             
             Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Naskah saat ini telah disimpan ke Riwayat Revisi.', timer: 1500, showConfirmButton: false });
         };
 
-        window.viewRevisions = () => {
+        // BUKA RIWAYAT REVISI
+        window.viewRevisions = async () => {
             document.getElementById('dropdown-menu').classList.remove('active');
-            Swal.fire('Fitur Segera Hadir', 'Fitur membaca ulang Riwayat Revisi naskah sedang dalam tahap pengembangan.', 'info');
+            Swal.fire({ title: 'Memuat Riwayat...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                const qRev = query(collection(db, "stories", storyId, "chapters", chapterId, "revisions"), orderBy("savedAt", "desc"), limit(5));
+                const snapRev = await getDocs(qRev);
+
+                if (snapRev.empty) {
+                    Swal.fire('Belum Ada Revisi', 'Gunakan menu "Simpan Pratinjau" untuk merekam versi revisi naskah.', 'info');
+                    return;
+                }
+
+                let listHtml = '<div style="max-height: 250px; overflow-y: auto;">';
+                snapRev.forEach(d => {
+                    const r = d.data();
+                    const dateStr = r.savedAt && typeof r.savedAt.toDate === 'function' ? r.savedAt.toDate().toLocaleString('id-ID') : 'Versi Draf';
+                    
+                    listHtml += `
+                        <div class="revision-item">
+                            <div class="revision-info">
+                                <b>${dateStr}</b><br>
+                                <span>${r.wordCount || 0} Kata</span>
+                            </div>
+                            <button class="btn-restore-rev" onclick="restoreRevision('${encodeURIComponent(r.contentSnapshot)}')">Pulihkan</button>
+                        </div>
+                    `;
+                });
+                listHtml += '</div>';
+
+                Swal.fire({
+                    title: 'Riwayat Revisi',
+                    html: listHtml,
+                    showConfirmButton: false,
+                    showCloseButton: true
+                });
+
+            } catch (e) {
+                console.error("Gagal ambil revisi:", e);
+                Swal.fire('Error', 'Gagal memuat riwayat revisi.', 'error');
+            }
+        };
+
+        window.restoreRevision = (contentEncoded) => {
+            const rawContent = decodeURIComponent(contentEncoded);
+            document.getElementById('editor').innerHTML = rawContent;
+            checkEditorEmpty();
+            countWords();
+            triggerAutoSave();
+            Swal.fire({ icon: 'success', title: 'Naskah Dipulihkan!', text: 'Versi revisi telah diterapkan ke editor.', timer: 1500, showConfirmButton: false });
         };
 
         window.deleteChapter = async () => {
@@ -412,10 +467,8 @@
             if (konfirmasi.isConfirmed) {
                 Swal.fire({ title: 'Menghapus Bab...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    // Hapus Dokumen Bab
                     await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
                     
-                    // Kurangi hitungan bab di tabel Master Cerita
                     const storyRef = doc(db, "stories", storyId);
                     const snap = await getDoc(storyRef);
                     const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 1;
@@ -430,22 +483,41 @@
             }
         };
 
-        // 5. Publikasi Bab
+        // 5. Publikasi Bab & Sync ke Koleksi Publik
         window.publishChapter = async () => {
-            if (isPublished) {
-                Swal.fire('Sudah Rilis', 'Bab ini sudah dipublikasikan. Perubahan naskah akan otomatis tersimpan dan diperbarui ke pembaca.', 'info');
-                return;
-            }
-
             const title = document.getElementById('chapter-title').value.trim();
             if (!title) {
                 Swal.fire('Judul Kosong', 'Harap beri judul bab sebelum mempublikasikannya.', 'warning');
                 return;
             }
 
+            const readUrl = `${window.location.origin}/read.html?id=${storyId}`;
+
+            if (isPublished) {
+                Swal.fire({
+                    title: 'Bab Sudah Rilis',
+                    html: `
+                        <p style="font-size:0.9rem; color:#64748b;">Perubahan naskah terbaru telah otomatis diperbarui ke pembaca.</p>
+                        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0;">${readUrl}</div>
+                    `,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#003366',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link Bab',
+                    cancelButtonText: 'Tutup'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        navigator.clipboard.writeText(readUrl);
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link bab berhasil disalin!', showConfirmButton: false, timer: 1500 });
+                    }
+                });
+                return;
+            }
+
             const konfirmasi = await Swal.fire({
                 title: 'Publikasikan Bab?',
-                text: 'Bab ini akan bisa dibaca oleh semua pengguna Cendekia Aksara.',
+                text: 'Bab ini akan langsung rilis dan dapat dibaca oleh seluruh komunitas Cendekia.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#10b981',
@@ -457,30 +529,73 @@
                 Swal.fire({ title: 'Memproses Publikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 
                 try {
-                    // Pastikan draf terakhir tersimpan
                     await saveChapterData(false);
 
-                    // Ubah Status Bab
+                    // A. Update Status Bab
                     await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
                         status: 'published',
                         publishedAt: serverTimestamp()
                     });
 
-                    // Cek jika status Cerita Induk masih draft, jadikan published
+                    // B. Update Status Cerita Utama di draf
                     const storyRef = doc(db, "stories", storyId);
                     const storySnap = await getDoc(storyRef);
-                    if (storySnap.exists() && storySnap.data().status === 'draft') {
-                        await updateDoc(storyRef, { status: 'published', publishedAt: serverTimestamp() });
-                    }
+                    let storyMaster = storySnap.exists() ? storySnap.data() : {};
 
-                    // Opsional: Buat Notifikasi ke Database untuk semua pengikut (Bisa lewat Cloud Function di real-app)
-                    
+                    await updateDoc(storyRef, { 
+                        status: 'published', 
+                        publishedAt: serverTimestamp(),
+                        updatedAt: serverTimestamp() 
+                    });
+
+                    // C. SINKRONISASI KE KOLEKSI PUBLIK (published_stories)
+                    // Ini agar cerita muncul di Beranda (index.html) & Genre
+                    const pubStoryRef = doc(db, "published_stories", storyId);
+                    const pubSnap = await getDoc(pubStoryRef);
+                    const existingViews = pubSnap.exists() ? (pubSnap.data().views || 0) : 0;
+                    const existingRating = pubSnap.exists() ? (pubSnap.data().rating || '5.0') : '5.0';
+
+                    await setDoc(pubStoryRef, {
+                        storyId: storyId,
+                        title: storyMaster.title || title,
+                        genre: storyMaster.genre || 'Umum',
+                        synopsis: storyMaster.description || '',
+                        coverBase64: storyMaster.coverBase64 || null,
+                        authorId: currentUser.uid,
+                        authorName: currentUser.displayName || storyMaster.authorName || 'Penulis Cendekia',
+                        views: existingViews,
+                        rating: existingRating,
+                        status: 'published',
+                        publishedAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+
                     isPublished = true;
                     const btnPub = document.getElementById('btn-publish');
                     btnPub.innerText = "Telah Rilis";
                     btnPub.style.background = "#10b981";
 
-                    Swal.fire({ icon: 'success', title: 'Berhasil Dirilis!', text: 'Bab Anda telah dipublikasikan ke publik.', confirmButtonColor: '#003366' });
+                    // POP-UP SUKSES LENGKAP DENGAN LINK BAB
+                    Swal.fire({
+                        title: 'Berhasil Dirilis! 🎉',
+                        html: `
+                            <p style="font-size:0.85rem; color:#64748b;">Bab Anda telah resmi diterbitkan ke publik. Pembaca kini dapat menikmati karya Anda.</p>
+                            <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0; font-family:monospace;">${readUrl}</div>
+                        `,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#003366',
+                        cancelButtonColor: '#10b981',
+                        confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link',
+                        cancelButtonText: '<i class="fa-solid fa-book-open"></i> Baca Sekarang'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            navigator.clipboard.writeText(readUrl);
+                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tautan bab disalin!', showConfirmButton: false, timer: 1500 });
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            window.location.href = readUrl;
+                        }
+                    });
 
                 } catch (error) {
                     console.error("Gagal rilis:", error);
@@ -489,6 +604,8 @@
             }
         };
 
+        // Ekspor fungsi ke scope window
+        window.restoreRevision = restoreRevision;
     </script>
 </body>
 </html>
