@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jelajah Genre - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- 1. GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px; 
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- 2. MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px; 
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.2rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- 4. HEADER & SEARCH BAR --- */
+        .page-header {
+            padding: 25px 20px 15px 20px;
+            text-align: center;
+        }
+        .page-header h2 {
+            font-family: 'Playfair Display', serif; font-size: 1.6rem;
+            color: var(--primary); margin: 0 0 5px 0;
+        }
+        .page-header p {
+            font-size: 0.85rem; color: var(--text-gray); margin: 0 0 20px 0;
+        }
+
+        .search-box {
+            display: flex; align-items: center; background: #f1f5f9;
+            border: 1px solid #cbd5e1; border-radius: 50px; padding: 12px 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+            transition: 0.3s;
+        }
+        .search-box:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
+        .search-box i { color: #94a3b8; font-size: 1.1rem; }
+        .search-box input {
+            border: none; outline: none; width: 100%; background: transparent;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; margin-left: 10px;
+            color: var(--text-dark);
+        }
+
+        /* --- 5. GENRE GRID --- */
+        .genre-container {
+            padding: 10px 20px 30px 20px;
+            flex: 1;
+        }
+
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .genre-card {
+            border-radius: 16px; padding: 20px 15px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-decoration: none; color: white; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: 0.3s;
+            position: relative; overflow: hidden; min-height: 110px; cursor: pointer;
+        }
+        .genre-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        
+        /* Efek Kilap di Kartu */
+        .genre-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); animation: shine 6s infinite;
+        }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+        .genre-title { font-family: 'Aleo', serif; font-size: 1.1rem; font-weight: 700; margin: 0 0 5px 0; position: relative; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        .genre-count { font-size: 0.75rem; font-weight: 500; opacity: 0.9; position: relative; z-index: 2; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 50px;}
+
+        /* LOADING & EMPTY STATE */
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+        .empty-state p { margin: 0; font-size: 0.95rem; }
+
+        /* Loading Full Screen Placeholder */
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 500; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0;
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="nav-brand">
+                <h1>Jelajah Genre</h1>
+            </div>
+            <div style="width: 24px;"></div> <!-- Spacer untuk menyeimbangkan posisi judul di tengah -->
+        </header>
+
+        <!-- HEADER & PENCARIAN -->
+        <div class="page-header">
+            <h2>Telusuri Kategori</h2>
+            <p>Temukan ratusan karya berdasarkan genre favoritmu.</p>
+            
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="Cari genre (Misteri, Komedi, dll)..." oninput="filterGenres()">
+            </div>
+        </div>
+
+        <!-- AREA GRID GENRE -->
+        <div class="genre-container" style="position: relative;">
+            
+            <div id="loading-overlay">
+                <div class="spinner"></div>
+                <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyusun Katalog Genre...</div>
+            </div>
+
+            <div class="genre-grid" id="genre-grid">
+                <!-- Akan diisi otomatis oleh JavaScript -->
+            </div>
+            
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let allGenres = []; // Array untuk menyimpan hasil rekap genre
+
+        // Array Warna Gradient Estetik untuk Kartu Genre (Diacak secara konsisten)
+        const gradients = [
+            "linear-gradient(135deg, #ef4444, #b91c1c)", // Merah
+            "linear-gradient(135deg, #3b82f6, #1d4ed8)", // Biru
+            "linear-gradient(135deg, #10b981, #047857)", // Hijau
+            "linear-gradient(135deg, #f59e0b, #b45309)", // Oranye/Emas
+            "linear-gradient(135deg, #8b5cf6, #6d28d9)", // Ungu
+            "linear-gradient(135deg, #ec4899, #be185d)", // Pink
+            "linear-gradient(135deg, #06b6d4, #0369a1)", // Cyan
+            "linear-gradient(135deg, #64748b, #334155)", // Slate/Abu-abu
+            "linear-gradient(135deg, #003366, #001f3f)"  // Navy Cendekia
+        ];
+
+        // Fungsi kecil untuk menghasilkan angka unik berdasarkan teks string
+        // Tujuannya agar warna genre "Romansa" selalu sama (tidak berubah-ubah tiap refresh)
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return Math.abs(hash);
+        }
+
+        async function fetchGenres() {
+            try {
+                // Tarik SELURUH cerita yang sudah dipublikasikan
+                const q = query(collection(db, "published_stories"));
+                const snap = await getDocs(q);
+                
+                const genreMap = {}; // Objek untuk menghitung jumlah cerita per genre
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    // Jika penulis tidak mengisi genre, masukkan ke "Umum"
+                    let genreName = data.genre ? data.genre.trim() : "Umum";
+                    
+                    // Standarisasi teks (Title Case) agar "romansa" dan "Romansa" dihitung sama
+                    genreName = genreName.charAt(0).toUpperCase() + genreName.slice(1).toLowerCase();
+
+                    // Tambahkan hitungan
+                    if (!genreMap[genreName]) {
+                        genreMap[genreName] = 0;
+                    }
+                    genreMap[genreName]++;
+                });
+
+                // Konversi objek ke dalam array agar mudah disortir
+                allGenres = Object.keys(genreMap).map(name => {
+                    return { name: name, count: genreMap[name] };
+                });
+
+                // Urutkan berdasarkan jumlah cerita terbanyak
+                allGenres.sort((a, b) => b.count - a.count);
+
+                // Sembunyikan loading dan render ke layar
+                document.getElementById('loading-overlay').style.display = 'none';
+                renderGenreGrid(allGenres);
+
+            } catch (error) {
+                console.error("Gagal menarik data genre:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('genre-grid').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>Gagal memuat katalog genre.<br>Periksa koneksi internet Anda.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderGenreGrid(genreArray) {
+            const container = document.getElementById('genre-grid');
+            container.innerHTML = '';
+
+            if (genreArray.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <p>Belum ada cerita dan genre yang diterbitkan oleh pengguna.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            genreArray.forEach(genre => {
+                // Pilih warna yang konsisten berdasarkan nama genre
+                const colorIndex = hashCode(genre.name) % gradients.length;
+                const bgGradient = gradients[colorIndex];
+
+                // URL Tujuan saat genre diklik
+                const targetUrl = `genre-list.html?genre=${encodeURIComponent(genre.name)}`;
+
+                html += `
+                    <a href="${targetUrl}" class="genre-card" style="background: ${bgGradient};">
+                        <h3 class="genre-title">${genre.name}</h3>
+                        <span class="genre-count">${genre.count} Cerita</span>
+                    </a>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Ekspos fungsi ke Window agar bisa dipanggil oleh atribut oninput di HTML
+        window.filterGenres = () => {
+            const keyword = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            if (keyword === "") {
+                renderGenreGrid(allGenres);
+                return;
+            }
+
+            const filtered = allGenres.filter(g => g.name.toLowerCase().includes(keyword));
+            
+            if (filtered.length === 0) {
+                document.getElementById('genre-grid').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <p>Genre "<b>${keyword}</b>" tidak ditemukan.</p>
+                    </div>
+                `;
+            } else {
+                renderGenreGrid(filtered);
+            }
+        };
+
+        // Jalankan penarikan data saat halaman pertama kali dibuka
+        window.onload = () => {
+            fetchGenres();
+        };
+    </script>
+</body>
+</html>
