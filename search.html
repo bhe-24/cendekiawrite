@@ -10,40 +10,49 @@
     <style>
         :root { --primary: #003366; --gold: #d4af37; --bg-color: #f8fafc; --text-dark: #1e293b; --text-gray: #64748b; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; min-height: 100vh; }
-        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;}
+        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; flex: 1; display: flex; flex-direction: column; }
         @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } }
 
         .search-header { display: flex; align-items: center; gap: 15px; padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100;}
-        .btn-back { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; }
-        .search-input-box { flex: 1; display: flex; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 15px; }
+        .btn-back { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; transition: 0.2s;}
+        .btn-back:hover { color: var(--primary); }
+        .search-input-box { flex: 1; display: flex; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 15px; transition: 0.3s;}
+        .search-input-box:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(0,51,102,0.1);}
         .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.95rem; margin-left: 10px; background: transparent; }
         
         .search-body { padding: 20px; flex: 1; overflow-y: auto; }
-        .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; display: flex; justify-content: space-between;}
-        .clear-btn { color: #dc2626; font-size: 0.75rem; cursor: pointer; border: none; background: none; font-family: 'Poppins'; font-weight: 600;}
+        .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; display: flex; justify-content: space-between; align-items: center;}
+        .clear-btn { color: #dc2626; font-size: 0.75rem; cursor: pointer; border: none; background: rgba(220, 38, 38, 0.1); padding: 4px 10px; border-radius: 50px; font-family: 'Poppins'; font-weight: 600; transition: 0.2s;}
+        .clear-btn:hover { background: #dc2626; color: white;}
 
-        .history-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
-        .history-chip { background: white; border: 1px solid #cbd5e1; padding: 6px 15px; border-radius: 50px; font-size: 0.8rem; color: var(--text-gray); cursor: pointer; display: flex; align-items: center; gap: 8px;}
-        .history-chip:hover { border-color: var(--primary); color: var(--primary); }
+        .history-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 35px; }
+        .history-chip { background: white; border: 1px solid #cbd5e1; padding: 6px 15px; border-radius: 50px; font-size: 0.8rem; color: var(--text-gray); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+        .history-chip:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc;}
 
         .recommend-list { display: flex; flex-direction: column; gap: 12px; }
-        .rec-item { font-size: 0.9rem; color: var(--primary); padding: 10px; border-radius: 8px; background: #f8fafc; font-weight: 500; cursor: pointer;}
-        .rec-item i { color: var(--gold); margin-right: 10px; }
+        .rec-item { font-size: 0.9rem; color: var(--primary); padding: 12px 15px; border-radius: 12px; background: #f8fafc; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
+        .rec-item:hover { border-color: var(--gold); transform: translateX(5px);}
+        .rec-item i { color: var(--gold); margin-right: 10px; font-size: 1.1rem;}
 
         /* Hasil Pencarian */
-        .story-card { display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 12px; background: white; border:1px solid #e2e8f0; margin-bottom: 15px;}
-        .story-cover { width: 65px; height: 95px; border-radius: 8px; background-color:#cbd5e1; background-size: cover; background-position: center; flex-shrink: 0; }
-        .story-info h4 { margin: 0 0 5px 0; font-size: 1.05rem; color: var(--primary); }
-        .story-info p { margin: 0 0 5px 0; font-size: 0.8rem; color: var(--text-gray); }
+        .story-card { display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 16px; background: white; border:1px solid #e2e8f0; margin-bottom: 15px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
+        .story-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.06);}
+        .story-cover { width: 70px; height: 100px; border-radius: 8px; background-color:#cbd5e1; background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid #e2e8f0;}
+        .story-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden;}
+        .story-info h4 { margin: 0 0 5px 0; font-size: 1rem; color: var(--primary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .story-info p { margin: 0 0 8px 0; font-size: 0.8rem; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-        .empty-state { text-align:center; padding: 40px 20px; color: #94a3b8; }
+        .empty-state { text-align:center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;}
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto;}
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="app-wrapper">
         <div class="search-header">
-            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-back" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="search-input-box">
                 <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
                 <input type="text" id="search-input" placeholder="Gunakan #tagar, @penulis..." autofocus>
@@ -53,13 +62,13 @@
         <div class="search-body" id="search-body">
             <!-- Tampilan Awal (Riwayat & Rekomendasi) -->
             <div id="default-view">
-                <h3 class="section-title">Riwayat Pencarian <button class="clear-btn" onclick="clearHistory()">Hapus Semua</button></h3>
+                <h3 class="section-title">Riwayat Pencarian <button class="clear-btn" onclick="clearHistory()">Hapus</button></h3>
                 <div class="history-list" id="history-list"></div>
 
                 <h3 class="section-title">Rekomendasi Populer</h3>
                 <div class="recommend-list">
                     <div class="rec-item" onclick="triggerSearch('#lombamenulis')"><i class="fa-solid fa-fire"></i> #lombamenulis</div>
-                    <div class="rec-item" onclick="triggerSearch('Romansa')"><i class="fa-solid fa-heart"></i> Romansa</div>
+                    <div class="rec-item" onclick="triggerSearch('Romansa')"><i class="fa-solid fa-heart"></i> Romansa (Genre)</div>
                     <div class="rec-item" onclick="triggerSearch('#fantasiepic')"><i class="fa-solid fa-wand-magic-sparkles"></i> #fantasiepic</div>
                 </div>
             </div>
@@ -71,18 +80,47 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0", authDomain: "mading-cf676.firebaseapp.com", projectId: "mading-cf676", storageBucket: "mading-cf676.firebasestorage.app", messagingSenderId: "72175203671", appId: "1:72175203671:web:7a0676a55beb64bc96ba12" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
         let allStories = [];
+        let authorCache = {}; // Cache untuk menyimpan username asli penulis
         let searchTimer;
 
-        // Load semua data di awal untuk pencarian lokal instan
+        // Load semua data cerita dan map username penulis
         async function loadStories() {
-            const snap = await getDocs(collection(db, "published_stories"));
-            snap.forEach(d => allStories.push({ id: d.id, ...d.data() }));
+            try {
+                const snap = await getDocs(collection(db, "published_stories"));
+                let authorIdsToFetch = new Set();
+                
+                snap.forEach(d => { 
+                    const sData = d.data();
+                    allStories.push({ id: d.id, ...sData }); 
+                    if(sData.authorId) authorIdsToFetch.add(sData.authorId);
+                });
+
+                // Tarik data asli Penulis (Untuk mengganti nama "Penulis Cendekia")
+                for (let uid of authorIdsToFetch) {
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", uid));
+                        if(uSnap.exists()) {
+                            const uData = uSnap.data();
+                            authorCache[uid] = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
+                        }
+                    } catch(e) {}
+                }
+
+                // Terapkan nama asli ke array lokal
+                allStories.forEach(story => {
+                    if(authorCache[story.authorId]) {
+                        story.realAuthorName = authorCache[story.authorId];
+                    } else {
+                        story.realAuthorName = story.authorName || 'Anonim';
+                    }
+                });
+            } catch(e) { console.error("Gagal memuat database pencarian:", e); }
         }
         loadStories();
 
@@ -90,18 +128,23 @@
         function loadHistory() {
             let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
             const container = document.getElementById('history-list');
-            if(history.length === 0) { container.innerHTML = '<div style="font-size:0.8rem; color:#94a3b8;">Belum ada riwayat.</div>'; return; }
+            if(history.length === 0) { container.innerHTML = '<div style="font-size:0.85rem; color:#94a3b8; font-style:italic;">Belum ada riwayat pencarian.</div>'; return; }
             
             container.innerHTML = history.map(h => `<div class="history-chip" onclick="triggerSearch('${h}')"><i class="fa-solid fa-clock-rotate-left"></i> ${h}</div>`).join('');
         }
         
         window.clearHistory = () => { localStorage.removeItem('searchHistory'); loadHistory(); };
-        window.triggerSearch = (val) => { document.getElementById('search-input').value = val; executeSearch(val); };
+        window.triggerSearch = (val) => { document.getElementById('search-input').value = val; executeSearch(val); saveHistory(val); };
 
         function saveHistory(term) {
             if(!term) return;
             let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-            if(!history.includes(term)) { history.unshift(term); if(history.length > 5) history.pop(); localStorage.setItem('searchHistory', JSON.stringify(history)); loadHistory(); }
+            if(!history.includes(term)) { 
+                history.unshift(term); 
+                if(history.length > 5) history.pop(); 
+                localStorage.setItem('searchHistory', JSON.stringify(history)); 
+                loadHistory(); 
+            }
         }
 
         // Logika Eksekusi Pencarian
@@ -117,47 +160,67 @@
 
             if(e.key === 'Enter') saveHistory(val);
             
-            searchTimer = setTimeout(() => { executeSearch(val); }, 300);
+            searchTimer = setTimeout(() => { executeSearch(val); }, 400); // Debounce 400ms agar smooth
         });
 
         function executeSearch(queryText) {
             document.getElementById('default-view').style.display = 'none';
             const resView = document.getElementById('results-view');
             resView.style.display = 'block';
-            resView.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Mencari...</p></div>';
+            resView.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Mencari karya...</p></div>';
 
             setTimeout(() => {
                 const results = allStories.filter(story => {
+                    const safeTitle = (story.title || '').toLowerCase();
+                    const safeGenre = (story.genre || '').toLowerCase();
+                    const safeAuthor = (story.realAuthorName || '').toLowerCase(); // Cek pakai nama ASLI
+
                     if (queryText.startsWith('#')) {
+                        // Pencarian khusus TAGAR
                         const tQuery = queryText.substring(1).trim();
+                        if(!tQuery) return false;
                         return story.tags && Array.isArray(story.tags) && story.tags.some(t => t.toLowerCase().includes(tQuery));
                     } else if (queryText.startsWith('@')) {
+                        // Pencarian khusus PENULIS
                         const aQuery = queryText.substring(1).trim();
-                        return story.authorName && story.authorName.toLowerCase().includes(aQuery);
+                        if(!aQuery) return false;
+                        // Hapus karakter '@' dari realAuthorName untuk dicocokkan
+                        const cleanAuthorName = safeAuthor.replace('@', '');
+                        return cleanAuthorName.includes(aQuery);
                     } else {
-                        return (story.title && story.title.toLowerCase().includes(queryText)) || (story.genre && story.genre.toLowerCase().includes(queryText));
+                        // Pencarian UMUM (Judul / Genre / Nama Penulis tanpa @)
+                        return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText);
                     }
                 });
 
-                if (results.length === 0) { resView.innerHTML = `<div class="empty-state"><p>Maaf, kata kunci "<b>${queryText}</b>" tidak ditemukan.</p></div>`; return; }
+                if (results.length === 0) { 
+                    resView.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass-minus"></i><p>Maaf, tidak ada hasil untuk "<b>${queryText}</b>".<br>Coba gunakan kata kunci lain.</p></div>`; 
+                    return; 
+                }
 
-                let html = '';
+                let html = '<div style="display:flex; flex-direction:column;">';
                 results.forEach(data => {
                     const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
-                    let tagsHtml = data.tags ? data.tags.slice(0,3).map(t => `<span style="font-size:0.65rem; color:var(--primary); margin-right:5px;">#${t}</span>`).join('') : '';
+                    let tagsHtml = data.tags && Array.isArray(data.tags) 
+                        ? data.tags.slice(0,3).map(t => `<span style="font-size:0.65rem; color:var(--primary); margin-right:5px; font-weight:600;">#${t}</span>`).join('') 
+                        : '';
                     
                     html += `
                         <div class="story-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
                             <div class="story-cover" style="background-image: ${coverBg};"></div>
                             <div class="story-info">
-                                <h4>${data.title}</h4>
-                                <p><i class="fa-solid fa-pen"></i> ${data.authorName || 'Anonim'}</p>
-                                <div><span style="font-size:0.7rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1; margin-right:5px;">${data.genre || 'Umum'}</span>${tagsHtml}</div>
+                                <h4>${data.title || 'Tanpa Judul'}</h4>
+                                <p><i class="fa-solid fa-at"></i> ${data.realAuthorName}</p>
+                                <div>
+                                    <span style="font-size:0.7rem; background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; color:var(--text-dark); border: 1px solid #cbd5e1; margin-right:5px;">${data.genre || 'Umum'}</span>
+                                    ${tagsHtml}
+                                </div>
                             </div>
                         </div>`;
                 });
+                html += '</div>';
                 resView.innerHTML = html;
-            }, 300);
+            }, 300); // Simulasi delay jaringan agar animasi spinner terlihat profesional
         }
 
         loadHistory();
