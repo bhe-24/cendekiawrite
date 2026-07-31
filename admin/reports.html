@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pusat Laporan - Cendekia Aksara Admin</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: #001f3f;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 2px solid var(--danger); /* Aksen merah untuk Laporan */
+        }
+        .btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-icon:hover { color: var(--danger); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px;}
+
+        /* --- HEADER ACTION --- */
+        .action-header {
+            background: white; padding: 25px 20px 10px 20px; border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 60px; z-index: 99;
+        }
+        .action-header h2 { font-size: 1.2rem; margin: 0 0 5px 0; color: var(--primary); font-family: 'Playfair Display', serif;}
+        .action-header p { font-size: 0.85rem; color: var(--text-gray); margin: 0 0 15px 0; line-height: 1.4;}
+
+        /* --- TABS --- */
+        .tab-container { display: flex; background: #f8fafc; border-radius: 12px; padding: 4px; border: 1px solid #e2e8f0; }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 10px 0; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-gray);
+            border-radius: 8px; transition: 0.3s;
+        }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* --- REPORT LIST --- */
+        .report-list-container { padding: 20px; flex: 1; overflow-y: auto; }
+        
+        .report-card {
+            background: white; border-radius: 16px; padding: 18px; margin-bottom: 15px;
+            border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; gap: 12px; transition: 0.2s;
+        }
+        .report-card:hover { border-color: var(--danger); box-shadow: 0 4px 15px rgba(220, 38, 38, 0.08); }
+
+        .report-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .badge-type {
+            font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px;
+        }
+        
+        /* Tipe Laporan */
+        .type-plagiasi { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .type-toksik { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+        .type-spam { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        
+        .report-date { font-size: 0.7rem; color: #94a3b8; }
+
+        .report-body { background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px dashed #cbd5e1; }
+        .report-target { font-size: 0.85rem; font-weight: 600; color: var(--primary); margin: 0 0 5px 0; }
+        .report-reason { font-size: 0.8rem; color: var(--text-dark); margin: 0; line-height: 1.4; }
+
+        .report-actions { display: flex; gap: 10px; margin-top: 5px; }
+        .btn-act { 
+            flex: 1; padding: 10px; border-radius: 10px; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; 
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; border: none;
+        }
+        .btn-view { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        .btn-view:hover { background: #3b82f6; color: white; }
+        .btn-resolve { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .btn-resolve:hover { background: #16a34a; color: white; }
+        .btn-delete { background: white; color: var(--text-gray); border: 1px solid #e2e8f0; flex: 0 0 45px; }
+        .btn-delete:hover { background: #fee2e2; color: var(--danger); border-color: #fca5a5; }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--nav-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--danger); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 1rem; letter-spacing: 1px;">Memuat Data Laporan...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Pusat Laporan</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <!-- HEADER INFO & TABS -->
+        <div class="action-header">
+            <h2>Tinjauan Laporan Pelanggaran</h2>
+            <p>Evaluasi aduan dari komunitas. Tindak lanjuti laporan yang terbukti melanggar Pedoman Cendekia Aksara.</p>
+            
+            <div class="tab-container">
+                <div class="tab-btn active" id="tab-open" onclick="switchTab('open')">Belum Diproses</div>
+                <div class="tab-btn" id="tab-resolved" onclick="switchTab('resolved')">Selesai</div>
+            </div>
+        </div>
+
+        <!-- LIST LAPORAN -->
+        <div class="report-list-container" id="report-list">
+            <!-- Data Diisi JS -->
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allReports = [];
+        let currentTab = 'open';
+
+        // 1. Otorisasi Admin
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        loadReports();
+                    } else {
+                        kickOutHacker();
+                    }
+                } catch (error) {
+                    kickOutHacker();
+                }
+            } else {
+                window.location.href = '../login.html';
+            }
+        });
+
+        function kickOutHacker() {
+            Swal.fire({ title: 'Akses Ditolak!', text: 'Area Administrator.', icon: 'error', confirmButtonColor: '#dc2626', allowOutsideClick: false })
+            .then(() => { window.location.href = '../index.html'; });
+        }
+
+        // 2. Tarik Data Laporan
+        async function loadReports() {
+            try {
+                // Asumsi ada koleksi 'reports' tempat user melaporkan cerita/komentar
+                const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                allReports = [];
+                querySnapshot.forEach((docSnap) => {
+                    allReports.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                renderReports();
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat laporan:", error);
+                // Matikan loading, tampilkan state kosong jika koleksi belum ada (mencegah error merah)
+                document.getElementById('loading-overlay').style.display = 'none';
+                renderReports(); 
+            }
+        }
+
+        // 3. Sistem Tab & Render Laporan
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            document.getElementById('tab-open').classList.remove('active');
+            document.getElementById('tab-resolved').classList.remove('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            renderReports();
+        };
+
+        function renderReports() {
+            const container = document.getElementById('report-list');
+            
+            // Filter berdasarkan status
+            const filteredReports = allReports.filter(r => (r.status || 'open') === currentTab);
+
+            if (filteredReports.length === 0) {
+                const msg = currentTab === 'open' ? 'Bagus! Tidak ada laporan baru.' : 'Belum ada laporan yang diselesaikan.';
+                const icon = currentTab === 'open' ? 'fa-shield-heart' : 'fa-clipboard-check';
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid ${icon}"></i><p>${msg}</p></div>`;
+                return;
+            }
+
+            let html = '';
+            filteredReports.forEach(r => {
+                // Tentukan Styling Tipe Laporan
+                let typeClass = 'type-spam'; let typeIcon = 'fa-flag'; let typeLabel = r.type || 'Lainnya';
+                if (r.type === 'plagiasi') { typeClass = 'type-plagiasi'; typeIcon = 'fa-copy'; typeLabel = 'Plagiasi'; }
+                else if (r.type === 'toksik') { typeClass = 'type-toksik'; typeIcon = 'fa-skull-crossbones'; typeLabel = 'Toksik / Kekerasan'; }
+                else if (r.type === 'spam') { typeClass = 'type-spam'; typeIcon = 'fa-bullhorn'; typeLabel = 'Spam / Iklan'; }
+
+                const dateObj = r.createdAt ? r.createdAt.toDate() : new Date();
+                const dateStr = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+
+                // Tentukan Target Buka
+                // Jika melaporkan cerita, link ke pratinjau cerita tersebut
+                const targetUrl = r.storyId ? `../pratinjau.html?id=${r.storyId}` : '#';
+
+                // Tombol Aksi (Tandai Selesai muncul jika open, Kembalikan jika resolved)
+                let actionBtnHtml = '';
+                if (currentTab === 'open') {
+                    actionBtnHtml = `<button class="btn-act btn-resolve" onclick="markAsResolved('${r.id}')"><i class="fa-solid fa-check"></i> Tandai Selesai</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn-act btn-resolve" style="background:#f1f5f9; color:#64748b; border-color:#cbd5e1;" onclick="markAsOpen('${r.id}')"><i class="fa-solid fa-arrow-rotate-left"></i> Batal Selesai</button>`;
+                }
+
+                html += `
+                    <div class="report-card">
+                        <div class="report-header">
+                            <span class="badge-type ${typeClass}"><i class="fa-solid ${typeIcon}"></i> ${typeLabel}</span>
+                            <span class="report-date">${dateStr}</span>
+                        </div>
+                        
+                        <div class="report-body">
+                            <h4 class="report-target">ID Target: ${r.storyId || r.targetId || 'Tidak Diketahui'}</h4>
+                            <p class="report-reason"><b>Pesan Pelapor:</b> ${r.message || r.reason || 'Tidak ada detail tambahan.'}</p>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="btn-act btn-view" onclick="window.open('${targetUrl}', '_blank')"><i class="fa-solid fa-eye"></i> Tinjau Konteks</button>
+                            ${actionBtnHtml}
+                            <button class="btn-act btn-delete" title="Hapus Laporan Ini" onclick="deleteReport('${r.id}')"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 4. Tindakan: Tandai Selesai / Buka Kembali
+        window.markAsResolved = async (id) => {
+            Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                await updateDoc(doc(db, "reports", id), { status: 'resolved', resolvedAt: serverTimestamp() });
+                
+                // Update local array agar tidak perlu fetch ulang seluruh data
+                const report = allReports.find(r => r.id === id);
+                if (report) report.status = 'resolved';
+                
+                Swal.close();
+                renderReports();
+            } catch (e) {
+                Swal.fire('Error', 'Gagal memproses laporan.', 'error');
+            }
+        };
+
+        window.markAsOpen = async (id) => {
+            Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                await updateDoc(doc(db, "reports", id), { status: 'open' });
+                
+                const report = allReports.find(r => r.id === id);
+                if (report) report.status = 'open';
+                
+                Swal.close();
+                renderReports();
+            } catch (e) {
+                Swal.fire('Error', 'Gagal memproses laporan.', 'error');
+            }
+        };
+
+        // 5. Tindakan: Hapus Laporan Permanen
+        window.deleteReport = async (id) => {
+            const confirm = await Swal.fire({
+                title: 'Hapus Laporan?', 
+                text: 'Laporan ini akan dihapus permanen dari sistem.', 
+                icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    await deleteDoc(doc(db, "reports", id));
+                    
+                    // Hapus dari array lokal
+                    allReports = allReports.filter(r => r.id !== id);
+                    
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Laporan Dihapus', showConfirmButton:false, timer:1500});
+                    renderReports();
+                } catch (e) {
+                    Swal.fire('Error', 'Gagal menghapus laporan.', 'error');
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
