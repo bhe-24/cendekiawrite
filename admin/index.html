@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pusat Komando Admin - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9; /* Sedikit lebih abu untuk admin */
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: #001f3f; /* Warna sangat gelap untuk admin */
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 2px solid var(--gold);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-brand i { color: var(--gold); font-size: 1.2rem; }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px;}
+        
+        .btn-logout { background: rgba(220, 38, 38, 0.1); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.4); padding: 5px 12px; border-radius: 50px; font-size: 0.8rem; font-family: 'Poppins'; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-logout:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+        /* --- HERO ADMIN DASHBOARD --- */
+        .admin-hero {
+            background: linear-gradient(135deg, #001f3f 0%, var(--primary) 100%);
+            padding: 30px 20px; color: white; position: relative; overflow: hidden;
+            border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.1);
+        }
+        .admin-hero::after {
+            content: '\f085'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -10px; bottom: -20px; font-size: 8rem;
+            color: rgba(255, 255, 255, 0.03); pointer-events: none; transform: rotate(-15deg);
+        }
+        .admin-greeting { font-size: 0.85rem; color: #cbd5e1; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px;}
+        .admin-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin: 0 0 20px 0; color: var(--gold); }
+
+        /* --- STATISTIC CARDS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; position: relative; z-index: 2; }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
+            padding: 15px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .stat-card i { font-size: 1.2rem; color: var(--gold); margin-bottom: 8px; }
+        .stat-value { font-size: 1.6rem; font-weight: 700; margin: 0; line-height: 1; }
+        .stat-label { font-size: 0.75rem; color: #e2e8f0; margin: 5px 0 0 0; }
+
+        /* --- MODULE MENU GRID --- */
+        .modules-container { padding: 25px 20px; flex: 1; }
+        .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px 10px; }
+
+        .module-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        
+        .module-card {
+            background: white; border-radius: 16px; padding: 18px 20px;
+            display: flex; align-items: center; gap: 15px; text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+            transition: 0.3s; cursor: pointer;
+        }
+        .module-card:hover { transform: translateX(5px); border-color: var(--primary); box-shadow: 0 6px 15px rgba(0, 51, 102, 0.08); }
+        
+        .module-icon {
+            width: 45px; height: 45px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; color: white; flex-shrink: 0;
+        }
+        
+        /* Icon Colors per Module */
+        .ic-users { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .ic-stories { background: linear-gradient(135deg, #10b981, #047857); }
+        .ic-banners { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .ic-broadcast { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .ic-reports { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+        .module-info { flex: 1; }
+        .module-info h3 { margin: 0 0 3px 0; font-size: 1rem; color: var(--text-dark); }
+        .module-info p { margin: 0; font-size: 0.75rem; color: var(--text-gray); line-height: 1.3; }
+        .module-arrow { color: #cbd5e1; font-size: 1rem; transition: 0.2s; }
+        .module-card:hover .module-arrow { color: var(--primary); transform: translateX(3px); }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--nav-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY LOADING SECURE -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 1rem; letter-spacing: 1px;">Otorisasi Sistem...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-brand">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h1 class="nav-title">Cendekia Command</h1>
+            </div>
+            <button class="btn-logout" onclick="confirmLogout()">Keluar</button>
+        </header>
+
+        <!-- HERO & STATS -->
+        <div class="admin-hero">
+            <p class="admin-greeting">Selamat Datang, Administrator</p>
+            <h2 class="admin-name" id="admin-name">Memuat...</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fa-solid fa-users"></i>
+                    <h3 class="stat-value" id="count-users">0</h3>
+                    <p class="stat-label">Total Pengguna</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                    <h3 class="stat-value" id="count-stories">0</h3>
+                    <p class="stat-label">Karya Rilis</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-images"></i>
+                    <h3 class="stat-value" id="count-banners">0</h3>
+                    <p class="stat-label">Banner Aktif</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-flag"></i>
+                    <h3 class="stat-value" id="count-reports">0</h3>
+                    <p class="stat-label">Laporan / Isu</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULES -->
+        <div class="modules-container">
+            
+            <h3 class="section-title">Manajemen Utama</h3>
+            <div class="module-list">
+                
+                <!-- KELOLA PENGGUNA -->
+                <div class="module-card" onclick="requireModule('Kelola Pengguna', 'users.html')">
+                    <div class="module-icon ic-users"><i class="fa-solid fa-user-gear"></i></div>
+                    <div class="module-info">
+                        <h3>Pengguna & Akses</h3>
+                        <p>Atur *role* (Admin/Penulis), blokir akun, dan reset sandi pengguna.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right module-arrow"></i>
+                </div>
+
+                <!-- KELOLA KARYA & EDITOR'S CHOICE -->
+                <div class="module-card" onclick="requireModule('Moderasi Karya', 'stories.html')">
+                    <div class="module-icon ic-stories"><i class="fa-solid fa-book-open-reader"></i></div>
+                    <div class="module-info">
+                        <h3>Moderasi & Pilihan Editor</h3>
+                        <p>Pantau semua cerita, *take-down* naskah, & atur *Editor's Choice* beranda.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right module-arrow"></i>
+                </div>
+
+                <!-- KELOLA BANNER -->
+                <div class="module-card" onclick="requireModule('Kelola Banner', 'banners.html')">
+                    <div class="module-icon ic-banners"><i class="fa-solid fa-panorama"></i></div>
+                    <div class="module-info">
+                        <h3>Etalase Banner Beranda</h3>
+                        <p>Tambah, edit, atau hapus *banner slider* (Promo/Event) di halaman utama.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right module-arrow"></i>
+                </div>
+            </div>
+
+            <h3 class="section-title">Sistem & Komunikasi</h3>
+            <div class="module-list">
+                
+                <!-- BROADCAST NOTIFIKASI ONESIGNAL -->
+                <div class="module-card" onclick="requireModule('Broadcast Notifikasi', 'broadcast.html')">
+                    <div class="module-icon ic-broadcast"><i class="fa-solid fa-bullhorn"></i></div>
+                    <div class="module-info">
+                        <h3>Pusat Siaran Notifikasi</h3>
+                        <p>Kirim *Push Notification* ke seluruh HP pengguna via sistem OneSignal.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right module-arrow"></i>
+                </div>
+
+                <!-- LAPORAN & LOG -->
+                <div class="module-card" onclick="requireModule('Pusat Laporan', 'reports.html')">
+                    <div class="module-icon ic-reports"><i class="fa-solid fa-shield-virus"></i></div>
+                    <div class="module-info">
+                        <h3>Laporan Pelanggaran</h3>
+                        <p>Tinjau laporan komentar toksik atau konten plagiasi dari komunitas.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right module-arrow"></i>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getCountFromServer, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 1. Kunci Keamanan Ganda (Auth & Role Admin)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        
+                        // CEK OTORISASI ADMIN
+                        if (data.role !== 'admin') {
+                            kickOutHacker();
+                            return;
+                        }
+
+                        // Lolos Otorisasi -> Tampilkan Data
+                        document.getElementById('admin-name').innerText = data.name || 'Administrator';
+                        loadSystemStatistics();
+
+                    } else {
+                        kickOutHacker();
+                    }
+                } catch (error) {
+                    console.error("Kesalahan otorisasi:", error);
+                    kickOutHacker();
+                }
+            } else {
+                window.location.href = '../login.html';
+            }
+        });
+
+        // Tendang user yang bukan admin ke halaman depan
+        function kickOutHacker() {
+            Swal.fire({
+                title: 'Akses Ditolak!',
+                text: 'Area ini dikhususkan untuk Administrator Sistem. Tindakan Anda telah dicatat.',
+                icon: 'error',
+                confirmButtonColor: '#dc2626',
+                allowOutsideClick: false
+            }).then(() => {
+                window.location.href = '../index.html';
+            });
+        }
+
+        // 2. Load Statistik Cepat Dashboard
+        async function loadSystemStatistics() {
+            try {
+                // Hitung Total Pengguna
+                const userColl = collection(db, "users");
+                const userSnap = await getCountFromServer(userColl);
+                document.getElementById('count-users').innerText = userSnap.data().count;
+
+                // Hitung Karya Diterbitkan
+                const storyColl = collection(db, "published_stories");
+                const storySnap = await getCountFromServer(storyColl);
+                document.getElementById('count-stories').innerText = storySnap.data().count;
+
+                // Hitung Banner Aktif
+                const bannerQuery = query(collection(db, "app_banners"), where("isActive", "==", true));
+                const bannerSnap = await getCountFromServer(bannerQuery);
+                document.getElementById('count-banners').innerText = bannerSnap.data().count;
+
+                // Hitung Laporan (Simulasi, jika koleksi 'reports' belum ada maka nilainya 0)
+                try {
+                    const reportQuery = query(collection(db, "reports"), where("status", "==", "open"));
+                    const reportSnap = await getCountFromServer(reportQuery);
+                    document.getElementById('count-reports').innerText = reportSnap.data().count;
+                } catch(e) {
+                    document.getElementById('count-reports').innerText = '0';
+                }
+
+                // Buka Layar Loading
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat statistik:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Peringatan', 'Gagal memuat sebagian data statistik server.', 'warning');
+            }
+        }
+
+        // 3. Sistem Navigasi Modul Admin
+        window.requireModule = (moduleName, targetUrl) => {
+            // Ini akan dipanggil saat kita membuat modul-modul turunan admin di tahap selanjutnya.
+            // Untuk saat ini, kita berikan SweetAlert info bahwa modul siap dibangun.
+            Swal.fire({
+                title: `Akses Modul: ${moduleName}`,
+                text: `Sistem siap mengarahkan Anda ke file ${targetUrl}. Namun file tersebut belum dibuat.`,
+                icon: 'info',
+                confirmButtonColor: '#003366'
+            });
+            // Jika file sudah dibuat, cukup aktifkan baris ini:
+            // window.location.href = targetUrl;
+        };
+
+        // 4. Logout Admin
+        window.confirmLogout = () => {
+            Swal.fire({
+                title: 'Tutup Sesi Admin?',
+                text: 'Anda akan keluar dari Pusat Komando.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Keluar',
+                cancelButtonText: 'Batal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    await signOut(auth);
+                    window.location.href = '../login.html';
+                }
+            });
+        };
+    </script>
+</body>
+</html>
