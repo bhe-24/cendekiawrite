@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta name="google-site-verification" content="nfOmTXjQ7bxFhT0wJGNrC6WuzTSbjRCrfWY-UdGS0HU" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Masuk / Daftar - Cendekia Aksara</title>
+    
+    <!-- PWA TAGS -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/5Srjyo4.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- 1. GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --primary-light: #005a9c;
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- 2. MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px; 
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+            padding-top: 70px; /* Spacer for fixed header */
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin-right: auto; margin-left: 15px;}
+        .nav-brand img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; }
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- 4. FORM CONTAINER --- */
+        .auth-container {
+            padding: 30px 25px;
+            flex: 1; display: flex; flex-direction: column;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .form-header { text-align: center; margin-bottom: 25px; }
+        .form-header img {
+            height: 70px; width: 70px; border-radius: 50%; object-fit: cover;
+            margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid var(--gold); background: white; padding: 3px;
+        }
+        .form-header h3 { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; font-size: 1.5rem; }
+        .form-header p { font-size: 0.85rem; color: var(--text-gray); margin: 0; }
+
+        .form-group { margin-bottom: 18px; text-align: left; position: relative; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--text-dark); font-weight: 600; font-size: 0.85rem; }
+        .form-group input {
+            width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 12px;
+            transition: all 0.3s; font-family: 'Poppins', sans-serif; font-size: 0.95rem;
+            background: #f1f5f9; color: var(--text-dark);
+        }
+        .form-group input:focus {
+            border-color: var(--primary); background: #fff; outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+        }
+
+        .toggle-password {
+            position: absolute; right: 15px; top: 36px;
+            cursor: pointer; color: #94a3b8; font-size: 1rem; transition: 0.2s;
+        }
+        .toggle-password:hover { color: var(--primary); }
+
+        /* --- 5. CAPTCHA --- */
+        .captcha-group .captcha-container {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+            background: #f8fafc; padding: 5px; border-radius: 12px; border: 1px solid #cbd5e1;
+        }
+        #captcha-canvas {
+            background: #ffffff; border-radius: 8px; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); cursor: not-allowed;
+            border: 1px dashed #cbd5e1; flex: 1; height: 45px;
+        }
+        .btn-refresh-captcha {
+            background: var(--nav-bg); color: white; border: none;
+            padding: 0 15px; height: 45px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-refresh-captcha:hover { background: var(--primary); transform: rotate(90deg); }
+
+        /* --- 6. BUTTONS & LINKS --- */
+        .btn {
+            width: 100%; padding: 14px; margin-top: 10px;
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            color: white; border: none; border-radius: 50px;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            font-family: 'Poppins', sans-serif; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-register { background: linear-gradient(135deg, var(--primary), var(--nav-bg)); box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3); }
+        .btn-register:hover { box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4); }
+
+        .toggle-auth {
+            margin-top: 25px; color: var(--text-gray); cursor: pointer; text-align: center;
+            font-size: 0.85rem; transition: color 0.3s;
+        }
+        .toggle-auth b { color: var(--primary); font-weight: 700; }
+        .toggle-auth:hover b { color: var(--gold); }
+
+        .forgot-link {
+            display: block; text-align: right; margin-top: 8px; margin-bottom: 10px;
+            font-size: 0.8rem; color: var(--primary); cursor: pointer;
+            text-decoration: none; font-weight: 600;
+        }
+        .forgot-link:hover { color: var(--gold); }
+
+        /* --- 7. LOADING OVERLAY --- */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid #e2e8f0;
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        .hidden { display: none !important; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="nav-brand">
+                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
+                <h1>Cendekia</h1>
+            </div>
+        </header>
+
+        <div class="auth-container">
+            <div id="auth-view">
+                
+                <!-- FORM LOGIN -->
+                <div id="login-form-container">
+                    <div class="form-header">
+                        <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
+                        <h3>Masuk Akun</h3>
+                        <p>Selamat datang kembali di dunia Aksara.</p>
+                    </div>
+
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label>Alamat Email</label>
+                            <input type="email" id="username" placeholder="contoh: nama@email.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label>Kata Sandi</label>
+                            <input type="password" id="password" placeholder="Masukkan kata sandi" required autocomplete="current-password">
+                            <i class="fa-solid fa-eye toggle-password" onclick="togglePass('password', this)"></i>
+                        </div>
+
+                        <!-- BLOK CAPTCHA -->
+                        <div class="form-group captcha-group">
+                            <label>Kode Keamanan</label>
+                            <div class="captcha-container">
+                                <canvas id="captcha-canvas"></canvas>
+                                <button type="button" id="btn-refresh-captcha" class="btn-refresh-captcha" title="Muat Ulang Kode">
+                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                </button>
+                            </div>
+                            <input type="text" id="captcha-input" placeholder="Ketik karakter pada gambar" required autocomplete="off">
+                        </div>
+
+                        <a class="forgot-link" id="to-forgot">Lupa kata sandi?</a>
+                        <button type="submit" class="btn">Masuk ke Cendekia</button>
+                    </form>
+                    <p class="toggle-auth" id="to-register">Belum menjadi anggota? <b>Daftar Sekarang</b></p>
+                </div>
+                
+                <!-- FORM REGISTER -->
+                <div id="register-form-container" class="hidden">
+                    <div class="form-header">
+                        <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
+                        <h3>Daftar Anggota</h3>
+                        <p>Mulai perjalanan tulisanmu bersama kami.</p>
+                    </div>
+
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label>Nama / Nama Pena</label>
+                            <input type="text" id="reg-name" placeholder="Masukkan nama atau nama pena" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Alamat Email</label>
+                            <input type="email" id="reg-email" placeholder="contoh: nama@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Buat Kata Sandi</label>
+                            <input type="password" id="reg-pass" placeholder="Minimal 6 karakter" required minlength="6">
+                            <i class="fa-solid fa-eye toggle-password" onclick="togglePass('reg-pass', this)"></i>
+                        </div>
+                        <button type="submit" class="btn btn-register">Buat Akun Baru</button>
+                    </form>
+                    <p class="toggle-auth" id="to-login">Sudah memiliki akun? <b>Masuk Sistem</b></p>
+                </div>
+
+                <!-- FORM VERIFIKASI KODE (via EmailJS) -->
+                <div id="verify-form-container" class="hidden">
+                    <div class="form-header">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size: 3.5rem; color: var(--gold); margin-bottom: 15px;"></i>
+                        <h3>Verifikasi Email</h3>
+                        <p>Masukkan 6 digit kode yang dikirim ke<br><b id="verify-email-display" style="color:var(--primary);"></b></p>
+                    </div>
+
+                    <form id="verify-form">
+                        <div class="form-group">
+                            <label style="text-align: center;">Kode Verifikasi</label>
+                            <input type="text" id="verify-code" placeholder="123456" required maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" style="letter-spacing:8px; text-align:center; font-weight:700; font-size:1.4rem;">
+                        </div>
+                        <button type="submit" class="btn btn-register">Verifikasi Sekarang</button>
+                    </form>
+                    <p class="toggle-auth" id="resend-code" style="margin-top:14px;">Tidak menerima kode? <b>Kirim Ulang</b></p>
+                    <p class="toggle-auth" id="back-to-login-from-verify"><i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Masuk</p>
+                </div>
+
+                <!-- FORM FORGOT PASSWORD -->
+                <div id="forgot-form-container" class="hidden">
+                    <div class="form-header">
+                        <i class="fa-solid fa-key" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 15px;"></i>
+                        <h3>Reset Sandi</h3>
+                        <p>Kami akan mengirimkan tautan pemulihan.</p>
+                    </div>
+
+                    <form id="forgot-form">
+                        <div class="form-group">
+                            <label>Email Terdaftar</label>
+                            <input type="email" id="forgot-email" placeholder="contoh: nama@email.com" required>
+                        </div>
+                        <button type="submit" class="btn">Kirim Tautan Pemulihan</button>
+                    </form>
+                    <p class="toggle-auth" id="back-to-login-from-forgot"><i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Masuk</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-text" style="margin-top:20px; font-weight:600; color:var(--primary); font-size: 0.95rem; letter-spacing: 0.5px;">Memuat Sistem...</p>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Asumsi ActivityLogger dinonaktifkan sementara jika file js/activity-logger.js belum dipindahkan ke repositori baru
+        // import ActivityLogger from "./js/activity-logger.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0", 
+            authDomain: "mading-cf676.firebaseapp.com", 
+            projectId: "mading-cf676", 
+            storageBucket: "mading-cf676.firebasestorage.app", 
+            messagingSenderId: "72175203671", 
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = 'admin@ac.id';
+        let isLoggingIn = false;
+        let isRegistering = false; 
+
+        // ==========================================
+        // EMAILJS - KIRIM KODE VERIFIKASI
+        // ==========================================
+        const EMAILJS_SERVICE_ID  = "service_r3z10ye";
+        const EMAILJS_TEMPLATE_ID = "template_jjeu22b";
+        const EMAILJS_PUBLIC_KEY  = "2a9O5Q-7Uk0b7RpmG";
+        emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+        function generateVerificationCode() {
+            return String(Math.floor(100000 + Math.random() * 900000));
+        }
+
+        function getCodeExpiry(minutes = 15) {
+            return new Date(Date.now() + minutes * 60000).toISOString();
+        }
+
+        async function sendVerificationEmail(toEmail, toName, code) {
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                to_email: toEmail,
+                to_name: toName || 'Pengguna',
+                verification_code: code
+            });
+        }
+
+        // ==========================================
+        // GENERATOR CAPTCHA GAMBAR
+        // ==========================================
+        let currentCaptchaText = "";
+
+        function generateCaptcha() {
+            const canvas = document.getElementById('captcha-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set actual canvas resolution to match display size for crisp rendering
+            canvas.width = canvas.parentElement.offsetWidth - 60; // Approximate width minus button
+            canvas.height = 45;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Latar Belakang
+            for (let i = 0; i < 30; i++) {
+                ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255}, 0.3)`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 3 + 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+            currentCaptchaText = "";
+            for (let i = 0; i < 5; i++) {
+                currentCaptchaText += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            ctx.font = 'bold 24px "Poppins", sans-serif';
+            ctx.textBaseline = 'middle';
+            const spacing = canvas.width / 6;
+            
+            for (let i = 0; i < currentCaptchaText.length; i++) {
+                const x = spacing + (i * spacing * 0.8);
+                const y = (canvas.height / 2) + (Math.random() * 6 - 3);
+                const angle = Math.random() * 0.4 - 0.2;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.fillStyle = i % 2 === 0 ? '#003366' : '#d4af37'; 
+                ctx.fillText(currentCaptchaText[i], 0, 0);
+                ctx.restore();
+            }
+
+            for (let i = 0; i < 4; i++) {
+                ctx.strokeStyle = `rgba(0, 51, 102, 0.4)`;
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            document.getElementById('captcha-input').value = "";
+        }
+
+        window.addEventListener('resize', generateCaptcha); // Regenerate on resize
+        window.addEventListener('DOMContentLoaded', generateCaptcha);
+        document.getElementById('btn-refresh-captcha').addEventListener('click', generateCaptcha);
+
+        // ==========================================
+        // UTILITAS & ROUTING
+        // ==========================================
+        const showLoading = (msg) => {
+            document.getElementById('loading-text').innerText = msg;
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        };
+        const hideLoading = () => document.getElementById('loading-overlay').classList.add('hidden');
+
+        window.togglePass = (inputId, icon) => {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text"; icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = "password"; icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        };
+
+        function routeUser(data, email) {
+            const role = data.role || 'member';
+            if (role === 'admin' || email === ADMIN_EMAIL) return 'admin/index.html'; // Akses rahasia admin jika lewat sini
+            return 'index.html'; // Publik user dikembalikan ke beranda
+        }
+
+        function resolveInitialRole(email) {
+            if (email === ADMIN_EMAIL) return 'admin';
+            return 'member';
+        }
+
+        // ==========================================
+        // NAVIGASI ANTAR FORM (UI)
+        // ==========================================
+        const loginForm   = document.getElementById('login-form-container');
+        const regForm     = document.getElementById('register-form-container');
+        const verifyForm  = document.getElementById('verify-form-container');
+        const forgotForm  = document.getElementById('forgot-form-container');
+
+        function goToVerify(email) {
+            loginForm.classList.add('hidden');
+            regForm.classList.add('hidden');
+            forgotForm.classList.add('hidden');
+            verifyForm.classList.remove('hidden');
+            document.getElementById('verify-code').value = '';
+            document.getElementById('verify-email-display').textContent = email || '';
+        }
+
+        document.getElementById('to-register').onclick = () => { loginForm.classList.add('hidden'); verifyForm.classList.add('hidden'); regForm.classList.remove('hidden'); };
+        document.getElementById('to-login').onclick    = () => { regForm.classList.add('hidden'); verifyForm.classList.add('hidden'); loginForm.classList.remove('hidden'); generateCaptcha(); };
+        document.getElementById('to-forgot').onclick   = () => { loginForm.classList.add('hidden'); verifyForm.classList.add('hidden'); forgotForm.classList.remove('hidden'); };
+        document.getElementById('back-to-login-from-forgot').onclick = () => { forgotForm.classList.add('hidden'); loginForm.classList.remove('hidden'); };
+
+        document.getElementById('back-to-login-from-verify').onclick = async () => {
+            isRegistering = false;
+            try { await signOut(auth); } catch (e) { }
+            verifyForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            generateCaptcha();
+        };
+
+        // ==========================================
+        // LISTENER AUTENTIKASI (Pengecekan Otomatis)
+        // ==========================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                if (isLoggingIn || isRegistering) return; 
+
+                showLoading('Memverifikasi Sesi...');
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        const needsVerification = !user.email.endsWith('@ac.id') && data.emailVerified === false;
+                        
+                        if (needsVerification) {
+                            hideLoading();
+                            isRegistering = true;
+                            goToVerify(user.email);
+                            return;
+                        }
+                        
+                        if (user.email === ADMIN_EMAIL && data.role !== 'admin') {
+                            await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
+                            data.role = 'admin';
+                        }
+                        window.location.href = routeUser(data, user.email);
+                    } else {
+                        const role = resolveInitialRole(user.email);
+                        const newData = { name: user.displayName || 'Penulis', email: user.email, role, status: 'active', emailVerified: true, createdAt: new Date().toISOString() };
+                        await setDoc(doc(db, 'users', user.uid), newData);
+                        window.location.href = routeUser(newData, user.email);
+                    }
+                } catch (e) {
+                    hideLoading();
+                }
+            } else {
+                hideLoading();
+            }
+        });
+
+        // ==========================================
+        // 1. LOGIN
+        // ==========================================
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const inputCaptcha = document.getElementById('captcha-input').value;
+            if (inputCaptcha.toLowerCase() !== currentCaptchaText.toLowerCase()) {
+                Swal.fire({ icon: 'error', title: 'Kode Salah', text: 'Karakter keamanan yang Anda masukkan tidak sesuai gambar.', confirmButtonColor: '#dc3545' });
+                generateCaptcha(); 
+                return;
+            }
+
+            showLoading('Memeriksa Kredensial...');
+            isLoggingIn = true;
+            
+            const email = document.getElementById('username').value.trim();
+            const pass  = document.getElementById('password').value;
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                showLoading('Memeriksa Status Akun...');
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                let data = snap.exists() ? snap.data() : null;
+
+                if (!data) {
+                    const role = resolveInitialRole(user.email);
+                    data = { name: user.email, email: user.email, role, status: 'active', emailVerified: true, createdAt: new Date().toISOString() };
+                    await setDoc(doc(db, 'users', user.uid), data);
+                }
+
+                const needsVerification = !email.endsWith('@ac.id') && data.emailVerified === false;
+
+                if (needsVerification) {
+                    isLoggingIn = false;
+                    isRegistering = true;
+                    hideLoading();
+                    Swal.fire({
+                        icon: 'warning', title: 'Email Belum Diverifikasi',
+                        html: `Akun Anda belum diverifikasi.<br><br>Silakan masukkan kode verifikasi yang telah kami kirim ke email <b>${email}</b>.`,
+                        confirmButtonColor: '#003366', confirmButtonText: 'Masukkan Kode'
+                    }).then(() => { goToVerify(email); });
+                    generateCaptcha();
+                    return;
+                }
+
+                showLoading('Memasuki Sistem...');
+                // Uncomment jika activity logger sudah diimplementasi: await ActivityLogger.logLogin(user.uid, data.name || 'User', user.email);
+                
+                // Set OneSignal ID for push notifications
+                if(window.OneSignal) OneSignal.login(user.uid);
+                
+                isLoggingIn = false;
+                window.location.href = routeUser(data, user.email);
+
+            } catch (error) {
+                isLoggingIn = false;
+                hideLoading();
+                Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Kredensial yang Anda masukkan salah atau akun tidak ditemukan.', confirmButtonColor: '#003366' });
+                generateCaptcha(); 
+            }
+        };
+
+        // ==========================================
+        // 2. REGISTER
+        // ==========================================
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const name  = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass  = document.getElementById('reg-pass').value;
+            
+            if (email.endsWith('@ac.id')) {
+                Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Email dengan domain korporat (@ac.id) tidak dapat didaftarkan secara publik.', confirmButtonColor: '#dc3545' });
+                return;
+            }
+
+            showLoading('Mendaftarkan Identitas...');
+            isRegistering = true; 
+            const role = resolveInitialRole(email);
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                const code = generateVerificationCode();
+                const expiry = getCodeExpiry(15);
+
+                await setDoc(doc(db, 'users', cred.user.uid), {
+                    name, email, role,
+                    status: 'active', emailVerified: false,
+                    verificationCode: code, codeExpiry: expiry,
+                    createdAt: new Date().toISOString()
+                });
+
+                try {
+                    await sendVerificationEmail(email, name, code);
+                } catch (mailErr) {
+                    console.error('Gagal mengirim email verifikasi:', mailErr);
+                }
+
+                hideLoading();
+                Swal.fire({
+                    icon: 'info', title: 'Satu Langkah Lagi!',
+                    html: `Kami telah mengirimkan kode verifikasi 6 digit ke email <b>${email}</b>.<br><br><span style="color:#dc3545; font-weight:bold;">TIPS:</span> Periksa folder <b>SPAM/JUNK</b> jika kode belum muncul di Kotak Masuk.`,
+                    confirmButtonColor: '#0f766e', confirmButtonText: 'Masukkan Kode'
+                }).then(() => {
+                    document.getElementById('register-form').reset();
+                    goToVerify(email);
+                });
+
+            } catch (err) {
+                isRegistering = false;
+                hideLoading();
+                let errorMsg = err.message;
+                if (err.code === 'auth/email-already-in-use') errorMsg = 'Email ini sudah terdaftar. Silakan masuk (login).';
+                Swal.fire({ icon: 'error', title: 'Gagal Mendaftar', text: errorMsg, confirmButtonColor: '#dc3545' });
+            }
+        };
+
+        // ==========================================
+        // 3. VERIFIKASI KODE
+        // ==========================================
+        document.getElementById('verify-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const codeInput = document.getElementById('verify-code').value.trim();
+            const user = auth.currentUser;
+
+            if (!user) {
+                isRegistering = false;
+                Swal.fire({ icon: 'warning', title: 'Sesi Berakhir', text: 'Sesi Anda telah berakhir. Silakan masuk kembali.', confirmButtonColor: '#003366' }).then(() => {
+                    verifyForm.classList.add('hidden'); loginForm.classList.remove('hidden'); generateCaptcha();
+                });
+                return;
+            }
+
+            showLoading('Memeriksa Kode...');
+            try {
+                const uref = doc(db, 'users', user.uid);
+                const snap = await getDoc(uref);
+
+                if (!snap.exists()) {
+                    hideLoading();
+                    Swal.fire({ icon: 'error', title: 'Data Tidak Ditemukan', text: 'Data akun Anda tidak ditemukan di sistem.', confirmButtonColor: '#dc3545' });
+                    return;
+                }
+
+                const data = snap.data();
+
+                if (data.emailVerified) {
+                    isRegistering = false;
+                    hideLoading();
+                    window.location.href = routeUser(data, user.email);
+                    return;
+                }
+
+                if (!data.verificationCode || data.verificationCode !== codeInput) {
+                    hideLoading();
+                    Swal.fire({ icon: 'error', title: 'Kode Salah', text: 'Kode verifikasi yang Anda masukkan tidak sesuai.', confirmButtonColor: '#dc3545' });
+                    return;
+                }
+
+                if (data.codeExpiry && new Date(data.codeExpiry).getTime() < Date.now()) {
+                    hideLoading();
+                    Swal.fire({ icon: 'warning', title: 'Kode Kedaluwarsa', text: 'Kode verifikasi sudah kedaluwarsa. Silakan minta kode baru.', confirmButtonColor: '#d4af37' });
+                    return;
+                }
+
+                await updateDoc(uref, { emailVerified: true, verificationCode: null, codeExpiry: null });
+                data.emailVerified = true;
+
+                // Uncomment if activity logger is present: await ActivityLogger.logLogin(user.uid, data.name || 'User', user.email);
+                if(window.OneSignal) OneSignal.login(user.uid);
+
+                isRegistering = false;
+                hideLoading();
+                Swal.fire({
+                    icon: 'success', title: 'Verifikasi Berhasil!', text: 'Akun Anda sudah aktif. Mengalihkan...',
+                    confirmButtonColor: '#0f766e', timer: 1800, showConfirmButton: false
+                }).then(() => {
+                    window.location.href = routeUser(data, user.email);
+                });
+
+            } catch (err) {
+                hideLoading();
+                Swal.fire({ icon: 'error', title: 'Terjadi Kesalahan', text: err.message, confirmButtonColor: '#dc3545' });
+            }
+        };
+
+        // KIRIM ULANG KODE
+        let resendCooldown = false;
+        document.getElementById('resend-code').onclick = async () => {
+            if (resendCooldown) return;
+            const user = auth.currentUser;
+
+            if (!user) {
+                Swal.fire({ icon: 'warning', title: 'Sesi Berakhir', text: 'Silakan masuk kembali untuk mengirim ulang kode.', confirmButtonColor: '#003366' });
+                return;
+            }
+
+            showLoading('Mengirim Ulang Kode...');
+            try {
+                const uref = doc(db, 'users', user.uid);
+                const snap = await getDoc(uref);
+                const data = snap.exists() ? snap.data() : null;
+
+                if (data && data.emailVerified) {
+                    hideLoading();
+                    Swal.fire({ icon: 'info', title: 'Sudah Terverifikasi', text: 'Akun ini sudah terverifikasi. Silakan masuk.', confirmButtonColor: '#003366' });
+                    return;
+                }
+
+                const code = generateVerificationCode();
+                const expiry = getCodeExpiry(15);
+                await updateDoc(uref, { verificationCode: code, codeExpiry: expiry });
+                await sendVerificationEmail(user.email, (data && data.name) || 'Pengguna', code);
+
+                hideLoading();
+                Swal.fire({ icon: 'success', title: 'Kode Terkirim', text: 'Kode verifikasi baru telah dikirim ke email Anda.', confirmButtonColor: '#0f766e' });
+
+                resendCooldown = true;
+                setTimeout(() => { resendCooldown = false; }, 60000); 
+
+            } catch (err) {
+                hideLoading();
+                Swal.fire({ icon: 'error', title: 'Gagal Mengirim', text: err.message, confirmButtonColor: '#dc3545' });
+            }
+        };
+
+        // ==========================================
+        // 4. FORGOT PASSWORD
+        // ==========================================
+        document.getElementById('forgot-form').onsubmit = async (e) => {
+            e.preventDefault();
+            showLoading('Mengirim Tautan...');
+            try {
+                await sendPasswordResetEmail(auth, document.getElementById('forgot-email').value);
+                hideLoading();
+                Swal.fire({
+                    icon: 'success', title: 'Email Terkirim!',
+                    text: 'Silakan periksa kotak masuk (atau spam) email Anda untuk instruksi pemulihan.',
+                    confirmButtonColor: '#0f766e'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        forgotForm.classList.add('hidden');
+                        loginForm.classList.remove('hidden');
+                        generateCaptcha();
+                    }
+                });
+            } catch (error) {
+                hideLoading();
+                Swal.fire({ icon: 'error', title: 'Pengiriman Gagal', text: 'Pastikan email yang Anda masukkan terdaftar di sistem kami.', confirmButtonColor: '#dc3545' });
+            }
+        };
+    </script>
+</body>
+</html>
