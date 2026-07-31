@@ -127,9 +127,13 @@
         .scroll-row { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; scrollbar-width: none; }
         .scroll-row::-webkit-scrollbar { display: none; }
         
-        .book-card { width: 100px; flex-shrink: 0; cursor: pointer; }
+        .book-card { width: 100px; flex-shrink: 0; cursor: pointer; position: relative; }
         .book-cover { width: 100%; height: 140px; border-radius: 8px; background-size: cover; background-position: center; background-color: #cbd5e1; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 8px;}
         .book-title { font-size: 0.75rem; font-weight: 700; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;}
+        .book-badge-new {
+            position: absolute; top: 6px; left: 6px; background: #059669; color: white;
+            font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; z-index: 2;
+        }
 
         /* --- MENGIKUTI LIST --- */
         .follow-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer;}
@@ -298,6 +302,14 @@
         let targetUserData = null;
         let isFollowing = false;
 
+        // Helper: ambil waktu (ms) dari Firestore Timestamp secara aman
+        function toMillisSafe(ts) {
+            if (!ts) return 0;
+            if (typeof ts.toMillis === 'function') return ts.toMillis();
+            if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+            return 0;
+        }
+
         // 1. Tab Switcher
         window.switchTab = (tabName) => {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -352,9 +364,12 @@
         }
 
         // 4. Tarik Semua Data Profil Target
+        // Setiap bagian (karya, pustaka, following, feed) dibuatkan try/catch TERPISAH.
+        // Jadi kalau salah satu query gagal, bagian lainnya tetap bisa tampil normal
+        // -- tidak saling menjatuhkan seperti sebelumnya.
         async function fetchProfileData() {
+            // A. Data Utama User (wajib berhasil, kalau gagal baru hentikan proses)
             try {
-                // A. Data Utama User
                 const userDoc = await getDoc(doc(db, "users", targetUserId));
                 if (!userDoc.exists()) {
                     Swal.fire('Tidak Ditemukan', 'Profil ini tidak tersedia atau telah dihapus.', 'error').then(()=>window.location.href='index.html');
@@ -363,7 +378,6 @@
 
                 targetUserData = userDoc.data();
                 
-                // Render Header & Bio
                 document.getElementById('p-name').innerText = targetUserData.name || 'Penulis Cendekia';
                 document.getElementById('p-username').innerText = '@' + (targetUserData.username || `user${targetUserId.substring(0,5)}`);
                 document.getElementById('p-bio').innerText = targetUserData.bio || 'Pengguna ini belum menuliskan bio.';
@@ -372,26 +386,73 @@
                 if(targetUserData.profilePicBase64) document.getElementById('p-avatar').style.backgroundImage = `url('${targetUserData.profilePicBase64}')`;
 
                 document.getElementById('stat-pengikut').innerText = targetUserData.followersCount || 0;
+            } catch (error) {
+                console.error("Gagal memuat data utama profil:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Error Sistem', 'Gagal memuat data profil. Periksa koneksi Anda.', 'error');
+                return; // Tanpa data user, bagian lain tidak relevan untuk dilanjutkan
+            }
 
-                // B. Data Karya Diterbitkan
+            // Jalankan semua bagian lain secara independen (tidak saling memblokir)
+            await Promise.allSettled([
+                loadKarya(),
+                loadPustaka(),
+                loadFollowing(),
+                fetchAnnouncements()
+            ]);
+
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // 4B. Karya Diterbitkan — diurutkan dari yang paling baru terbit,
+        // dilengkapi badge "Baru" untuk karya yang terbit dalam 7 hari terakhir.
+        async function loadKarya() {
+            try {
                 const qKarya = query(collection(db, "published_stories"), where("authorId", "==", targetUserId));
                 const snapKarya = await getDocs(qKarya);
-                document.getElementById('stat-karya').innerText = snapKarya.size;
-                
+
+                let karyaList = [];
+                snapKarya.forEach(d => karyaList.push({ id: d.id, ...d.data() }));
+
+                // Urutkan manual di JS (hindari perlu composite index Firestore)
+                karyaList.sort((a, b) => {
+                    const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
+                    const timeB = toMillisSafe(b.publishedAt) || toMillisSafe(b.updatedAt);
+                    return timeB - timeA;
+                });
+
+                document.getElementById('stat-karya').innerText = karyaList.length;
+
+                const now = Date.now();
+                const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
                 let karyaHtml = '';
-                snapKarya.forEach(d => {
-                    const k = d.data();
+                karyaList.forEach(k => {
                     const bg = k.coverBase64 ? `url('${k.coverBase64}')` : 'none';
+                    const publishedTime = toMillisSafe(k.publishedAt);
+                    const isNew = publishedTime > 0 && (now - publishedTime) < sevenDaysMs;
+                    const badge = isNew ? `<span class="book-badge-new">Baru</span>` : '';
+                    const title = k.title || 'Tanpa Judul';
+
                     karyaHtml += `
-                        <div class="book-card" onclick="window.location.href='read.html?id=${d.id}'">
+                        <div class="book-card" onclick="window.location.href='read.html?id=${k.id}'">
+                            ${badge}
                             <div class="book-cover" style="background-image: ${bg}; border-color:var(--gold);"></div>
-                            <h4 class="book-title" style="color:var(--primary);">${k.title}</h4>
+                            <h4 class="book-title" style="color:var(--primary);">${title}</h4>
                         </div>
                     `;
                 });
-                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
 
-                // C. Data Pustaka (Daftar Bacaan)
+                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
+            } catch (error) {
+                console.error("Gagal memuat karya diterbitkan:", error);
+                document.getElementById('list-karya').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat karya. Coba muat ulang halaman.</p></div>`;
+            }
+        }
+
+        // 4C. Pustaka (Daftar Bacaan)
+        async function loadPustaka() {
+            try {
                 const qPustaka = query(collection(db, "users", targetUserId, "library"), where("isArchived", "==", false));
                 const snapPustaka = await getDocs(qPustaka);
                 document.getElementById('stat-pustaka').innerText = snapPustaka.size;
@@ -400,16 +461,24 @@
                 snapPustaka.forEach(d => {
                     const p = d.data();
                     const bg = p.coverBase64 ? `url('${p.coverBase64}')` : 'none';
+                    const title = p.title || 'Tanpa Judul';
                     pustakaHtml += `
                         <div class="book-card" onclick="window.location.href='read.html?id=${p.storyId}'">
                             <div class="book-cover" style="background-image: ${bg};"></div>
-                            <h4 class="book-title">${p.title}</h4>
+                            <h4 class="book-title">${title}</h4>
                         </div>
                     `;
                 });
                 document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
+            } catch (error) {
+                console.error("Gagal memuat pustaka:", error);
+                document.getElementById('list-pustaka').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat pustaka.</p></div>`;
+            }
+        }
 
-                // D. Data Mengikuti (Following)
+        // 4D. Mengikuti (Following)
+        async function loadFollowing() {
+            try {
                 const qFollow = query(collection(db, "users", targetUserId, "following"));
                 const snapFollow = await getDocs(qFollow);
                 
@@ -417,43 +486,41 @@
                 snapFollow.forEach(d => {
                     const f = d.data();
                     const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    const name = f.name || 'Penulis Cendekia';
                     followHtml += `
                         <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
                             <div class="follow-ava" style="background-image: ${bg};"></div>
                             <div>
-                                <h4 class="follow-name">${f.name}</h4>
+                                <h4 class="follow-name">${name}</h4>
                                 <p class="follow-user">@${f.username || `user${d.id.substring(0,5)}`}</p>
                             </div>
                         </div>
                     `;
                 });
                 document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
-
-                // E. Data Pengumuman (Feed)
-                fetchAnnouncements();
-
-                document.getElementById('loading-overlay').style.display = 'none';
-
             } catch (error) {
-                console.error("Gagal memuat profil:", error);
-                document.getElementById('loading-overlay').style.display = 'none';
-                Swal.fire('Error Sistem', 'Gagal memuat data. Periksa koneksi Anda.', 'error');
+                console.error("Gagal memuat daftar mengikuti:", error);
+                document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat daftar mengikuti.</p></div>`;
             }
         }
 
         // 5. Cek Status Follow (Jika Other Profile)
         async function checkFollowStatus() {
             if (!currentUserId) return; // Belum login
-            const followDoc = await getDoc(doc(db, "users", currentUserId, "following", targetUserId));
-            const btn = document.getElementById('btn-follow');
-            if (followDoc.exists()) {
-                isFollowing = true;
-                btn.innerText = "Mengikuti";
-                btn.classList.add('following');
-            } else {
-                isFollowing = false;
-                btn.innerText = "Ikuti";
-                btn.classList.remove('following');
+            try {
+                const followDoc = await getDoc(doc(db, "users", currentUserId, "following", targetUserId));
+                const btn = document.getElementById('btn-follow');
+                if (followDoc.exists()) {
+                    isFollowing = true;
+                    btn.innerText = "Mengikuti";
+                    btn.classList.add('following');
+                } else {
+                    isFollowing = false;
+                    btn.innerText = "Ikuti";
+                    btn.classList.remove('following');
+                }
+            } catch (error) {
+                console.error("Gagal memeriksa status mengikuti:", error);
             }
         }
 
@@ -465,14 +532,12 @@
             }
             
             const btn = document.getElementById('btn-follow');
-            const targetRef = doc(db, "users", targetUserId);
             const myFollowRef = doc(db, "users", currentUserId, "following", targetUserId);
 
             try {
                 if (isFollowing) {
                     // Unfollow
                     await deleteDoc(myFollowRef);
-                    // Kurangi followers count (Simplified approach)
                     let currentCount = parseInt(document.getElementById('stat-pengikut').innerText);
                     document.getElementById('stat-pengikut').innerText = Math.max(0, currentCount - 1);
                     
@@ -528,7 +593,6 @@
                     const data = d.data();
                     const bg = targetUserData.profilePicBase64 ? `url('${targetUserData.profilePicBase64}')` : 'none';
                     
-                    // Format waktu sederhana
                     const timeObj = data.createdAt ? data.createdAt.toDate() : new Date();
                     const timeStr = timeObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
 
@@ -547,7 +611,10 @@
                 });
                 container.innerHTML = html;
 
-            } catch(e) { console.error("Gagal ambil feed:", e); }
+            } catch(e) {
+                console.error("Gagal ambil feed:", e);
+                document.getElementById('feed-container').innerHTML = `<div class="empty-state"><p>Gagal memuat pengumuman.</p></div>`;
+            }
         }
 
         // 8. Publish Pengumuman (Khusus Own Profile)
@@ -559,18 +626,14 @@
             }
 
             try {
-                // Simpan ke database
                 await addDoc(collection(db, "users", currentUserId, "announcements"), {
                     text: text,
                     createdAt: serverTimestamp()
                 });
 
                 document.getElementById('announce-text').value = '';
-                
-                // Refresh list pengumuman
                 fetchAnnouncements();
 
-                // Notifikasi sukses (Simulasi integrasi OneSignal Fan-Out)
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil Dipublikasikan!',
