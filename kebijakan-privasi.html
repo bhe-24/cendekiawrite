@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kebijakan Privasi - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #475569;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .btn-back { background: none; border: none; color: var(--text-dark); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-back:hover { color: var(--primary); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: var(--primary); margin: 0; }
+
+        /* --- HERO HEADER --- */
+        .doc-header {
+            background: linear-gradient(135deg, #0f172a 0%, var(--primary) 100%);
+            padding: 40px 25px; text-align: center; color: white;
+            position: relative; overflow: hidden;
+        }
+        .doc-header::after {
+            content: '\f3ed'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -20px; bottom: -30px; font-size: 10rem;
+            color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
+        }
+        .doc-icon {
+            width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 16px;
+            display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
+            color: var(--gold); margin: 0 auto 15px auto; border: 1px solid rgba(255,255,255,0.2);
+            position: relative; z-index: 2;
+        }
+        .doc-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 10px 0; position: relative; z-index: 2;}
+        .doc-meta { font-size: 0.8rem; color: #cbd5e1; position: relative; z-index: 2;}
+
+        /* --- CONTENT AREA --- */
+        .doc-content { padding: 30px 25px; font-family: 'Lora', serif; line-height: 1.8; color: #334155; }
+        .doc-intro { font-size: 0.95rem; margin-bottom: 30px; text-align: justify; }
+
+        /* --- BAB & PASAL STYLING --- */
+        .chapter-container { margin-bottom: 40px; }
+        .chapter-title {
+            font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 700;
+            color: var(--primary); margin: 0 0 20px 0; text-align: center;
+            border-bottom: 2px solid var(--gold); padding-bottom: 10px; text-transform: uppercase;
+        }
+        
+        .article-block { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start; }
+        .article-num {
+            font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700;
+            background: #f1f5f9; color: var(--primary); padding: 5px 12px;
+            border-radius: 8px; flex-shrink: 0; min-width: 80px; text-align: center;
+            border: 1px solid #cbd5e1;
+        }
+        .article-text { font-size: 0.95rem; margin: 0; text-align: justify; }
+
+        /* SCROLL TO TOP */
+        .btn-top {
+            position: fixed; bottom: 30px; right: 20px; width: 45px; height: 45px;
+            background: var(--gold); color: white; border: none; border-radius: 50%;
+            font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            opacity: 0; visibility: hidden; transition: 0.3s; z-index: 100;
+        }
+        .btn-top.show { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Dokumen Hukum</h1>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <div class="doc-header">
+            <div class="doc-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2 class="doc-title">Kebijakan Privasi</h2>
+            <p class="doc-meta">Efektif mulai: 1 Agustus 2026<br>Versi Dokumen: 1.0.0</p>
+        </div>
+
+        <div class="doc-content">
+            <p class="doc-intro">
+                Selamat datang di <b>Cendekia Aksara</b>. Perlindungan data pribadi Anda adalah prioritas utama kami. Dokumen ini disusun secara tegas, jelas, dan mengikat secara hukum untuk menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi Anda selama Anda menggunakan ekosistem platform Cendekia Aksara.
+            </p>
+
+            <!-- BAB I -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab I: Ketentuan Umum</h3>
+                <div class="article-block"><div class="article-num">Pasal 1</div><p class="article-text">"Platform" merujuk pada seluruh ekosistem Cendekia Aksara, mencakup aplikasi web (PWA), situs web utama, serta layanan backend terkait.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 2</div><p class="article-text">"Pengguna" merujuk pada setiap individu yang mendaftar, mengakses, membaca, atau menerbitkan naskah di dalam Platform.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 3</div><p class="article-text">Dengan mendaftar atau menggunakan Platform, Pengguna menyatakan persetujuan mutlak terhadap seluruh ketentuan dalam Kebijakan Privasi ini tanpa paksaan.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 4</div><p class="article-text">Kebijakan ini mengacu pada peraturan perlindungan data pribadi yang berlaku di yurisdiksi Republik Indonesia (UU PDP).</p></div>
+                <div class="article-block"><div class="article-num">Pasal 5</div><p class="article-text">Cendekia Aksara tidak akan pernah menjual, menyewakan, atau menukar data pribadi Pengguna kepada pihak ketiga untuk tujuan komersial.</p></div>
+            </div>
+
+            <!-- BAB II -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab II: Pengumpulan Data</h3>
+                <div class="article-block"><div class="article-num">Pasal 6</div><p class="article-text">Saat pendaftaran akun, kami mengumpulkan data dasar berupa Nama Lengkap, Alamat Email, *Username*, dan Kata Sandi terenkripsi.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 7</div><p class="article-text">Informasi tambahan profil, termasuk Bio, Foto Profil (*Avatar*), dan preferensi bacaan bersifat opsional dan dikendalikan sepenuhnya oleh Pengguna.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 8</div><p class="article-text">Kami mengamankan semua data *User Generated Content* (UGC), yang mencakup naskah cerita, draf, komentar, dan pemungutan suara (*votes*).</p></div>
+                <div class="article-block"><div class="article-num">Pasal 9</div><p class="article-text">Aktivitas membaca, termasuk riwayat pustaka dan *bookmark* halaman, direkam untuk keperluan fitur "Lanjutkan Membaca".</p></div>
+                <div class="article-block"><div class="article-num">Pasal 10</div><p class="article-text">Data teknis perangkat dikumpulkan otomatis, mencakup alamat IP, jenis *browser*, sistem operasi, serta pengidentifikasi unik perangkat.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 11</div><p class="article-text">Jika Pengguna mengaktifkan notifikasi, kami mengumpulkan ID OneSignal untuk keperluan pengiriman pemberitahuan *Push* ke perangkat.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 12</div><p class="article-text">Data yang diperoleh dari integrasi masuk sosial (seperti Google Sign-In) tunduk pada izin yang diberikan Pengguna pada platform terkait.</p></div>
+            </div>
+
+            <!-- BAB III -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab III: Penggunaan Data</h3>
+                <div class="article-block"><div class="article-num">Pasal 13</div><p class="article-text">Data pribadi digunakan utamanya untuk memfasilitasi pembuatan akun, otentikasi sesi, dan penyediaan layanan baca-tulis naskah.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 14</div><p class="article-text">Platform menggunakan data riwayat baca untuk melatih algoritma personalisasi, guna merekomendasikan cerita yang relevan bagi Pengguna.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 15</div><p class="article-text">Data interaksi (jumlah tayangan dan *vote*) digunakan untuk menyusun peringkat (*Leaderboard*) dan mengalkulasi popularitas karya di beranda.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 16</div><p class="article-text">Alamat email digunakan untuk mengirimkan informasi administratif, pemulihan kata sandi, serta buletin komunitas jika disetujui Pengguna.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 17</div><p class="article-text">Platform memanfaatkan analitik perilaku untuk menambal *bug*, meningkatkan *User Experience* (UX), dan menjaga stabilitas server.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 18</div><p class="article-text">Sistem melakukan pemindaian otomatis terhadap komentar untuk mendeteksi ujaran kebencian (*toxic*) atau kata kunci berbahaya guna menjaga ekosistem tetap aman.</p></div>
+            </div>
+
+            <!-- BAB IV -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab IV: Penyimpanan & Keamanan</h3>
+                <div class="article-block"><div class="article-num">Pasal 19</div><p class="article-text">Seluruh data pengguna disimpan dengan aman pada infrastruktur *cloud* berskala global yang dikelola oleh mitra layanan kami (Google Firebase).</p></div>
+                <div class="article-block"><div class="article-num">Pasal 20</div><p class="article-text">Transmisi data antara perangkat Pengguna dan server dilindungi menggunakan protokol enkripsi standar industri (SSL/TLS).</p></div>
+                <div class="article-block"><div class="article-num">Pasal 21</div><p class="article-text">Kata sandi Pengguna tidak pernah disimpan dalam bentuk teks biasa (plain-text), melainkan melalui proses *hashing* kriptografis searah.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 22</div><p class="article-text">Pengguna bertanggung jawab penuh untuk menjaga kerahasiaan kredensial *login* dan tidak membagikannya kepada entitas mana pun.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 23</div><p class="article-text">Data akan dipertahankan selama akun Pengguna berstatus aktif untuk memastikan kesinambungan riwayat pustaka dan naskah.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 24</div><p class="article-text">Dalam skenario pelanggaran atau insiden kebocoran keamanan siber, Cendekia Aksara akan menginformasikan pengguna selambat-lambatnya 3x24 jam.</p></div>
+            </div>
+
+            <!-- BAB V -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab V: Keterlibatan Pihak Ketiga</h3>
+                <div class="article-block"><div class="article-num">Pasal 25</div><p class="article-text">Cendekia Aksara berhak membagikan sebagian data kepada Pihak Ketiga yang bertindak sebagai Penyedia Infrastruktur Layanan (*Service Providers*).</p></div>
+                <div class="article-block"><div class="article-num">Pasal 26</div><p class="article-text">Layanan *Push Notification* didukung oleh OneSignal, yang memiliki kewenangan akses terbatas pada *Device ID* untuk mengirimkan sinyal pemberitahuan.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 27</div><p class="article-text">Pihak Ketiga diwajibkan oleh perjanjian kerahasiaan (NDA) untuk tidak memproses data pengguna di luar instruksi tertulis kami.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 28</div><p class="article-text">Data diagregasi secara anonim (*de-identified data*) dapat dibagikan untuk tujuan statistik, kemitraan pemasaran, atau laporan pers.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 29</div><p class="article-text">Kami berhak membuka data Pengguna tanpa izin jika diwajibkan oleh proses hukum, surat perintah pengadilan, atau investigasi kriminal dari penegak hukum.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 30</div><p class="article-text">Dalam hal merger, akuisisi, atau kepailitan korporasi, aset data pengguna akan menjadi bagian dari transisi bisnis dengan perlindungan hukum yang setara.</p></div>
+            </div>
+
+            <!-- BAB VI -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VI: Hak-Hak Pengguna</h3>
+                <div class="article-block"><div class="article-num">Pasal 31</div><p class="article-text">Pengguna berhak (*Right to Access*) mengakses dan meninjau informasi pribadi yang kami kumpulkan melalui menu Pengaturan Akun.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 32</div><p class="article-text">Pengguna memegang kendali penuh untuk memperbarui, mengedit, atau memperbaiki data *username*, foto profil, dan biografi kapan saja.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 33</div><p class="article-text">Hak untuk Dilupakan (*Right to be Forgotten*): Pengguna dapat meminta penghapusan total atas akun mereka secara permanen.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 34</div><p class="article-text">Penghapusan akun akan turut memusnahkan semua draf, riwayat bacaan, dan naskah terbit yang belum diamankan oleh penulis.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 35</div><p class="article-text">Pengguna memiliki otoritas mutlak untuk mencabut izin *Push Notification* kapan saja langsung melalui menu pengaturan perangkat HP masing-masing.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 36</div><p class="article-text">Permintaan ekspor data atau pencabutan *consent* yang lebih kompleks dapat diajukan secara formal melalui kontak layanan bantuan.</p></div>
+            </div>
+
+            <!-- BAB VII -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VII: Teknologi Pelacakan</h3>
+                <div class="article-block"><div class="article-num">Pasal 37</div><p class="article-text">Platform mendayagunakan *Cookies* dan mekanisme *Local Storage*/*Session Storage* untuk menyimpan otentikasi sesi dan preferensi mode layar.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 38</div><p class="article-text">Data yang tersimpan di *Local Storage* membantu fungsi proteksi seperti *Spam View Protection* pada ruang baca untuk memastikan validitas statistik karya.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 39</div><p class="article-text">Pengguna dapat menolak *Cookies* melalui pengaturan peramban internet (*browser*), namun hal ini dapat menonaktifkan sejumlah fungsi krusial.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 40</div><p class="article-text">Platform tidak merespons terhadap sinyal pencegahan pelacakan (*Do-Not-Track/DNT*) yang dikirimkan oleh browser pihak ketiga.</p></div>
+            </div>
+
+            <!-- BAB VIII -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab VIII: Hak Cipta Naskah</h3>
+                <div class="article-block"><div class="article-num">Pasal 41</div><p class="article-text">Platform melindungi data naskah penulis melalui implementasi skrip pelarangan klik-kanan, pemblokiran teks, dan instrumen anti-*copy-paste* di ruang baca.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 42</div><p class="article-text">Setiap karya orisinal yang diterbitkan sepenuhnya adalah Hak Kekayaan Intelektual penulis; Platform hanya berfungsi sebagai medium distribusi literatur.</p></div>
+            </div>
+
+            <!-- BAB IX -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab IX: Batasan Usia</h3>
+                <div class="article-block"><div class="article-num">Pasal 43</div><p class="article-text">Platform tidak dirancang secara spesifik untuk audiens di bawah batas usia minimum digital, yakni 13 (tiga belas) tahun.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 44</div><p class="article-text">Jika teridentifikasi secara valid bahwa akun dioperasikan oleh anak di bawah umur tanpa pendampingan wali, Platform berhak melakukan pemusnahan data tersebut.</p></div>
+            </div>
+
+            <!-- BAB X -->
+            <div class="chapter-container">
+                <h3 class="chapter-title">Bab X: Penutup</h3>
+                <div class="article-block"><div class="article-num">Pasal 45</div><p class="article-text">Kebijakan Privasi ini dapat mengalami amandemen sewaktu-waktu. Revisi signifikan akan dikomunikasikan secara eksplisit melalui sistem *broadcast* notifikasi.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 46</div><p class="article-text">Konflik, sengketa perselisihan, atau multitafsir akan diselesaikan berlandaskan asas musyawarah yang tertunduk pada Hukum Republik Indonesia.</p></div>
+                <div class="article-block"><div class="article-num">Pasal 47</div><p class="article-text">Korespondensi terkait aduan, pelaporan penyalahgunaan privasi, atau penghapusan data masal dapat ditujukan ke Layanan Pusat Cendekia Aksara melalui email: <b>legal@cendekia-aksara.id</b>.</p></div>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <!-- TOMBOL SCROLL TO TOP -->
+    <button class="btn-top" id="btn-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Logika memunculkan tombol Scroll to Top
+        const btnTop = document.getElementById('btn-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btnTop.classList.add('show');
+            } else {
+                btnTop.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
