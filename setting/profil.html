@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ubah Profil - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+        .btn-save-nav {
+            background: none; border: none; color: var(--gold); font-family: 'Poppins'; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer;
+        }
+        .btn-save-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .cover-edit-area { position: relative; width: 100%; height: 150px; background-color: var(--primary); background-size: cover; background-position: center; }
+        .cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 0.8rem; flex-direction: column; gap: 6px;}
+
+        .avatar-edit-wrapper { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; background-color: #cbd5e1; margin: -48px auto 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .avatar-edit-img { width: 100%; height: 100%; border-radius: 50%; background-size: cover; background-position: center; }
+        .avatar-edit-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; font-size: 1rem;}
+
+        .form-section { padding: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-gray); margin-bottom: 6px; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #e2e8f0;
+            background: white; font-family: 'Poppins'; font-size: 0.9rem; color: var(--text-dark);
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+        .form-group textarea { resize: none; min-height: 100px; }
+        .char-count { text-align: right; font-size: 0.7rem; color: #94a3b8; margin-top: 4px; }
+        .username-hint { font-size: 0.75rem; color: var(--text-gray); margin-top: 4px; }
+        .username-hint.error { color: #dc2626; }
+        .username-hint.ok { color: #16a34a; }
+
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Profil...</div>
+        </div>
+
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Ubah Profil</h1>
+            <button class="btn-save-nav" id="btn-save" onclick="saveProfile()">Simpan</button>
+        </header>
+
+        <div class="cover-edit-area" id="cover-preview">
+            <div class="cover-overlay" onclick="document.getElementById('input-cover').click()">
+                <i class="fa-solid fa-camera"></i>
+                <span>Ganti Sampul</span>
+            </div>
+        </div>
+        <input type="file" id="input-cover" accept="image/*">
+
+        <div class="avatar-edit-wrapper">
+            <div class="avatar-edit-img" id="avatar-preview"></div>
+            <div class="avatar-edit-overlay" onclick="document.getElementById('input-avatar').click()">
+                <i class="fa-solid fa-camera"></i>
+            </div>
+        </div>
+        <input type="file" id="input-avatar" accept="image/*">
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>Nama Pena</label>
+                <input type="text" id="f-name" maxlength="60" placeholder="Nama yang ditampilkan">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="f-username" maxlength="20" placeholder="username_unik" oninput="checkUsername()">
+                <p class="username-hint" id="username-hint">Huruf kecil, angka, dan underscore saja.</p>
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea id="f-bio" maxlength="160" oninput="updateCharCount()" placeholder="Ceritakan sedikit tentang dirimu sebagai penulis..."></textarea>
+                <p class="char-count"><span id="bio-count">0</span>/160</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let originalUsername = '';
+        let newCoverBase64 = null;
+        let newAvatarBase64 = null;
+        let usernameValid = true;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    document.getElementById('f-name').value = d.name || '';
+                    document.getElementById('f-username').value = d.username || '';
+                    document.getElementById('f-bio').value = d.bio || '';
+                    originalUsername = d.username || '';
+                    updateCharCount();
+                    if (d.coverBase64) document.getElementById('cover-preview').style.backgroundImage = `url('${d.coverBase64}')`;
+                    if (d.profilePicBase64) document.getElementById('avatar-preview').style.backgroundImage = `url('${d.profilePicBase64}')`;
+                }
+            } catch (e) {
+                console.error("Gagal memuat data profil:", e);
+            }
+            document.getElementById('loading-overlay').style.display = 'none';
+        });
+
+        window.updateCharCount = () => {
+            document.getElementById('bio-count').innerText = document.getElementById('f-bio').value.length;
+        };
+
+        function compressImage(file, maxWidth) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.75));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.getElementById('input-cover').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            newCoverBase64 = await compressImage(file, 800);
+            document.getElementById('cover-preview').style.backgroundImage = `url('${newCoverBase64}')`;
+        });
+
+        document.getElementById('input-avatar').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            newAvatarBase64 = await compressImage(file, 400);
+            document.getElementById('avatar-preview').style.backgroundImage = `url('${newAvatarBase64}')`;
+        });
+
+        let usernameTimer = null;
+        window.checkUsername = () => {
+            clearTimeout(usernameTimer);
+            const hint = document.getElementById('username-hint');
+            let val = document.getElementById('f-username').value.trim().toLowerCase();
+            document.getElementById('f-username').value = val;
+
+            if (!/^[a-z0-9_]{3,20}$/.test(val)) {
+                usernameValid = false;
+                hint.innerText = 'Minimal 3 karakter: huruf kecil, angka, underscore.';
+                hint.className = 'username-hint error';
+                return;
+            }
+            if (val === originalUsername) {
+                usernameValid = true;
+                hint.innerText = 'Username saat ini.';
+                hint.className = 'username-hint';
+                return;
+            }
+            usernameTimer = setTimeout(async () => {
+                const q = query(collection(db, "users"), where("username", "==", val));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    usernameValid = true;
+                    hint.innerText = 'Username tersedia.';
+                    hint.className = 'username-hint ok';
+                } else {
+                    usernameValid = false;
+                    hint.innerText = 'Username sudah digunakan.';
+                    hint.className = 'username-hint error';
+                }
+            }, 500);
+        };
+
+        window.saveProfile = async () => {
+            if (!usernameValid) {
+                Swal.fire('Periksa Kembali', 'Username tidak valid atau sudah digunakan.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.innerText = 'Menyimpan...';
+
+            const payload = {
+                name: document.getElementById('f-name').value.trim() || 'Penulis Cendekia',
+                username: document.getElementById('f-username').value.trim(),
+                bio: document.getElementById('f-bio').value.trim()
+            };
+            if (newCoverBase64) payload.coverBase64 = newCoverBase64;
+            if (newAvatarBase64) payload.profilePicBase64 = newAvatarBase64;
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), payload);
+                Swal.fire({ icon: 'success', title: 'Profil Diperbarui', timer: 1200, showConfirmButton: false })
+                    .then(() => { window.location.href = '../profil.html'; });
+            } catch (e) {
+                console.error("Gagal menyimpan profil:", e);
+                Swal.fire('Error', 'Gagal menyimpan perubahan. Coba lagi.', 'error');
+                btn.disabled = false;
+                btn.innerText = 'Simpan';
+            }
+        };
+    </script>
+</body>
+</html>
