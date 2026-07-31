@@ -17,7 +17,7 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Ganti dengan App ID OneSignal Anda
+          appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Pastikan App ID ini valid
           notifyButton: { enable: true },
         });
       });
@@ -143,19 +143,14 @@
         }
 
         /* LOADING & EMPTY STATE */
-        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; border: none; }
         .empty-state i { font-size: 4rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.95rem; }
 
-        #loading-overlay {
-            position: absolute; top: 110px; left: 0; width: 100%; height: calc(100% - 110px);
-            background: white; z-index: 500; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #e2e8f0;
             border-top-color: var(--gold); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
+            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -178,15 +173,12 @@
             <button class="btn-mark-read" onclick="markAllAsRead()"><i class="fa-solid fa-check-double"></i> Tandai Dibaca</button>
         </div>
 
-        <!-- OVERLAY LOADING -->
-        <div id="loading-overlay">
-            <div class="spinner"></div>
-            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Sinkronisasi Radar...</div>
-        </div>
-
         <!-- LIST NOTIFIKASI -->
         <div class="notif-container" id="notif-container">
-            <!-- Akan diisi otomatis oleh JavaScript -->
+            <div class="empty-state">
+                <div class="spinner"></div>
+                <p>Sinkronisasi Radar Cendekia...</p>
+            </div>
         </div>
 
     </div>
@@ -217,14 +209,20 @@
         let currentUserUid = null;
         let unreadNotifIds = [];
 
-        // 1. Cek Status Login & Sinkronisasi OneSignal
+        // 1. Cek Status Login & Sinkronisasi OneSignal Secara Aman (Bug Fixed)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 
-                // Daftarkan ke sistem Push Notification OneSignal
-                if(window.OneSignal) {
-                    OneSignal.login(user.uid);
+                // Mendaftarkan user ke OneSignal dengan cara yang aman (Menunggu SDK Siap)
+                if (window.OneSignalDeferred) {
+                    window.OneSignalDeferred.push(async function(OneSignal) {
+                        try {
+                            await OneSignal.login(user.uid);
+                        } catch (e) {
+                            console.error("Gagal sinkronisasi OneSignal:", e);
+                        }
+                    });
                 }
 
                 listenToNotifications();
@@ -260,12 +258,10 @@
 
         // 3. Listener Real-time ke Firestore
         function listenToNotifications() {
-            // Asumsi: notifikasi tersimpan di koleksi 'notifications' dalam dokumen pengguna
             const q = query(collection(db, "users", currentUserUid, "notifications"), orderBy("createdAt", "desc"));
             
             onSnapshot(q, (snap) => {
                 const container = document.getElementById('notif-container');
-                document.getElementById('loading-overlay').style.display = 'none';
 
                 if (snap.empty) {
                     container.innerHTML = `
@@ -280,11 +276,11 @@
                 let html = '';
                 unreadNotifIds = [];
 
-                snap.forEach(doc => {
-                    const data = doc.data();
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
                     const isUnread = !data.isRead;
                     
-                    if (isUnread) unreadNotifIds.push(doc.id);
+                    if (isUnread) unreadNotifIds.push(docSnap.id);
 
                     // Penentuan Ikon berdasarkan Tipe Notifikasi
                     let iconClass = 'fa-solid fa-bell';
@@ -298,7 +294,7 @@
 
                     // Kartu HTML
                     html += `
-                        <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifClick('${doc.id}', '${data.targetUrl}', ${isUnread})">
+                        <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifClick('${docSnap.id}', '${data.targetUrl}', ${isUnread})">
                             <div class="notif-icon ${bgClass}"><i class="${iconClass}"></i></div>
                             <div class="notif-content">
                                 <h4 class="notif-title">${data.title}</h4>
@@ -312,7 +308,12 @@
                 container.innerHTML = html;
             }, (error) => {
                 console.error("Gagal menarik notifikasi:", error);
-                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('notif-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i>
+                        <p>Gagal memuat notifikasi. Silakan periksa koneksi Anda.</p>
+                    </div>
+                `;
             });
         }
 
@@ -330,7 +331,7 @@
             }
 
             // Arahkan ke URL target (Misal: read.html?id=xxx)
-            if (url && url !== "null") {
+            if (url && url !== "null" && url !== "undefined") {
                 window.location.href = url;
             }
         };
@@ -343,6 +344,8 @@
             }
 
             try {
+                Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
                 const batch = writeBatch(db);
                 unreadNotifIds.forEach(id => {
                     const notifRef = doc(db, "users", currentUserUid, "notifications", id);
@@ -353,7 +356,6 @@
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Semua telah ditandai dibaca', showConfirmButton: false, timer: 1500 });
                 
                 // Array akan dikosongkan otomatis oleh listener onSnapshot
-
             } catch (error) {
                 console.error("Gagal menandai semua dibaca:", error);
                 Swal.fire('Error', 'Terjadi kesalahan sistem saat memproses.', 'error');
