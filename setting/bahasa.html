@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bahasa & Tampilan - Cendekia Aksara</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --primary: #003366;
+            --gold: #d4af37;
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; }
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--nav-bg); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        .section-box { padding: 20px; }
+        .group-title { font-size: 0.78rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 4px; }
+        .card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; padding: 16px; margin-bottom: 22px; }
+
+        .option-row { display: flex; gap: 10px; margin-bottom: 4px; }
+        .option-chip {
+            flex: 1; text-align: center; padding: 12px 8px; border-radius: 10px;
+            border: 1.5px solid #e2e8f0; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+            color: var(--text-gray); transition: 0.2s;
+        }
+        .option-chip.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+        .option-chip i { display: block; font-size: 1.1rem; margin-bottom: 6px; }
+
+        .preview-text-box { background: #f8fafc; border-radius: 10px; padding: 16px; margin-top: 14px; border: 1px dashed #cbd5e1; color: var(--text-dark); line-height: 1.6; }
+
+        .toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+        .toggle-text h4 { margin: 0 0 3px 0; font-size: 0.9rem; font-weight: 500; color: var(--text-dark); }
+        .toggle-text p { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-toggle { position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .3s; border-radius: 34px; }
+        .slider-toggle:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider-toggle { background-color: var(--primary); }
+        input:checked + .slider-toggle:before { transform: translateX(20px); }
+
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Preferensi...</div>
+        </div>
+
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Bahasa & Tampilan</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="section-box">
+
+            <h3 class="group-title">Bahasa Aplikasi</h3>
+            <div class="card">
+                <div class="option-row">
+                    <div class="option-chip active" data-lang="id" onclick="selectLang('id')">
+                        <i class="fa-solid fa-language"></i>Bahasa Indonesia
+                    </div>
+                    <div class="option-chip" data-lang="en" onclick="selectLang('en')">
+                        <i class="fa-solid fa-language"></i>English
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="group-title">Ukuran Teks Baca</h3>
+            <div class="card">
+                <div class="option-row">
+                    <div class="option-chip" data-size="sm" onclick="selectSize('sm')">Kecil</div>
+                    <div class="option-chip active" data-size="md" onclick="selectSize('md')">Sedang</div>
+                    <div class="option-chip" data-size="lg" onclick="selectSize('lg')">Besar</div>
+                    <div class="option-chip" data-size="xl" onclick="selectSize('xl')">Ekstra</div>
+                </div>
+                <div class="preview-text-box" id="preview-text">
+                    Ini adalah pratinjau ukuran teks saat membaca naskah di Cendekia Aksara.
+                </div>
+            </div>
+
+            <h3 class="group-title">Mode Tampilan</h3>
+            <div class="card">
+                <div class="toggle-item">
+                    <div class="toggle-text">
+                        <h4>Mode Gelap</h4>
+                        <p>Nyaman digunakan saat membaca malam hari.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pref-dark" onchange="saveAll()">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        let state = { lang: 'id', textSize: 'md', darkMode: false };
+        const sizeMap = { sm: '0.8rem', md: '0.95rem', lg: '1.1rem', xl: '1.3rem' };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists() && snap.data().displayPrefs) {
+                    state = { ...state, ...snap.data().displayPrefs };
+                }
+            } catch (e) {
+                console.error("Gagal memuat preferensi tampilan:", e);
+            }
+            applyState();
+            document.getElementById('loading-overlay').style.display = 'none';
+        });
+
+        function applyState() {
+            document.querySelectorAll('[data-lang]').forEach(el => el.classList.toggle('active', el.dataset.lang === state.lang));
+            document.querySelectorAll('[data-size]').forEach(el => el.classList.toggle('active', el.dataset.size === state.textSize));
+            document.getElementById('preview-text').style.fontSize = sizeMap[state.textSize];
+            document.getElementById('pref-dark').checked = !!state.darkMode;
+        }
+
+        window.selectLang = (lang) => { state.lang = lang; applyState(); saveAll(); };
+        window.selectSize = (size) => { state.textSize = size; applyState(); saveAll(); };
+
+        window.saveAll = async () => {
+            state.darkMode = document.getElementById('pref-dark').checked;
+            try {
+                await setDoc(doc(db, "users", currentUser.uid), { displayPrefs: state }, { merge: true });
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Preferensi disimpan', showConfirmButton: false, timer: 1000 });
+            } catch (e) {
+                console.error("Gagal menyimpan preferensi tampilan:", e);
+            }
+        };
+    </script>
+</body>
+</html>
