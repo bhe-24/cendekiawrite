@@ -178,7 +178,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -231,20 +231,40 @@
         // 1. Ambil Data Cerita Penulis (Draf & Diterbitkan)
         async function fetchMyStories() {
             try {
-                // Tarik cerita dari koleksi master 'stories' yang dimiliki oleh user ini
-                const q = query(collection(db, "stories"), where("authorId", "==", currentUser.uid), orderBy("updatedAt", "desc"));
+                // Hapus fungsi orderBy di query Firestore untuk menghindari error Composite Index Missing
+                // Urutkan data secara lokal dengan JavaScript
+                const q = query(collection(db, "stories"), where("authorId", "==", currentUser.uid));
                 const snap = await getDocs(q);
                 
+                let fetchedStories = [];
+
+                snap.forEach(docSnap => {
+                    fetchedStories.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Urutkan cerita berdasarkan waktu pembaruan terakhir (Terbaru di atas)
+                fetchedStories.sort((a, b) => {
+                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
+                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
+                    return timeB - timeA; 
+                });
+
                 let draftHtml = '';
                 let pubHtml = '';
 
-                snap.forEach(docSnap => {
-                    const data = docSnap.data();
+                fetchedStories.forEach(data => {
                     const cover = data.coverBase64 ? `<div class="story-cover" style="background-image: url('${data.coverBase64}');"></div>` : `<div class="story-cover"><i class="fa-solid fa-image"></i></div>`;
-                    const updateTime = data.updatedAt ? data.updatedAt.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : 'Baru saja';
                     
+                    // Formatting Tanggal Amann
+                    let updateTime = 'Baru saja';
+                    if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
+                        updateTime = data.updatedAt.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+                    } else if (data.updatedAt && data.updatedAt.seconds) {
+                        updateTime = new Date(data.updatedAt.seconds * 1000).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+                    }
+
                     const card = `
-                        <div class="story-item" onclick="window.location.href='menulis-info.html?id=${docSnap.id}'">
+                        <div class="story-item" onclick="window.location.href='menulis-info.html?id=${data.id}'">
                             ${cover}
                             <div class="story-info">
                                 <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
@@ -278,7 +298,7 @@
 
             } catch (error) {
                 console.error("Gagal menarik data cerita:", error);
-                Swal.fire('Error', 'Gagal memuat daftar cerita.', 'error');
+                Swal.fire('Error', 'Gagal memuat daftar cerita. Silakan coba lagi.', 'error');
             }
         }
 
