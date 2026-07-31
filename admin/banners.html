@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kelola Banner - Cendekia Aksara Admin</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: #001f3f;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-icon:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px;}
+
+        /* --- HEADER ACTION --- */
+        .action-header {
+            background: white; padding: 20px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 60px; z-index: 99; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .action-header h2 { font-size: 1.1rem; margin: 0; color: var(--primary); }
+        .btn-add {
+            background: var(--gold); color: white; border: none; padding: 8px 15px;
+            border-radius: 50px; font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(212,175,55,0.3); transition: 0.2s;
+        }
+        .btn-add:hover { background: #b45309; transform: translateY(-2px); }
+
+        /* --- BANNER LIST --- */
+        .banner-list-container { padding: 20px; flex: 1; overflow-y: auto; }
+        
+        .banner-card {
+            background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px;
+            border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; gap: 15px; position: relative;
+        }
+
+        /* Banner Visual Preview (Mimicking Homepage) */
+        .banner-preview-box {
+            width: 100%; height: 140px; border-radius: 12px; background-size: cover; background-position: center;
+            position: relative; overflow: hidden; background-color: #0f172a;
+        }
+        .banner-preview-box::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+        .banner-content { position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2; }
+        .banner-content h3 { font-size: 1.1rem; margin: 8px 0 0 0; font-family: 'Playfair Display', serif; }
+        .banner-tag { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; color: white; }
+
+        .banner-info { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+        .status-badge {
+            font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 50px;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #f1f5f9; color: #64748b; }
+
+        .banner-actions { display: flex; gap: 10px; }
+        .btn-toggle { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-dark); width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
+        .btn-toggle:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-delete { background: #fee2e2; border: 1px solid #f87171; color: #dc2626; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
+        .btn-delete:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+        /* --- MODAL TAMBAH BANNER --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content {
+            background: white; width: 100%; max-width: 450px; border-radius: 20px;
+            padding: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; color: var(--primary); font-size: 1.2rem; }
+        .btn-close-modal { background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer; }
+        .btn-close-modal:hover { color: var(--danger); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Poppins'; font-size: 0.9rem; background: #f8fafc; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(0,51,102,0.1); }
+        
+        .color-pickers { display: flex; gap: 15px; }
+        .color-pickers .form-group { flex: 1; }
+        .color-input { width: 100%; height: 45px; border: 1px solid #cbd5e1; border-radius: 10px; cursor: pointer; background: #f8fafc; padding: 2px;}
+
+        .img-uploader {
+            width: 100%; height: 120px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .img-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; display: none; z-index: 2;}
+        .img-uploader i { font-size: 2rem; color: #94a3b8; margin-bottom: 8px; z-index: 1;}
+        .img-uploader span { font-size: 0.8rem; color: #64748b; font-weight: 600; z-index: 1;}
+        
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 50px; font-family: 'Poppins'; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s;}
+        .btn-submit:hover { background: #001f3f; }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--nav-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 1rem; letter-spacing: 1px;">Memuat Database Banner...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Etalase Banner</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <!-- ACTION HEADER -->
+        <div class="action-header">
+            <h2>Daftar Banner</h2>
+            <button class="btn-add" onclick="openModal()"><i class="fa-solid fa-plus"></i> Tambah Banner</button>
+        </div>
+
+        <!-- LIST BANNER -->
+        <div class="banner-list-container" id="banner-list">
+            <!-- Data Diisi JS -->
+        </div>
+
+    </div>
+
+    <!-- MODAL TAMBAH BANNER -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Buat Banner Baru</h3>
+                <button class="btn-close-modal" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Preview Live -->
+            <div class="form-group">
+                <label>Pratinjau Live</label>
+                <div class="banner-preview-box" id="live-bg" style="background-color: #0f172a;">
+                    <div class="banner-content">
+                        <span class="banner-tag" id="live-tag" style="background-color: #d4af37;">INFO</span>
+                        <h3 id="live-title">Judul Akan Tampil Disini</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Judul Banner</label>
+                <input type="text" id="b-title" class="form-input" placeholder="Cth: Lomba Menulis Nasional 2026" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Teks Label (Maks. 1 Kata)</label>
+                <input type="text" id="b-tag" class="form-input" placeholder="Cth: EVENT" maxlength="15" oninput="updatePreview()">
+            </div>
+
+            <div class="color-pickers">
+                <div class="form-group">
+                    <label>Warna Latar</label>
+                    <input type="color" id="b-bgcolor" class="color-input" value="#0f172a" onchange="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Warna Label</label>
+                    <input type="color" id="b-tagcolor" class="color-input" value="#d4af37" onchange="updatePreview()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Gambar Banner (Opsional tapi disarankan)</label>
+                <div class="img-uploader" onclick="document.getElementById('b-file').click()">
+                    <i class="fa-solid fa-image"></i><span>Klik untuk unggah (16:9)</span>
+                    <div class="img-preview" id="b-img-preview"></div>
+                </div>
+                <input type="file" id="b-file" accept="image/png, image/jpeg, image/jpg" style="display:none;" onchange="handleImageUpload(event)">
+            </div>
+
+            <button class="btn-submit" onclick="saveBanner()"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Publikasikan</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let tempBase64 = null; // Menyimpan gambar sementara sebelum di-save
+
+        // 1. Otorisasi Admin
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        loadBanners();
+                    } else {
+                        kickOutHacker();
+                    }
+                } catch (error) {
+                    kickOutHacker();
+                }
+            } else {
+                window.location.href = '../login.html';
+            }
+        });
+
+        function kickOutHacker() {
+            Swal.fire({ title: 'Akses Ditolak!', text: 'Area Administrator.', icon: 'error', confirmButtonColor: '#dc2626', allowOutsideClick: false })
+            .then(() => { window.location.href = '../index.html'; });
+        }
+
+        // 2. Tarik Data Banners
+        async function loadBanners() {
+            try {
+                // Urutkan dari yang terbaru
+                const q = query(collection(db, "app_banners"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                const container = document.getElementById('banner-list');
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-panorama"></i><p>Belum ada banner yang dibuat.</p></div>`;
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((docSnap) => {
+                    const b = docSnap.data();
+                    const bgImg = b.imageBase64 ? `background-image: url('${b.imageBase64}');` : '';
+                    const statusClass = b.isActive ? 'status-active' : 'status-inactive';
+                    const statusText = b.isActive ? 'Aktif' : 'Nonaktif';
+                    const toggleIcon = b.isActive ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+                    const toggleTitle = b.isActive ? 'Matikan Banner' : 'Aktifkan Banner';
+
+                    html += `
+                        <div class="banner-card">
+                            <div class="banner-preview-box" style="background-color: ${b.bgColor || '#0f172a'}; ${bgImg}">
+                                <div class="banner-content">
+                                    <span class="banner-tag" style="background-color: ${b.tagColor || '#d4af37'};">${b.tag || 'INFO'}</span>
+                                    <h3>${b.title}</h3>
+                                </div>
+                            </div>
+                            <div class="banner-info">
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                                <div class="banner-actions">
+                                    <button class="btn-toggle" title="${toggleTitle}" onclick="toggleStatus('${docSnap.id}', ${b.isActive})">${toggleIcon}</button>
+                                    <button class="btn-delete" title="Hapus Permanen" onclick="deleteBanner('${docSnap.id}')"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat banner:", error);
+                Swal.fire('Error', 'Gagal menarik data banner dari server.', 'error');
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // 3. Fungsi Aksi (Toggle & Delete)
+        window.toggleStatus = async (id, currentStatus) => {
+            Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                await updateDoc(doc(db, "app_banners", id), { isActive: !currentStatus });
+                Swal.close();
+                loadBanners();
+            } catch (e) {
+                Swal.fire('Error', 'Gagal mengubah status banner.', 'error');
+            }
+        };
+
+        window.deleteBanner = async (id) => {
+            const confirm = await Swal.fire({
+                title: 'Hapus Banner?', text: 'Data banner akan hilang permanen.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    await deleteDoc(doc(db, "app_banners", id));
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Banner dihapus', showConfirmButton:false, timer:1500});
+                    loadBanners();
+                } catch (e) {
+                    Swal.fire('Error', 'Gagal menghapus banner.', 'error');
+                }
+            }
+        };
+
+        // 4. Manajemen Modal & Preview
+        window.openModal = () => {
+            document.getElementById('add-modal').style.display = 'flex';
+            // Reset Form
+            document.getElementById('b-title').value = '';
+            document.getElementById('b-tag').value = '';
+            document.getElementById('b-bgcolor').value = '#0f172a';
+            document.getElementById('b-tagcolor').value = '#d4af37';
+            document.getElementById('b-img-preview').style.display = 'none';
+            document.getElementById('b-img-preview').style.backgroundImage = 'none';
+            tempBase64 = null;
+            updatePreview();
+        };
+
+        window.closeModal = () => {
+            document.getElementById('add-modal').style.display = 'none';
+        };
+
+        window.updatePreview = () => {
+            const title = document.getElementById('b-title').value || 'Judul Akan Tampil Disini';
+            const tag = document.getElementById('b-tag').value || 'INFO';
+            const bgColor = document.getElementById('b-bgcolor').value;
+            const tagColor = document.getElementById('b-tagcolor').value;
+
+            document.getElementById('live-title').innerText = title;
+            document.getElementById('live-tag').innerText = tag.toUpperCase();
+            document.getElementById('live-tag').style.backgroundColor = tagColor;
+            document.getElementById('live-bg').style.backgroundColor = bgColor;
+            
+            if(tempBase64) {
+                document.getElementById('live-bg').style.backgroundImage = `url('${tempBase64}')`;
+            } else {
+                document.getElementById('live-bg').style.backgroundImage = 'none';
+            }
+        };
+
+        window.handleImageUpload = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { Swal.fire('Terlalu Besar', 'Maksimal ukuran gambar 2MB.', 'warning'); return; }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempBase64 = e.target.result;
+                document.getElementById('b-img-preview').style.backgroundImage = `url('${tempBase64}')`;
+                document.getElementById('b-img-preview').style.display = 'block';
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.saveBanner = async () => {
+            const title = document.getElementById('b-title').value.trim();
+            const tag = document.getElementById('b-tag').value.trim().toUpperCase() || 'INFO';
+            const bgColor = document.getElementById('b-bgcolor').value;
+            const tagColor = document.getElementById('b-tagcolor').value;
+
+            if(!title) {
+                Swal.fire({toast:true, position:'top', icon:'warning', title:'Judul banner wajib diisi!', showConfirmButton:false, timer:1500});
+                return;
+            }
+
+            Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            try {
+                await addDoc(collection(db, "app_banners"), {
+                    title: title,
+                    tag: tag,
+                    bgColor: bgColor,
+                    tagColor: tagColor,
+                    imageBase64: tempBase64,
+                    isActive: true, // Otomatis aktif saat dibuat
+                    createdAt: serverTimestamp()
+                });
+
+                closeModal();
+                Swal.fire({toast:true, position:'top', icon:'success', title:'Banner berhasil dipublikasikan!', showConfirmButton:false, timer:2000});
+                loadBanners();
+            } catch (error) {
+                console.error("Gagal simpan banner:", error);
+                Swal.fire('Error', 'Gagal menyimpan banner ke server.', 'error');
+            }
+        };
+
+    </script>
+</body>
+</html>
