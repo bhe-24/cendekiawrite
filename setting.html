@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pengaturan - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- 1. GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-top: 60px; /* Spacer Navbar */
+            min-height: 100vh;
+        }
+
+        /* --- 2. MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); background-color: white;}
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .btn-back {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .btn-back:hover { color: var(--gold); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+
+        /* --- 4. USER QUICK INFO --- */
+        .user-quick-info {
+            padding: 25px 20px; background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 15px;
+        }
+        .user-ava {
+            width: 60px; height: 60px; border-radius: 50%;
+            background-color: #cbd5e1; background-size: cover; background-position: center;
+            border: 2px solid var(--gold);
+        }
+        .user-details h2 { margin: 0 0 3px 0; font-size: 1.1rem; color: var(--text-dark); }
+        .user-details p { margin: 0; font-size: 0.85rem; color: var(--text-gray); }
+
+        /* --- 5. SETTINGS LIST --- */
+        .settings-container { padding: 0 0 30px 0; flex: 1; }
+
+        .setting-group { margin-bottom: 25px; }
+        .group-title {
+            font-size: 0.8rem; font-weight: 700; color: var(--text-gray);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin: 0 0 10px 20px;
+        }
+
+        .setting-list { background: white; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+        .setting-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid #f1f5f9;
+            text-decoration: none; color: var(--text-dark); transition: 0.2s;
+        }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item:hover { background-color: #f8fafc; }
+        .setting-item:active { background-color: #f1f5f9; }
+
+        .setting-icon-text { display: flex; align-items: center; gap: 15px; }
+        .setting-icon {
+            width: 35px; height: 35px; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; color: white;
+        }
+        .setting-text h4 { margin: 0 0 3px 0; font-size: 0.95rem; font-weight: 500; }
+        .setting-text p { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+
+        .setting-arrow { color: #cbd5e1; font-size: 0.9rem; }
+
+        /* Warna Ikon per Kategori */
+        .ic-profile { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .ic-account { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .ic-notif { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .ic-lang { background: linear-gradient(135deg, #10b981, #047857); }
+        .ic-about { background: linear-gradient(135deg, var(--primary), #001f3f); }
+        .ic-help { background: linear-gradient(135deg, #64748b, #334155); }
+
+        /* --- 6. LOGOUT BUTTON --- */
+        .logout-wrapper { padding: 0 20px; margin-top: 10px; }
+        .btn-logout {
+            width: 100%; padding: 15px; border-radius: 12px;
+            background: white; border: 1px solid #fecaca; color: #dc2626;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.05);
+        }
+        .btn-logout:hover { background: #fef2f2; border-color: #ef4444; }
+
+        /* LOADING OVERLAY */
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- OVERLAY LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Pengaturan...</div>
+        </div>
+
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Pengaturan</h1>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </header>
+
+        <!-- USER QUICK INFO -->
+        <div class="user-quick-info">
+            <div class="user-ava" id="set-ava"></div>
+            <div class="user-details">
+                <h2 id="set-name">Memuat...</h2>
+                <p id="set-email">@email</p>
+            </div>
+        </div>
+
+        <div class="settings-container">
+            
+            <!-- GROUP 1: AKUN & PROFIL -->
+            <div class="setting-group">
+                <h3 class="group-title">Akun & Profil</h3>
+                <div class="setting-list">
+                    <a href="setting/profil.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-profile"><i class="fa-solid fa-user-pen"></i></div>
+                            <div class="setting-text">
+                                <h4>Ubah Profil</h4>
+                                <p>Ganti foto, bio, dan nama pena.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                    <a href="setting/akun.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-account"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="setting-text">
+                                <h4>Keamanan Akun</h4>
+                                <p>Kata sandi dan pembaruan email.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- GROUP 2: PREFERENSI -->
+            <div class="setting-group">
+                <h3 class="group-title">Preferensi Aplikasi</h3>
+                <div class="setting-list">
+                    <a href="setting/notifikasi.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-notif"><i class="fa-solid fa-bell-concierge"></i></div>
+                            <div class="setting-text">
+                                <h4>Notifikasi</h4>
+                                <p>Atur peringatan dan *push notification*.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                    <a href="setting/bahasa.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-lang"><i class="fa-solid fa-language"></i></div>
+                            <div class="setting-text">
+                                <h4>Bahasa & Tampilan</h4>
+                                <p>Sesuaikan pengalaman membacamu.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- GROUP 3: DUKUNGAN -->
+            <div class="setting-group">
+                <h3 class="group-title">Informasi Lanjut</h3>
+                <div class="setting-list">
+                    <a href="tentang.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-about"><i class="fa-solid fa-circle-info"></i></div>
+                            <div class="setting-text">
+                                <h4>Tentang Cendekia</h4>
+                                <p>Versi aplikasi dan visi kami.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                    <a href="bantuan.html" class="setting-item">
+                        <div class="setting-icon-text">
+                            <div class="setting-icon ic-help"><i class="fa-solid fa-headset"></i></div>
+                            <div class="setting-text">
+                                <h4>Pusat Bantuan</h4>
+                                <p>FAQ dan hubungi layanan dukungan.</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right setting-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- GROUP 4: LOGOUT -->
+            <div class="logout-wrapper">
+                <button class="btn-logout" onclick="confirmLogout()"><i class="fa-solid fa-power-off"></i> Keluar Akun</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Cek Status Login
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if(snap.exists()) {
+                        const data = snap.data();
+                        document.getElementById('set-name').innerText = data.name || 'Pengguna';
+                        document.getElementById('set-email').innerText = data.email || user.email;
+                        if(data.profilePicBase64) {
+                            document.getElementById('set-ava').style.backgroundImage = `url('${data.profilePicBase64}')`;
+                        }
+                    }
+                    document.getElementById('loading-overlay').style.display = 'none';
+                } catch (error) {
+                    console.error("Gagal menarik data user:", error);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }
+            } else {
+                // Jika belum login, tolak akses dan tendang ke login
+                Swal.fire({
+                    title: 'Akses Ditolak',
+                    text: 'Sesi Anda telah berakhir atau Anda belum masuk.',
+                    icon: 'warning',
+                    confirmButtonColor: '#003366',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+
+        // Fungsi Logout
+        window.confirmLogout = () => {
+            Swal.fire({
+                title: 'Keluar dari Cendekia?',
+                text: 'Sesi Anda di perangkat ini akan diakhiri.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        // Jika menggunakan OneSignal, putuskan koneksi UID perangkat ini
+                        if (window.OneSignal) {
+                            OneSignal.logout();
+                        }
+                        await signOut(auth);
+                        window.location.href = 'index.html'; // Tendang ke landing page publik
+                    } catch (error) {
+                        Swal.fire('Error', 'Gagal memproses permintaan keluar.', 'error');
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
