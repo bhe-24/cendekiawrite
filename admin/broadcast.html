@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Siaran Notifikasi - Cendekia Aksara Admin</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* --- GLOBAL & COLORS --- */
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+            --success: #10b981;
+            --purple: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        /* --- MOBILE FIRST WRAPPER --- */
+        .app-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            background-color: var(--bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } 
+            .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); }
+            .top-navbar { max-width: 600px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* --- FIXED NAVBAR --- */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: #001f3f;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 2px solid var(--purple); /* Aksen ungu untuk broadcast */
+        }
+        .btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-icon:hover { color: var(--purple); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px;}
+
+        /* --- HEADER ACTION --- */
+        .action-header {
+            background: white; padding: 25px 20px 20px 20px; border-bottom: 1px solid #e2e8f0;
+            position: relative; overflow: hidden;
+        }
+        .action-header::after {
+            content: '\f0a1'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -10px; top: -10px; font-size: 6rem;
+            color: rgba(139, 92, 246, 0.05); pointer-events: none; transform: rotate(-15deg);
+        }
+        .action-header h2 { font-size: 1.2rem; margin: 0 0 5px 0; color: var(--primary); font-family: 'Playfair Display', serif;}
+        .action-header p { font-size: 0.85rem; color: var(--text-gray); margin: 0; line-height: 1.4;}
+
+        /* --- FORM BROADCAST --- */
+        .form-section { padding: 20px; background: white; border-bottom: 1px solid #e2e8f0; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
+        .form-input, textarea { 
+            width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
+            font-family: 'Poppins'; font-size: 0.9rem; background: #f8fafc; outline: none; transition: 0.3s; 
+        }
+        .form-input:focus, textarea:focus { border-color: var(--purple); background: white; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+        textarea { resize: vertical; min-height: 80px; }
+
+        .btn-submit { 
+            width: 100%; background: linear-gradient(135deg, var(--purple), #6d28d9); color: white; 
+            border: none; padding: 14px; border-radius: 50px; font-family: 'Poppins'; font-weight: 600; 
+            font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
+
+        /* --- HISTORY LIST --- */
+        .history-container { padding: 20px; flex: 1; }
+        .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px 5px; }
+
+        .history-card {
+            background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px;
+            border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            display: flex; gap: 15px; align-items: flex-start;
+        }
+        .h-icon {
+            width: 40px; height: 40px; background: #f3e8ff; color: var(--purple);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; flex-shrink: 0;
+        }
+        .h-info { flex: 1; overflow: hidden; }
+        .h-title { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin: 0 0 4px 0; }
+        .h-msg { font-size: 0.8rem; color: var(--text-gray); margin: 0 0 8px 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .h-meta { font-size: 0.7rem; color: #94a3b8; display: flex; gap: 10px; align-items: center; }
+
+        /* LOADING */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--nav-bg); z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
+
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: 'Poppins'; font-weight: 500; font-size: 1rem; letter-spacing: 1px;">Otorisasi Sistem...</div>
+    </div>
+
+    <div class="app-wrapper">
+        
+        <!-- NAVBAR -->
+        <header class="top-navbar">
+            <button class="btn-icon" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Pusat Siaran</h1>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <!-- HEADER INFO -->
+        <div class="action-header">
+            <h2>Kirim Pemberitahuan Global</h2>
+            <p>Pesan yang Anda kirim akan diterima oleh seluruh perangkat pengguna yang mengizinkan notifikasi Push OneSignal.</p>
+        </div>
+
+        <!-- FORMULIR SIARAN -->
+        <div class="form-section">
+            <div class="form-group">
+                <label>Judul Notifikasi</label>
+                <input type="text" id="bc-title" class="form-input" placeholder="Cth: Ada Event Menulis Baru Nih!">
+            </div>
+
+            <div class="form-group">
+                <label>Pesan Singkat</label>
+                <textarea id="bc-message" placeholder="Cth: Ikuti lomba menulis cerpen fantasi dan menangkan hadiah jutaan rupiah! Klik di sini untuk detailnya."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Tautan Tujuan (Opsional)</label>
+                <input type="text" id="bc-url" class="form-input" placeholder="Cth: https://cendekia-aksara.id/search.html">
+                <span style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px; display: block;">Jika diisi, pengguna akan diarahkan ke link ini saat mengetuk notifikasi.</span>
+            </div>
+
+            <button class="btn-submit" onclick="confirmBroadcast()"><i class="fa-solid fa-paper-plane"></i> Siarkan Sekarang</button>
+        </div>
+
+        <!-- RIWAYAT SIARAN -->
+        <div class="history-container">
+            <h3 class="section-title">Riwayat Siaran</h3>
+            <div id="history-list">
+                <!-- Data Riwayat Diisi JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Konfigurasi Database Cendekia Aksara
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let adminName = "Admin";
+
+        // 1. Otorisasi Admin
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        adminName = snap.data().name || "Administrator";
+                        loadBroadcastHistory();
+                    } else {
+                        kickOutHacker();
+                    }
+                } catch (error) {
+                    kickOutHacker();
+                }
+            } else {
+                window.location.href = '../login.html';
+            }
+        });
+
+        function kickOutHacker() {
+            Swal.fire({ title: 'Akses Ditolak!', text: 'Area Administrator.', icon: 'error', confirmButtonColor: '#dc2626', allowOutsideClick: false })
+            .then(() => { window.location.href = '../index.html'; });
+        }
+
+        // 2. Tampilkan Riwayat Siaran (Log)
+        async function loadBroadcastHistory() {
+            try {
+                const q = query(collection(db, "broadcast_logs"), orderBy("sentAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                const container = document.getElementById('history-list');
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>Belum ada riwayat siaran notifikasi.</p></div>`;
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const dateObj = data.sentAt ? data.sentAt.toDate() : new Date();
+                    const dateStr = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+
+                    html += `
+                        <div class="history-card">
+                            <div class="h-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                            <div class="h-info">
+                                <h4 class="h-title">${data.title}</h4>
+                                <p class="h-msg">${data.message}</p>
+                                <div class="h-meta">
+                                    <span><i class="fa-regular fa-clock"></i> ${dateStr}</span>
+                                    <span><i class="fa-solid fa-user-shield"></i> ${data.senderName}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat riwayat:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // 3. Konfirmasi & Pengiriman Siaran
+        window.confirmBroadcast = async () => {
+            const title = document.getElementById('bc-title').value.trim();
+            const message = document.getElementById('bc-message').value.trim();
+            const url = document.getElementById('bc-url').value.trim();
+
+            if (!title || !message) {
+                Swal.fire({toast:true, position:'top', icon:'warning', title:'Judul dan Pesan wajib diisi!', showConfirmButton:false, timer:2000});
+                return;
+            }
+
+            const confirm = await Swal.fire({
+                title: 'Siarkan Sekarang?',
+                html: `Perhatian: Notifikasi ini akan berdering di <b>seluruh</b> HP pengguna yang terdaftar pada sistem Push Notification.<br><br>Lanjutkan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8b5cf6',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Kirim Global'
+            });
+
+            if (confirm.isConfirmed) {
+                sendPushNotification(title, message, url);
+            }
+        };
+
+        async function sendPushNotification(title, message, url) {
+            Swal.fire({title: 'Menyiarkan...', text: 'Mengontak server OneSignal', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            // --- KONFIGURASI ONESIGNAL REST API ---
+            // PENTING: Ganti APP_ID dan REST_API_KEY dengan milik akun OneSignal Anda
+            const ONESIGNAL_APP_ID = "APP_ID_ONESIGNAL_ANDA_DISINI"; 
+            const ONESIGNAL_REST_API_KEY = "REST_API_KEY_ANDA_DISINI";
+
+            const payload = {
+                app_id: ONESIGNAL_APP_ID,
+                included_segments: ["Subscribed Users"],
+                headings: { "en": title },
+                contents: { "en": message }
+            };
+
+            // Tambahkan URL jika diisi
+            if (url) { payload.url = url; }
+
+            try {
+                // 1. Eksekusi REST API OneSignal
+                const response = await fetch("https://onesignal.com/api/v1/notifications", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json; charset=utf-8",
+                        "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.id) {
+                    // 2. Jika sukses API, Catat log ke Firestore
+                    await addDoc(collection(db, "broadcast_logs"), {
+                        title: title,
+                        message: message,
+                        targetUrl: url || null,
+                        senderName: adminName,
+                        oneSignalId: data.id,
+                        sentAt: serverTimestamp()
+                    });
+
+                    // 3. Bersihkan Form & Refresh
+                    document.getElementById('bc-title').value = '';
+                    document.getElementById('bc-message').value = '';
+                    document.getElementById('bc-url').value = '';
+
+                    Swal.fire('Berhasil!', 'Notifikasi berhasil disiarkan ke seluruh perangkat.', 'success');
+                    loadBroadcastHistory();
+
+                } else {
+                    console.error("OneSignal API Error:", data);
+                    Swal.fire('Gagal Menyiarkan', 'Terjadi penolakan dari server OneSignal. Pastikan API Key valid.', 'error');
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                Swal.fire('Koneksi Gagal', 'Tidak dapat terhubung ke server siaran.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
