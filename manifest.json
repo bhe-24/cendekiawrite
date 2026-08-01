@@ -1,20 +1,21 @@
 {
-  "name": "Cendekia Aksara",
-  "short_name": "Cendekia",
-  "description": "Portal Resmi Terpadu Cendekia Aksara",
-  "start_url": "/",
+  "name": "Aksara Narasi",
+  "short_name": "Aksana",
+  "description": "Platform Membaca & Menulis Cendekia Aksara",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#003366",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/img/icon-192x192.png",
+      "src": "https://i.imgur.com/5Srjyo4.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/img/icon-512x512.png",
+      "src": "https://i.imgur.com/5Srjyo4.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
