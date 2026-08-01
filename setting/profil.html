@@ -71,9 +71,11 @@
             background: white; font-family: 'Poppins'; font-size: 0.9rem; color: var(--text-dark);
         }
         .form-group input:focus, .form-group textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+        .form-group input:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; box-shadow: none;}
+        
         .form-group textarea { resize: none; min-height: 100px; }
         .char-count { text-align: right; font-size: 0.7rem; color: #94a3b8; margin-top: 4px; }
-        .username-hint { font-size: 0.75rem; color: var(--text-gray); margin-top: 4px; }
+        .username-hint { font-size: 0.75rem; color: var(--text-gray); margin-top: 4px; line-height: 1.4; }
         .username-hint.error { color: #dc2626; }
         .username-hint.ok { color: #16a34a; }
 
@@ -118,15 +120,26 @@
         <input type="file" id="input-avatar" accept="image/*">
 
         <div class="form-section">
+            
+            <!-- PERBAIKAN 1: Menampilkan nama asli tapi MENGUNCI inputnya agar tidak tertimpa -->
+            <div class="form-group">
+                <label>Nama Lengkap (Sistem Sekolah)</label>
+                <input type="text" id="f-realname" disabled value="Memuat...">
+                <p class="username-hint" style="font-size: 0.7rem;">Nama ini ditarik otomatis dari database sekolah dan tidak dapat diubah di sini.</p>
+            </div>
+
+            <!-- PERBAIKAN 2: Menggunakan ID baru f-penname -->
             <div class="form-group">
                 <label>Nama Pena</label>
-                <input type="text" id="f-name" maxlength="60" placeholder="Nama yang ditampilkan">
+                <input type="text" id="f-penname" maxlength="60" placeholder="Nama samaran untuk karya Anda">
             </div>
+
             <div class="form-group">
                 <label>Username</label>
                 <input type="text" id="f-username" maxlength="20" placeholder="username_unik" oninput="checkUsername()">
-                <p class="username-hint" id="username-hint">Huruf kecil, angka, dan underscore saja.</p>
+                <p class="username-hint" id="username-hint">Huruf kecil, angka, dan underscore saja.<br><b>Sistem kami lebih memprioritaskan username untuk ditampilkan ke publik.</b></p>
             </div>
+
             <div class="form-group">
                 <label>Bio</label>
                 <textarea id="f-bio" maxlength="160" oninput="updateCharCount()" placeholder="Ceritakan sedikit tentang dirimu sebagai penulis..."></textarea>
@@ -139,7 +152,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
@@ -170,9 +183,12 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const d = snap.data();
-                    document.getElementById('f-name').value = d.name || '';
+                    // Load data terpisah: Real name dikunci, Pen Name dibebaskan
+                    document.getElementById('f-realname').value = d.name || 'Siswa Cendekia';
+                    document.getElementById('f-penname').value = d.penName || '';
                     document.getElementById('f-username').value = d.username || '';
                     document.getElementById('f-bio').value = d.bio || '';
+                    
                     originalUsername = d.username || '';
                     updateCharCount();
                     if (d.coverBase64) document.getElementById('cover-preview').style.backgroundImage = `url('${d.coverBase64}')`;
@@ -230,6 +246,13 @@
             let val = document.getElementById('f-username').value.trim().toLowerCase();
             document.getElementById('f-username').value = val;
 
+            if (!val) {
+                usernameValid = true; 
+                hint.innerText = 'Boleh dikosongkan. Jika kosong, sistem akan menggunakan nama asli Anda.';
+                hint.className = 'username-hint';
+                return;
+            }
+
             if (!/^[a-z0-9_]{3,20}$/.test(val)) {
                 usernameValid = false;
                 hint.innerText = 'Minimal 3 karakter: huruf kecil, angka, underscore.';
@@ -251,7 +274,7 @@
                     hint.className = 'username-hint ok';
                 } else {
                     usernameValid = false;
-                    hint.innerText = 'Username sudah digunakan.';
+                    hint.innerText = 'Username sudah digunakan oleh orang lain.';
                     hint.className = 'username-hint error';
                 }
             }, 500);
@@ -266,11 +289,14 @@
             btn.disabled = true;
             btn.innerText = 'Menyimpan...';
 
+            // PERBAIKAN 3: Jangan mengirim ulang field 'name' agar database sekolah tetap aman!
             const payload = {
-                name: document.getElementById('f-name').value.trim() || 'Penulis Cendekia',
+                penName: document.getElementById('f-penname').value.trim(),
                 username: document.getElementById('f-username').value.trim(),
-                bio: document.getElementById('f-bio').value.trim()
+                bio: document.getElementById('f-bio').value.trim(),
+                updatedAt: serverTimestamp()
             };
+            
             if (newCoverBase64) payload.coverBase64 = newCoverBase64;
             if (newAvatarBase64) payload.profilePicBase64 = newAvatarBase64;
 
