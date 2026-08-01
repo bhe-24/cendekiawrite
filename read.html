@@ -80,7 +80,6 @@
         .replying-indicator { font-size: 0.75rem; color: var(--gold); font-weight: 600; margin-bottom: 8px; display: none; align-items: center; justify-content: space-between; background: rgba(212, 175, 55, 0.1); padding: 5px 10px; border-radius: 8px;}
         .replying-indicator i { cursor: pointer; color: var(--nav-text); }
         
-        /* PERBAIKAN: Input Komentar Tidak Luber */
         .comment-input-box { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; align-items: center; box-sizing: border-box;}
         .comment-input-box input { flex: 1; min-width: 0; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 50px; font-family: 'Poppins'; font-size: 0.85rem; outline: none; background: var(--panel-bg); color: var(--nav-text);}
         .comment-input-box input:focus { border-color: var(--primary); }
@@ -122,7 +121,7 @@
         .slider-group { display: flex; align-items: center; gap: 15px; }
         .slider-group input { flex: 1; accent-color: var(--primary); cursor: pointer; }
 
-        /* PERBAIKAN: HIDDEN POSTER TEMPLATE 4:5 (1080x1350) */
+        /* POSTER TEMPLATE 4:5 (1080x1350) */
         #poster-container {
             position: absolute; top: -9999px; left: -9999px; width: 1080px; height: 1350px;
             background: linear-gradient(135deg, #0f172a 0%, #003366 100%);
@@ -410,7 +409,7 @@
                 width: 140, height: 140, colorDark : "#003366", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
 
-            // --- PERBAIKAN: Cek Status Vote PER BAB ---
+            // --- CEK VOTE PER BAB ---
             const btnVote = document.getElementById('btn-vote');
             btnVote.classList.remove('voted');
             document.getElementById('vote-count-display').innerText = storyData.votes || 0; // Tampilkan total vote cerita
@@ -479,10 +478,29 @@
                 
                 await setDoc(chapterVoterRef, { votedAt: serverTimestamp() });
                 await updateDoc(storyRef, { votes: increment(1) });
-                // Tambahkan vote ke chapter juga agar bisa di-track per bab
                 await updateDoc(chapterRef, { votes: increment(1) }).catch(() => {}); 
 
-                storyData.votes = newCount; // Update local data
+                // --- KIRIM NOTIFIKASI KE PENULIS CERITA ---
+                if (storyData.authorId && storyData.authorId !== currentUser.uid) {
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", currentUser.uid));
+                        let voterName = 'Seseorang';
+                        if (uSnap.exists()) {
+                            const ud = uSnap.data();
+                            voterName = ud.penName || ud.name || voterName;
+                        }
+                        await addDoc(collection(db, "users", storyData.authorId, "notifications"), {
+                            type: 'vote',
+                            title: 'Dukungan Baru!',
+                            message: `${voterName} memberikan bintang pada Bab ${currentActiveIndex + 1}: ${chaptersList[currentActiveIndex].title || 'Tanpa Judul'}.`,
+                            targetUrl: `read.html?id=${storyId}&ch=${chId}`,
+                            isRead: false,
+                            createdAt: serverTimestamp()
+                        });
+                    } catch (e) { console.error("Gagal kirim notif vote", e); }
+                }
+
+                storyData.votes = newCount; 
 
                 Swal.fire({toast:true, position:'center', icon:'success', title:'Terima kasih atas bintangnya!', showConfirmButton:false, timer:1500});
             } catch (error) {
@@ -593,18 +611,37 @@
                 authorName: name, 
                 avatarBase64: ava, 
                 createdAt: serverTimestamp(),
-                parentId: replyingToCommentId // Null jika bukan balasan
+                parentId: replyingToCommentId 
             };
 
             try {
                 await addDoc(collection(db, "published_stories", storyId, "chapters", chId, "comments"), payload);
+                
+                // --- KIRIM NOTIFIKASI KE PENULIS CERITA ---
+                if (storyData.authorId && storyData.authorId !== currentUser.uid) {
+                    try {
+                        let notifMsg = `${name} berkomentar: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`;
+                        if (replyingToCommentId) {
+                            notifMsg = `${name} membalas komentar di bab ini.`;
+                        }
+                        await addDoc(collection(db, "users", storyData.authorId, "notifications"), {
+                            type: 'comment',
+                            title: 'Komentar Baru',
+                            message: notifMsg,
+                            targetUrl: `read.html?id=${storyId}&ch=${chId}`,
+                            isRead: false,
+                            createdAt: serverTimestamp()
+                        });
+                    } catch (e) { console.error("Gagal kirim notif komentar", e); }
+                }
+
                 cancelReply(); 
             } catch(e) {
                 Swal.fire({toast:true, position:'top', icon:'error', title:'Gagal Mengirim Komentar', showConfirmButton:false, timer:1500});
             }
         };
 
-        // --- SISTEM GENERATE POSTER & CAPTCHA ---
+        // --- SISTEM GENERATE POSTER ---
         window.generatePoster = async () => {
             const overlay = document.getElementById('share-overlay');
             overlay.style.display = 'flex';
@@ -613,14 +650,13 @@
                 try {
                     const posterNode = document.getElementById('poster-container');
                     const canvas = await html2canvas(posterNode, {
-                        scale: 2, // Kualitas HD
+                        scale: 2, 
                         useCORS: true,
                         backgroundColor: "#001f3f"
                     });
                     
                     const imgData = canvas.toDataURL("image/png");
                     
-                    // Trigger Download
                     const link = document.createElement('a');
                     link.download = `Cendekia_${storyData.title.replace(/\s+/g, '_')}.png`;
                     link.href = imgData;
@@ -628,7 +664,6 @@
 
                     overlay.style.display = 'none';
 
-                    // Siapkan Teks Salin (Caption)
                     const currentUrl = `${window.location.origin}${window.location.pathname}?id=${storyId}`;
                     const captionText = `📚 Mari membaca "${storyData.title}" karya ${storyData.authorName || 'Penulis Cendekia'} di Cendekia Aksara!\n\nTemukan cerita selengkapnya di sini:\n${currentUrl}`;
 
