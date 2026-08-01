@@ -283,12 +283,7 @@
     <!-- Script SweetAlert2 (dimuat lebih awal agar tersedia untuk skrip cache instan) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- ============================================================
-         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
-         sebelum Firebase SDK selesai diunduh. Kalau cerita ini pernah
-         dibuka sebelumnya, tampilan asli langsung muncul menggantikan
-         skeleton, dalam hitungan milidetik.
-         ============================================================ -->
+    <!-- RENDER INSTAN DARI CACHE LOKAL -->
     <script>
         (function () {
             window.showAllChapters = function () {
@@ -324,6 +319,9 @@
                 if (c.coverUrl) {
                     document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
                     document.getElementById('blur-bg').style.backgroundImage = c.coverUrl;
+                    // Hilangkan efek animasi jika load dari cache
+                    document.getElementById('p-cover').classList.remove('sk-dark');
+                    document.getElementById('blur-bg').classList.remove('sk-dark');
                 }
                 if (typeof c.views !== 'undefined') document.getElementById('p-views').innerText = c.views;
                 if (typeof c.votes !== 'undefined') document.getElementById('p-votes').innerText = c.votes;
@@ -348,7 +346,7 @@
                     };
                 }
             } catch (e) {
-                // Cache rusak/tidak valid -> abaikan, skeleton bawaan tetap tampil
+                // Cache rusak -> abaikan
             }
         })();
     </script>
@@ -381,6 +379,7 @@
         let firstChapterId = window.__previewFirstChapterId || null;
         let isSavedInLibrary = false;
         let fullChapterListHtml = window.__previewFullChapterListHtml || '';
+        let isPreviewLoaded = false;
 
         const PREVIEW_CACHE_KEY = 'cendekia_preview_cache_' + storyId;
         const PREVIEW_CHAPTER_LIMIT = 10;
@@ -399,9 +398,16 @@
 
         if (!storyId) { window.location.href = 'index.html'; }
 
+        // REVISI 2: Tunggu konfirmasi status login sebelum memuat data agar Firebase tidak menolak (Permission Denied)
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            if (user) checkLibraryStatus(); 
+            if (user) {
+                checkLibraryStatus(); 
+            }
+            if (!isPreviewLoaded) {
+                isPreviewLoaded = true;
+                loadPreview();
+            }
         });
 
         window.goBackToHome = () => {
@@ -432,16 +438,30 @@
 
         async function loadPreview() {
             try {
-                // DIPERBAIKI: Mengambil dokumen dari koleksi 'stories' bukan 'published_stories'
+                // Ambil semua data (judul, genre, cover, dll) dari draf penulis
                 const storyRef = doc(db, "stories", storyId);
                 const snap = await getDoc(storyRef);
 
                 if (!snap.exists()) {
-                    Swal.fire('Tidak Ditemukan', 'Cerita tidak ditemukan atau telah ditarik oleh penulis.', 'error').then(()=>window.location.href='index.html');
+                    Swal.fire('Tidak Ditemukan', 'Cerita tidak ditemukan atau Anda tidak memiliki akses.', 'error').then(()=>window.location.href='index.html');
                     return;
                 }
 
                 const data = snap.data();
+
+                // REVISI 3: Data Views & Votes diambil dari "published_stories" 
+                // Karena draf (stories) tidak mencatat views publik
+                try {
+                    const pubSnap = await getDoc(doc(db, "published_stories", storyId));
+                    if (pubSnap.exists()) {
+                        const pubData = pubSnap.data();
+                        data.views = pubData.views || data.views || 0;
+                        data.votes = pubData.votes || data.votes || 0;
+                    }
+                } catch(e) {
+                    console.warn("Karya belum dirilis publik, menggunakan stats bawaan draf.");
+                }
+
                 storyDataCache = data; 
                 currentGenre = data.genre || 'Umum';
 
@@ -485,6 +505,10 @@
                     document.getElementById('p-cover').style.backgroundImage = coverUrl;
                     document.getElementById('blur-bg').style.backgroundImage = coverUrl;
                 }
+                
+                // REVISI 1: Hapus class animasi "sk-dark" agar cover tidak bergerak / berkelip terus
+                document.getElementById('p-cover').classList.remove('sk-dark');
+                document.getElementById('blur-bg').classList.remove('sk-dark');
 
                 // Genre, Hak Cipta, dan Tagar
                 let tagsHtml = `<span class="badge-genre">${currentGenre}</span>`;
@@ -517,8 +541,10 @@
 
             } catch (error) {
                 console.error('Gagal memuat pratinjau:', error);
-                // Kalau sudah ada tampilan dari cache, biarkan; jangan timpa dengan pesan error
                 if (document.getElementById('p-title').style.display === 'none') {
+                    // Animasi dimatikan jika terjadi error
+                    document.getElementById('p-cover').classList.remove('sk-dark');
+                    document.getElementById('blur-bg').classList.remove('sk-dark');
                     Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data. Periksa koneksi Anda.', 'error');
                 }
             }
@@ -528,11 +554,10 @@
             try {
                 localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
             } catch (e) {
-                console.warn('Cache pratinjau tidak tersimpan (kemungkinan penyimpanan penuh):', e);
+                console.warn('Cache pratinjau tidak tersimpan:', e);
             }
         }
 
-        // Daftar bab: tampilkan maksimal 10 di halaman utama, sisanya lewat popup "Lihat Semua Bab"
         async function loadChapters() {
             try {
                 const qChaps = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
@@ -591,7 +616,6 @@
 
         async function loadSimilarStories() {
             try {
-                // DIPERBAIKI: Mengambil data cerita serupa dari koleksi 'stories' bukan 'published_stories'
                 const q = query(collection(db, "stories"), where("genre", "==", currentGenre), limit(6));
                 const snap = await getDocs(q);
                 let html = '';
@@ -618,8 +642,6 @@
                 return '';
             }
         }
-
-        window.onload = loadPreview;
 
         window.startReading = () => {
             if (firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
