@@ -161,7 +161,8 @@
         
         <!-- NAVBAR -->
         <header class="top-navbar">
-            <a href="genre.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+            <!-- Tombol kembali mendeteksi riwayat browser, jika tidak ada kembali ke index -->
+            <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="nav-brand">
                 <h1 id="navbar-title">Daftar Karya</h1>
             </div>
@@ -195,8 +196,9 @@
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
+        // PERBAIKAN: Menambahkan doc dan getDoc untuk keperluan pencarian profil user
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Konfigurasi Database Cendekia Aksara
@@ -213,17 +215,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let isUserLoggedIn = false;
-
-        // Cek Status Login untuk keperluan fungsi klik
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                isUserLoggedIn = true;
-            } else {
-                isUserLoggedIn = false;
-            }
-        });
-
         // Mengambil Parameter Genre dari URL (?genre=Romansa)
         const urlParams = new URLSearchParams(window.location.search);
         let selectedGenre = urlParams.get('genre') || 'Umum';
@@ -235,11 +226,11 @@
         async function fetchStoriesByGenre() {
             try {
                 // Tarik semua cerita (diurutkan berdasarkan views tertinggi)
-                // Kita filter di JavaScript agar logika deteksi huruf besar/kecil seragam dengan halaman genre.html
                 const q = query(collection(db, "published_stories"), orderBy("views", "desc"));
                 const snap = await getDocs(q);
                 
                 let filteredStories = [];
+                let authorIdsToFetch = new Set();
 
                 snap.forEach(doc => {
                     const data = { id: doc.id, ...doc.data() };
@@ -251,7 +242,29 @@
                     // Jika cocok dengan genre yang dipilih, masukkan ke array
                     if (dbGenreName === selectedGenre) {
                         filteredStories.push(data);
+                        if(data.authorId) authorIdsToFetch.add(data.authorId);
                     }
+                });
+
+                // PERBAIKAN: Melacak Profil Penulis Asli
+                let authorCache = {};
+                for (let uid of authorIdsToFetch) {
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", uid));
+                        if(uSnap.exists()) {
+                            const uData = uSnap.data();
+                            // Jika punya username gunakan @username, jika tidak gunakan nama, jika tidak gunakan Anonim
+                            authorCache[uid] = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
+                        }
+                    } catch(e) { console.warn("Gagal menarik data user:", uid); }
+                }
+
+                // Terapkan nama asli ke dalam array cerita
+                filteredStories = filteredStories.map(story => {
+                    return {
+                        ...story,
+                        realAuthorName: authorCache[story.authorId] || story.authorName || 'Anonim'
+                    };
                 });
 
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -291,12 +304,13 @@
                 const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                 const synopsisText = data.synopsis ? data.synopsis : "Penulis belum mencantumkan sinopsis untuk cerita ini.";
                 
+                // PERBAIKAN: Saat di klik, sistem langsung mengarahkan ke halaman pratinjau
                 html += `
-                    <div class="story-card-list" onclick="requireLogin('membaca cerita', 'read.html?id=${data.id}')">
+                    <div class="story-card-list" onclick="window.location.href='pratinjau.html?id=${data.id}'">
                         <div class="story-cover" style="background-image: ${coverBg};"></div>
                         <div class="story-info">
                             <h3>${data.title}</h3>
-                            <p class="author"><i class="fa-solid fa-pen-nib"></i> ${data.authorName || 'Anonim'}</p>
+                            <p class="author"><i class="fa-solid fa-pen-nib"></i> ${data.realAuthorName}</p>
                             <div class="story-meta-row">
                                 <span><i class="fa-solid fa-eye"></i> ${data.views || 0}</span>
                                 <span><i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</span>
@@ -310,29 +324,6 @@
 
             container.innerHTML = html;
         }
-
-        // --- SISTEM LINK DINAMIS & INTERSEP ---
-        window.requireLogin = (actionName, targetUrl) => {
-            if(isUserLoggedIn) {
-                window.location.href = targetUrl; // Langsung tembus ke read.html jika sudah login
-            } else {
-                Swal.fire({
-                    title: 'Akses Terbatas',
-                    text: `Silakan masuk atau buat akun terlebih dahulu untuk ${actionName}. Gratis dan cepat!`,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonColor: '#003366',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Masuk / Daftar',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = 'login.html';
-                    }
-                });
-            }
-        };
 
         // Tarik data saat halaman dibuka
         window.onload = () => {
