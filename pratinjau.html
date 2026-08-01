@@ -54,7 +54,7 @@
             position: relative;
             background: linear-gradient(to bottom, #0f172a 0%, var(--primary) 100%);
             padding: 40px 20px 30px 20px; text-align: center; color: white;
-            border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+            /* PERBAIKAN: border-radius dihapus agar menyatu mulus dengan section di bawahnya */
         }
         .cover-blur-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -200,7 +200,6 @@
             </div>
 
             <div class="dropdown-menu" id="dropdown-menu">
-                <!-- Teks diperbarui menjadi Masukkan ke Daftar Bacaan -->
                 <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Masukkan ke Daftar Bacaan</button>
                 <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan Cerita</button>
             </div>
@@ -283,10 +282,9 @@
 
     </div>
 
-    <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- RENDER INSTAN DARI CACHE LOKAL -->
+    <!-- INSTANT CACHE RENDER -->
     <script>
         (function () {
             window.showAllChapters = function () {
@@ -343,9 +341,7 @@
                         });
                     };
                 }
-            } catch (e) {
-                // Cache rusak -> abaikan
-            }
+            } catch (e) {}
         })();
     </script>
 
@@ -501,7 +497,6 @@
                 document.getElementById('p-cover').classList.remove('sk-dark');
                 document.getElementById('blur-bg').classList.remove('sk-dark');
 
-                // PERBAIKAN: Tagar sekarang dibungkus dengan link yang mengarah ke search.html
                 let tagsHtml = `<span class="badge-genre" onclick="window.location.href='search.html?q=${encodeURIComponent(currentGenre)}'">${currentGenre}</span>`;
                 if (data.copyrightStatement && copyrightLabels[data.copyrightStatement]) {
                     const cr = copyrightLabels[data.copyrightStatement];
@@ -543,7 +538,7 @@
 
         function savePreviewCache(payload) {
             try { localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() })); } 
-            catch (e) { console.warn('Cache pratinjau tidak tersimpan:', e); }
+            catch (e) {}
         }
 
         async function loadChapters() {
@@ -598,9 +593,11 @@
             }
         }
 
+        // PERBAIKAN: Fungsi Rekomendasi diubah agar merujuk ke published_stories (Bukan stories/draf)
         async function loadSimilarStories() {
             try {
-                const q = query(collection(db, "stories"), where("genre", "==", currentGenre), limit(6));
+                // Diubah dari "stories" menjadi "published_stories"
+                const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(6));
                 const snap = await getDocs(q);
                 let html = '';
                 snap.forEach(d => {
@@ -627,7 +624,6 @@
             }
         }
 
-        // PERBAIKAN: Fungsi Mulai Membaca sekarang mengecek status Login terlebih dahulu
         window.startReading = () => {
             if (!currentUser) {
                 Swal.fire({
@@ -646,7 +642,6 @@
             else window.location.href = `read.html?id=${storyId}`; 
         };
 
-        // --- SISTEM DROPDOWN & PUSTAKA ---
         window.toggleMenu = () => {
             document.getElementById('dropdown-menu').classList.toggle('active');
             event.stopPropagation();
@@ -661,10 +656,9 @@
                 const libSnap = await getDoc(doc(db, "users", currentUser.uid, "library", storyId));
                 if (libSnap.exists() && libSnap.data().isArchived === false) {
                     isSavedInLibrary = true;
-                    // Teks mengikuti permintaan baru
                     document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Ada di Daftar Bacaan`;
                 }
-            } catch(e) { console.error('Gagal memeriksa status pustaka:', e); }
+            } catch(e) {}
         }
 
         window.toggleLibrary = async () => {
@@ -709,12 +703,10 @@
                     Swal.fire({toast:true, position:'top', icon:'success', title:'Dimasukkan ke Daftar Bacaan', showConfirmButton:false, timer:1500});
                 }
             } catch (error) {
-                console.error("Gagal update pustaka:", error);
                 Swal.fire('Error', 'Gagal memperbarui pustaka. Coba lagi nanti.', 'error');
             }
         };
 
-        // PERBAIKAN: Tombol laporkan sekarang mengarah ke halaman lapor khusus, tidak lagi menggunakan popup
         window.reportStory = () => {
             if (!currentUser) {
                 Swal.fire({
