@@ -52,7 +52,7 @@
 <body>
     <div class="app-wrapper">
         <div class="search-header">
-            <button class="btn-back" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="search-input-box">
                 <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
                 <input type="text" id="search-input" placeholder="Gunakan #tagar, @penulis..." autofocus>
@@ -90,8 +90,6 @@
 
         async function loadStories() {
             try {
-                // Catatan: Mencari dari koleksi "published_stories" 
-                // (Cerita Draf tidak akan muncul di sini)
                 const snap = await getDocs(collection(db, "published_stories"));
                 let authorIdsToFetch = new Set();
                 
@@ -120,7 +118,6 @@
                 });
             } catch(e) { console.error("Gagal memuat database pencarian:", e); }
         }
-        loadStories();
 
         function loadHistory() {
             let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
@@ -171,7 +168,6 @@
                     const safeGenre = (story.genre || '').toLowerCase();
                     const safeAuthor = (story.realAuthorName || '').toLowerCase(); 
                     
-                    // PERBAIKAN: Ambil semua teks tagar lalu gabungkan untuk dibaca saat pencarian umum
                     const safeTags = (story.tags && Array.isArray(story.tags)) ? story.tags.join(' ').toLowerCase() : '';
 
                     if (queryText.startsWith('#')) {
@@ -184,7 +180,6 @@
                         const cleanAuthorName = safeAuthor.replace('@', '');
                         return cleanAuthorName.includes(aQuery);
                     } else {
-                        // PERBAIKAN: Pencarian UMUM kini juga mengecek teks di dalam `safeTags`
                         return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText) || safeTags.includes(queryText);
                     }
                 });
@@ -219,7 +214,31 @@
             }, 300); 
         }
 
-        loadHistory();
+        // INIT APP: Menunggu loadStories selesai, baru mengecek parameter URL
+        async function initApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryFromUrl = urlParams.get('q');
+            
+            // Jika ada query dari URL (misal dari klik tagar), tampilkan loading sementara
+            if(queryFromUrl) {
+                document.getElementById('search-input').value = queryFromUrl;
+                document.getElementById('default-view').style.display = 'none';
+                document.getElementById('results-view').style.display = 'block';
+                document.getElementById('results-view').innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Menyiapkan data...</p></div>';
+            }
+
+            // Tunggu data ditarik dari Firebase
+            await loadStories();
+            loadHistory();
+
+            // Jika ada query, jalankan pencarian
+            if (queryFromUrl) {
+                executeSearch(queryFromUrl.toLowerCase());
+                saveHistory(queryFromUrl);
+            }
+        }
+
+        initApp();
     </script>
 </body>
 </html>
