@@ -1,12 +1,16 @@
 {
+  "id": "/",
+  "scope": "/",
+  "start_url": "/index.html",
   "name": "Aksara Narasi",
   "short_name": "Aksana",
   "description": "Platform Membaca & Menulis Cendekia Aksara",
-  "start_url": "/index.html",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
   "orientation": "portrait",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "https://i.imgur.com/5Srjyo4.png",
