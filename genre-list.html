@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; 
+            padding-top: 60px; /* SINKRONISASI TINGGI NAVBAR */
             min-height: 100vh;
             display: flex; flex-direction: column;
         }
@@ -53,12 +53,14 @@
 
         /* --- 3. FIXED NAVBAR --- */
         .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; 
+            height: 60px; /* DIKUNCI 60PX AGAR TIDAK MISMATCH */
+            z-index: 1000;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--gold);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         .btn-back {
@@ -161,7 +163,6 @@
         
         <!-- NAVBAR -->
         <header class="top-navbar">
-            <!-- Tombol kembali mendeteksi riwayat browser, jika tidak ada kembali ke index -->
             <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="nav-brand">
                 <h1 id="navbar-title">Daftar Karya</h1>
@@ -196,7 +197,6 @@
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
-        // PERBAIKAN: Menambahkan doc dan getDoc untuk keperluan pencarian profil user
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -235,6 +235,14 @@
                 snap.forEach(doc => {
                     const data = { id: doc.id, ...doc.data() };
                     
+                    // --- PROTEKSI KETAT (LEGAL & PRIVASI) ---
+                    if (data.status === 'draft' || 
+                        data.status === 'archived' || 
+                        data.isDeleted === true || 
+                        data.isBanned === true) {
+                        return; // Lewati cerita yang dilarang/belum rilis secara resmi
+                    }
+                    
                     // Standarisasi pembacaan nama genre dari database
                     let dbGenreName = data.genre ? data.genre.trim() : "Umum";
                     dbGenreName = dbGenreName.charAt(0).toUpperCase() + dbGenreName.slice(1).toLowerCase();
@@ -246,7 +254,7 @@
                     }
                 });
 
-                // PERBAIKAN: Melacak Profil Penulis Asli
+                // Melacak Profil Penulis Asli
                 let authorCache = {};
                 for (let uid of authorIdsToFetch) {
                     try {
@@ -304,7 +312,7 @@
                 const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                 const synopsisText = data.synopsis ? data.synopsis : "Penulis belum mencantumkan sinopsis untuk cerita ini.";
                 
-                // PERBAIKAN: Saat di klik, sistem langsung mengarahkan ke halaman pratinjau
+                // PERBAIKAN: Menggunakan data.votes agar seragam dengan sistem Dukungan
                 html += `
                     <div class="story-card-list" onclick="window.location.href='pratinjau.html?id=${data.id}'">
                         <div class="story-cover" style="background-image: ${coverBg};"></div>
@@ -313,8 +321,8 @@
                             <p class="author"><i class="fa-solid fa-pen-nib"></i> ${data.realAuthorName}</p>
                             <div class="story-meta-row">
                                 <span><i class="fa-solid fa-eye"></i> ${data.views || 0}</span>
-                                <span><i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.rating || '0.0'}</span>
-                                ${data.isCompleted ? '<span style="color:#10b981;"><i class="fa-solid fa-check-circle"></i> Tamat</span>' : '<span style="color:#f59e0b;"><i class="fa-solid fa-spinner"></i> On-Going</span>'}
+                                <span><i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0}</span>
+                                ${data.progressStatus === 'completed' ? '<span style="color:#10b981;"><i class="fa-solid fa-check-circle"></i> Tamat</span>' : '<span style="color:#0ea5e9;"><i class="fa-solid fa-feather-pointed"></i> On-Going</span>'}
                             </div>
                             <p class="synopsis">${synopsisText}</p>
                         </div>
