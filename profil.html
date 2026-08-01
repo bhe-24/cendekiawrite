@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; /* Spacer Navbar -- HARUS sama persis dengan tinggi .top-navbar */
+            padding-top: 60px; /* Spacer Navbar */
             min-height: 100vh;
         }
 
@@ -46,11 +46,7 @@
             .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- FIXED NAVBAR ---
-             PERBAIKAN: tinggi dikunci PERSIS 60px (sebelumnya hanya mengandalkan padding+konten,
-             sehingga tingginya ~40px -- beda dengan padding-top body 60px DAN beda lagi dengan
-             posisi sticky tab-container di 50px. Tiga angka yang tidak sinkron itulah yang
-             menyebabkan garis-garis putih tidak rapi di bawah header). Sekarang semuanya dikunci 60px. */
+        /* --- FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: var(--nav-bg); backdrop-filter: blur(10px);
@@ -107,10 +103,7 @@
         .stat-num { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
         .stat-lbl { font-size: 0.7rem; color: var(--text-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* --- TABS ---
-             PERBAIKAN: top diselaraskan jadi 60px, persis mepet ke bawah navbar (sebelumnya 50px,
-             tidak sinkron dengan tinggi navbar sehingga saat halaman discroll, sedikit celah
-             putih ikut terlihat sesaat sebelum tab menempel sticky). */
+        /* --- TABS --- */
         .tab-container {
             display: flex; background: white; border-bottom: 1px solid #e2e8f0;
             position: sticky; top: 60px; z-index: 100;
@@ -143,11 +136,21 @@
             font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; z-index: 2;
         }
 
-        /* --- MENGIKUTI / PENGIKUT LIST --- */
-        .follow-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer;}
-        .follow-ava { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1;}
-        .follow-name { font-size: 0.85rem; font-weight: 600; margin: 0; color: var(--text-dark);}
-        .follow-user { font-size: 0.75rem; color: var(--text-gray); margin: 0;}
+        /* --- PERBAIKAN: MENGIKUTI (FOLLOWING) BULAT --- */
+        .following-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; scrollbar-width: none; }
+        .following-scroll::-webkit-scrollbar { display: none; }
+        
+        .follow-circle-item { width: 65px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; transition: 0.2s;}
+        .follow-circle-item:hover { transform: translateY(-3px); }
+        .follow-circle-ava { 
+            width: 55px; height: 55px; border-radius: 50%; background-size: cover; background-position: center; 
+            background-color: #cbd5e1; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .follow-circle-name { 
+            font-size: 0.7rem; color: var(--text-dark); font-weight: 500; text-align: center; 
+            width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
 
         /* --- PENGUMUMAN (FEED) --- */
         .announce-creator { background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: none;}
@@ -167,6 +170,15 @@
         .empty-state i { font-size: 2.5rem; margin-bottom: 10px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.85rem; }
 
+        /* LOADING */
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* --- MODAL LIST PENGIKUT/MENGIKUTI (via SweetAlert2) --- */
         .modal-follow-item {
             display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px;
@@ -174,7 +186,7 @@
         }
         .modal-follow-ava { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1; flex-shrink: 0; }
 
-        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        /* --- SKELETON SHIMMER --- */
         @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .sk-dark, .sk-light { background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
         .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.28) 37%, rgba(255,255,255,0.15) 63%); }
@@ -185,12 +197,17 @@
         .sk-book-card { width: 100px; flex-shrink: 0; }
         .sk-book-cover { width: 100%; height: 140px; border-radius: 8px; margin-bottom: 8px; }
         .sk-book-line { height: 10px; border-radius: 6px; }
-        .sk-follow-row { height: 60px; border-radius: 10px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <div class="app-wrapper">
+
+        <!-- OVERLAY LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyinkronkan Profil...</div>
+        </div>
 
         <!-- NAVBAR -->
         <header class="top-navbar">
@@ -267,13 +284,15 @@
                 <div class="scroll-row" id="list-pustaka" style="display:none;"></div>
             </div>
 
+            <!-- PERBAIKAN: Skeleton Untuk Mengikuti (Bulat) -->
             <div class="section-box">
                 <h3 class="section-title">Mengikuti</h3>
-                <div id="list-following-skeleton">
-                    <div class="sk-light sk-follow-row"></div>
-                    <div class="sk-light sk-follow-row"></div>
+                <div class="following-scroll" id="list-following-skeleton">
+                    <div class="follow-circle-item"><div class="follow-circle-ava sk-light"></div><div class="sk-light sk-line" style="width:40px; height:8px;"></div></div>
+                    <div class="follow-circle-item"><div class="follow-circle-ava sk-light"></div><div class="sk-light sk-line" style="width:40px; height:8px;"></div></div>
+                    <div class="follow-circle-item"><div class="follow-circle-ava sk-light"></div><div class="sk-light sk-line" style="width:40px; height:8px;"></div></div>
                 </div>
-                <div id="list-following" style="display:none;"></div>
+                <div class="following-scroll" id="list-following" style="display:none;"></div>
             </div>
 
         </div>
@@ -297,15 +316,10 @@
 
     </div>
 
-    <!-- Script SweetAlert2 (dimuat lebih awal agar tersedia untuk skrip cache instan) -->
+    <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- ============================================================
-         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
-         sebelum Firebase SDK selesai diunduh. Tata letak "profil sendiri
-         vs profil orang lain" langsung diterapkan (tanpa nunggu Auth),
-         dan isi profil langsung tampil dari kunjungan terakhir kalau ada.
-         ============================================================ -->
+    <!-- RENDER INSTAN DARI CACHE LOKAL -->
     <script>
         (function () {
             function showReal(id) {
@@ -320,9 +334,6 @@
             var lastUid = null;
             try { lastUid = localStorage.getItem('cendekia_last_uid'); } catch (e) {}
 
-            // Kalau tidak ada ?uid= di URL, ini SELALU profil sendiri (logika ini juga
-            // dipakai di skrip Firebase di bawah), jadi tata letaknya bisa langsung
-            // diterapkan sekarang tanpa menunggu status login selesai diperiksa.
             var isOwnGuess = !queryUid || (lastUid && queryUid === lastUid);
 
             if (isOwnGuess) {
@@ -351,18 +362,25 @@
                 if (c.name) { document.getElementById('p-name').innerText = c.name; showReal('p-name'); }
                 if (c.username) { document.getElementById('p-username').innerText = c.username; showReal('p-username'); }
                 if (c.bio) document.getElementById('p-bio').innerText = c.bio;
-                if (c.coverUrl) document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
-                if (c.avatarUrl) document.getElementById('p-avatar').style.backgroundImage = c.avatarUrl;
+                
+                if (c.coverUrl) {
+                    document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
+                    document.getElementById('p-cover').classList.remove('sk-dark');
+                }
+                if (c.avatarUrl) {
+                    document.getElementById('p-avatar').style.backgroundImage = c.avatarUrl;
+                    document.getElementById('p-avatar').classList.remove('sk-dark');
+                }
+                
                 if (typeof c.statKarya !== 'undefined') document.getElementById('stat-karya').innerText = c.statKarya;
                 if (typeof c.statPustaka !== 'undefined') document.getElementById('stat-pustaka').innerText = c.statPustaka;
                 if (typeof c.statPengikut !== 'undefined') document.getElementById('stat-pengikut').innerText = c.statPengikut;
+                
                 if (c.karyaHtml) { document.getElementById('list-karya').innerHTML = c.karyaHtml; showReal('list-karya'); }
                 if (c.pustakaHtml) { document.getElementById('list-pustaka').innerHTML = c.pustakaHtml; showReal('list-pustaka'); }
                 if (c.followingHtml) { document.getElementById('list-following').innerHTML = c.followingHtml; showReal('list-following'); }
                 if (c.feedHtml) document.getElementById('feed-container').innerHTML = c.feedHtml;
-            } catch (e) {
-                // Cache rusak/tidak valid -> abaikan, skeleton bawaan tetap tampil
-            }
+            } catch (e) {}
         })();
     </script>
 
@@ -422,7 +440,6 @@
             }
         };
 
-        // CEK LOGIN DAN ATUR TARGET ID
         onAuthStateChanged(auth, (user) => {
             const urlParams = new URLSearchParams(window.location.search);
             const queryUid = urlParams.get('uid');
@@ -500,11 +517,14 @@
                     avatarUrl = `url('${targetUserData.profilePicBase64}')`;
                     document.getElementById('p-avatar').style.backgroundImage = avatarUrl;
                 }
+                
+                // Pastikan class animasi dihilangkan
+                document.getElementById('p-cover').classList.remove('sk-dark');
+                document.getElementById('p-avatar').classList.remove('sk-dark');
 
                 document.getElementById('stat-pengikut').innerText = targetUserData.followersCount || 0;
             } catch (error) {
                 console.error("Gagal memuat data utama profil:", error);
-                // Kalau sudah ada tampilan dari cache, biarkan; jangan timpa dengan pesan error total
                 if (document.getElementById('p-name').style.display === 'none') {
                     Swal.fire('Error Sistem', 'Gagal memuat data profil. Periksa koneksi Anda.', 'error');
                 }
@@ -519,7 +539,6 @@
                 fetchAnnouncements()
             ]);
 
-            // Simpan semua hasil render ke cache lokal untuk kunjungan berikutnya
             saveProfileCache({
                 name: displayName, username: displayUsername, bio: bioText, coverUrl, avatarUrl,
                 statKarya: karyaResult.status === 'fulfilled' ? karyaResult.value.count : undefined,
@@ -535,9 +554,7 @@
         function saveProfileCache(payload) {
             try {
                 localStorage.setItem('cendekia_profile_cache_' + targetUserId, JSON.stringify({ ...payload, cachedAt: Date.now() }));
-            } catch (e) {
-                console.warn('Cache profil tidak tersimpan (kemungkinan penyimpanan penuh):', e);
-            }
+            } catch (e) {}
         }
 
         async function loadFollowersCount() {
@@ -637,9 +654,7 @@
                             targetUrl: `profil.html?uid=${currentUserId}`,
                             createdAt: serverTimestamp()
                         });
-                    } catch (e) {
-                        console.error("Gagal mengirim notifikasi follow:", e);
-                    }
+                    } catch (e) {}
 
                     Swal.fire({toast:true, position:'top-end', icon:'success', title:'Mengikuti', showConfirmButton:false, timer:1500});
                 }
@@ -658,7 +673,7 @@
         window.openFollowersModal = async () => {
             Swal.fire({ title: 'Memuat Pengikut...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
-                const snap = await getDocs(collection(db, "users", targetUserId, "followers"));
+                const snap = await getDocs(query(collection(db, "users", targetUserId, "followers"), orderBy("followedAt", "desc")));
                 if (snap.empty) {
                     Swal.fire('Belum Ada Pengikut', 'Profil ini belum memiliki pengikut.', 'info');
                     return;
@@ -682,6 +697,37 @@
             } catch (error) {
                 console.error("Gagal memuat daftar pengikut:", error);
                 Swal.fire('Error', 'Gagal memuat daftar pengikut.', 'error');
+            }
+        };
+
+        // --- FUNGSI BARU UNTUK MODAL MENGIKUTI ---
+        window.openFollowingModal = async () => {
+            Swal.fire({ title: 'Memuat Mengikuti...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const snap = await getDocs(query(collection(db, "users", targetUserId, "following"), orderBy("followedAt", "desc")));
+                if (snap.empty) {
+                    Swal.fire('Belum Mengikuti', 'Profil ini belum mengikuti siapapun.', 'info');
+                    return;
+                }
+                let listHtml = '<div style="max-height: 320px; overflow-y: auto; text-align:left;">';
+                snap.forEach(d => {
+                    const f = d.data();
+                    const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    listHtml += `
+                        <div class="modal-follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
+                            <div class="modal-follow-ava" style="background-image: ${bg};"></div>
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:600; color:var(--text-dark);">${f.name || 'Penulis Cendekia'}</div>
+                                <div style="font-size:0.75rem; color:var(--text-gray);">@${f.username || `user${d.id.substring(0,5)}`}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                listHtml += '</div>';
+                Swal.fire({ title: 'Mengikuti', html: listHtml, showConfirmButton: false, showCloseButton: true });
+            } catch (error) {
+                console.error("Gagal memuat daftar mengikuti:", error);
+                Swal.fire('Error', 'Gagal memuat daftar mengikuti.', 'error');
             }
         };
 
@@ -761,32 +807,47 @@
             }
         }
 
+        // --- PERBAIKAN: Fungsi Mengikuti Menjadi Lingkaran Horisontal ---
         async function loadFollowing() {
             try {
-                const qFollow = query(collection(db, "users", targetUserId, "following"));
+                const qFollow = query(collection(db, "users", targetUserId, "following"), orderBy("followedAt", "desc"));
                 const snapFollow = await getDocs(qFollow);
                 
+                let followList = [];
+                snapFollow.forEach(d => followList.push({id: d.id, ...d.data()}));
+
+                const displayLimit = 10;
+                const itemsToShow = followList.slice(0, displayLimit);
+
                 let followHtml = '';
-                snapFollow.forEach(d => {
-                    const f = d.data();
+                
+                itemsToShow.forEach(f => {
                     const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
+                    const uname = f.username || `user${f.id.substring(0,5)}`;
                     followHtml += `
-                        <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
-                            <div class="follow-ava" style="background-image: ${bg};"></div>
-                            <div>
-                                <h4 class="follow-name">${f.name || 'Pengguna'}</h4>
-                                <p class="follow-user">@${f.username || `user${d.id.substring(0,5)}`}</p>
-                            </div>
+                        <div class="follow-circle-item" onclick="window.location.href='profil.html?uid=${f.id}'">
+                            <div class="follow-circle-ava" style="background-image: ${bg};"></div>
+                            <div class="follow-circle-name">@${uname}</div>
                         </div>
                     `;
                 });
-                const finalHtml = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
+
+                if (followList.length > displayLimit) {
+                    followHtml += `
+                        <div class="follow-circle-item" onclick="openFollowingModal()">
+                            <div class="follow-circle-ava" style="background: #f1f5f9; border: 1px dashed #cbd5e1; color: var(--primary);"><i class="fa-solid fa-arrow-right"></i></div>
+                            <div class="follow-circle-name" style="color:var(--primary); font-weight:700;">Lihat<br>Semua</div>
+                        </div>
+                    `;
+                }
+
+                const finalHtml = followHtml || `<div class="empty-state" style="padding:20px; width:100%;"><p>Belum mengikuti siapapun.</p></div>`;
                 document.getElementById('list-following').innerHTML = finalHtml;
                 showReal('list-following');
                 return finalHtml;
             } catch (error) {
                 console.error("Error Follow:", error);
-                document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat daftar mengikuti.</p></div>`;
+                document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px; width:100%;"><p>Gagal memuat daftar mengikuti.</p></div>`;
                 showReal('list-following');
                 return undefined;
             }
