@@ -153,8 +153,6 @@
         </header>
 
         <div class="content-area">
-
-            <!-- SAMPUL DI KIRI, JUDUL DI SAMPING -->
             <div class="story-header-row">
                 <div class="cover-uploader" onclick="document.getElementById('cover-file').click()">
                     <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
@@ -171,7 +169,6 @@
                 </div>
             </div>
 
-            <!-- GENRE (popup pilihan) -->
             <div class="form-group">
                 <label>Genre Utama</label>
                 <button type="button" class="genre-select-btn" onclick="openGenrePicker()">
@@ -180,22 +177,19 @@
                 </button>
             </div>
 
-            <!-- TAGAR -->
             <div class="form-group">
                 <label>Tagar / Event (Opsional)</label>
                 <div class="tags-container" id="tags-container">
                     <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar lalu Enter...">
                 </div>
-                <p class="field-hint">Maksimal 5 tagar. Setiap tagar langsung tersimpan otomatis.</p>
+                <p class="field-hint">Maksimal 5 tagar. Ketik lalu Enter, atau langsung tekan Simpan.</p>
             </div>
 
-            <!-- SINOPSIS -->
             <div class="form-group">
                 <label>Sinopsis</label>
                 <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
             </div>
 
-            <!-- HAK CIPTA -->
             <div class="form-group">
                 <label>Pernyataan Hak Cipta</label>
                 <div class="copyright-list" id="copyright-list">
@@ -224,13 +218,12 @@
                         <div class="copyright-radio"></div>
                         <div class="copyright-text">
                             <h4>Fan-Fiksi</h4>
-                            <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain, dan saya memahami batasannya.</p>
+                            <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STATUS PROGRES -->
             <div class="form-group">
                 <label>Status Progres Cerita</label>
                 <div class="progress-status-group" id="progress-status-group">
@@ -316,7 +309,7 @@
                     document.getElementById('cover-preview').style.display = 'block';
                 }
 
-                if (data.tags) {
+                if (data.tags && Array.isArray(data.tags)) {
                     storyTags = data.tags;
                     renderTags();
                 }
@@ -337,9 +330,6 @@
             }
         }
 
-        // --- SIMPAN LANGSUNG (untuk aksi diskrit: tagar, genre, hak cipta, status) ---
-        // Berbeda dari triggerAutoSave yang di-debounce untuk mengetik judul/sinopsis,
-        // aksi berikut selalu tersimpan SEKETIKA agar tidak hilang saat pengguna cepat berpindah halaman.
         async function saveFieldImmediate(fields) {
             const indicator = document.getElementById('save-indicator');
             indicator.className = 'save-indicator saving';
@@ -351,16 +341,13 @@
                 indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
                 setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
             } catch (error) {
-                console.error('Gagal menyimpan perubahan:', error);
                 indicator.className = 'save-indicator';
                 indicator.style.opacity = '1';
                 indicator.style.color = '#dc2626';
                 indicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal tersimpan';
-                Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'Gagal menyimpan. Periksa koneksi Anda.', showConfirmButton: false, timer: 2500 });
             }
         }
 
-        // --- GENRE PICKER (popup SweetAlert2) ---
         window.openGenrePicker = () => {
             const genres = [
                 'Romansa', 'Fantasi', 'Fiksi Ilmiah', 'Misteri', 'Thriller', 'Horor', 'Aksi', 'Petualangan',
@@ -401,25 +388,22 @@
             selectGenreOption(val);
         };
 
-        // --- HAK CIPTA ---
         window.selectCopyright = (key) => {
             selectedCopyright = key;
             document.querySelectorAll('.copyright-card').forEach(el => el.classList.toggle('selected', el.dataset.value === key));
             saveFieldImmediate({ copyrightStatement: key });
         };
 
-        // --- STATUS PROGRES ---
         window.selectProgressStatus = (val) => {
             progressStatus = val;
             document.querySelectorAll('.status-btn').forEach(el => el.classList.toggle('active', el.dataset.value === val));
             saveFieldImmediate({ progressStatus: val });
         };
 
-        // --- TAGS LOGIC (diperbaiki agar langsung tersimpan) ---
         const tagInput = document.getElementById('tag-input');
         tagInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter' || e.key === ',') {
-                let tag = e.target.value.replace(',', '').trim().toLowerCase();
+                let tag = e.target.value.replace(',', '').replace('#', '').trim().toLowerCase();
                 if (tag && !storyTags.includes(tag) && storyTags.length < 5) {
                     storyTags.push(tag);
                     renderTags();
@@ -448,7 +432,6 @@
             saveFieldImmediate({ tags: storyTags });
         };
 
-        // --- AUTO SAVE (khusus judul & sinopsis, yang diketik terus-menerus) ---
         window.triggerAutoSave = () => {
             const indicator = document.getElementById('save-indicator');
             indicator.className = 'save-indicator saving'; indicator.style.color = ''; indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -456,13 +439,27 @@
             saveTimeout = setTimeout(saveToFirestore, 1500);
         };
 
+        // --- PERBAIKAN: Fungsi simpan juga memasukkan teks yang belum di-enter di input tagar ---
         async function saveToFirestore() {
             const indicator = document.getElementById('save-indicator');
+            
+            // Cek jika pengguna mengetik tagar tapi lupa menekan Enter sebelum klik Simpan
+            const tInput = document.getElementById('tag-input');
+            if (tInput && tInput.value) {
+                let leftoverTag = tInput.value.replace(',', '').replace('#', '').trim().toLowerCase();
+                if (leftoverTag && !storyTags.includes(leftoverTag) && storyTags.length < 5) {
+                    storyTags.push(leftoverTag);
+                    renderTags();
+                }
+                tInput.value = '';
+            }
+
             try {
                 await updateDoc(doc(db, "stories", storyId), {
                     title: document.getElementById('story-title').value,
                     description: document.getElementById('story-desc').value,
                     authorName: realAuthorName,
+                    tags: storyTags, // Memastikan seluruh tagar ikut ter-update
                     updatedAt: serverTimestamp()
                 });
                 indicator.className = 'save-indicator saved'; indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
@@ -487,7 +484,6 @@
             }
         };
 
-        // --- UPLOAD SAMPUL (dikompres dulu agar tidak melebihi batas ukuran dokumen Firestore) ---
         window.handleCoverUpload = (event) => {
             const file = event.target.files[0];
             if (!file) return;
@@ -508,8 +504,6 @@
                 const img = new Image();
                 img.onload = async () => {
                     try {
-                        // Kompres: batasi lebar maksimal 500px & kualitas JPEG 75%
-                        // agar hasil base64 tetap aman di bawah batas 1MB per dokumen Firestore.
                         const canvas = document.createElement('canvas');
                         const maxWidth = 500;
                         let w = img.width, h = img.height;
@@ -523,25 +517,17 @@
 
                         await updateDoc(doc(db, "stories", storyId), { coverBase64: compressedB64, updatedAt: serverTimestamp() });
                     } catch (error) {
-                        console.error('Gagal mengunggah sampul:', error);
                         Swal.fire('Gagal Mengunggah', 'Sampul gagal disimpan. Coba lagi atau gunakan gambar lain.', 'error');
                     }
                     overlay.style.display = 'none';
                 };
-                img.onerror = () => {
-                    overlay.style.display = 'none';
-                    Swal.fire('Gagal', 'File gambar tidak bisa dibaca. Coba file lain.', 'error');
-                };
+                img.onerror = () => { overlay.style.display = 'none'; Swal.fire('Gagal', 'File gambar tidak bisa dibaca.', 'error'); };
                 img.src = e.target.result;
             };
-            reader.onerror = () => {
-                overlay.style.display = 'none';
-                Swal.fire('Gagal', 'Gagal membaca file dari perangkat Anda.', 'error');
-            };
+            reader.onerror = () => { overlay.style.display = 'none'; Swal.fire('Gagal', 'Gagal membaca file.', 'error'); };
             reader.readAsDataURL(file);
         };
 
-        // --- MANAJEMEN BAB ---
         function listenToChapters() {
             const q = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
             onSnapshot(q, (snap) => {
@@ -551,11 +537,9 @@
                 let html = ''; let babCount = 1;
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
-                    
                     const unpublishBtn = data.status === 'published' 
                         ? `<button class="action-btn warning" onclick="unpublishChapter('${docSnap.id}', event)" title="Tarik ke Draf"><i class="fa-solid fa-eye-slash"></i></button>`
                         : '';
-
                     html += `
                         <div class="chapter-card">
                             <div class="chapter-info" onclick="window.location.href='menulis-editor.html?storyId=${storyId}&chapterId=${docSnap.id}'">
@@ -575,7 +559,6 @@
                 });
                 listContainer.innerHTML = html;
             }, (error) => {
-                console.error('Gagal memuat daftar bab:', error);
                 document.getElementById('chapter-list').innerHTML = `<div class="empty-chapter">Gagal memuat daftar bab. Coba muat ulang halaman.</div>`;
             });
         }
@@ -596,56 +579,34 @@
         window.deleteChapter = async (chapId, event) => {
             event.stopPropagation();
             const konfirmasi = await Swal.fire({
-                title: 'Hapus Bab Ini?',
-                text: 'Bab yang sudah dihapus tidak dapat dikembalikan lagi!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Hapus Permanen'
+                title: 'Hapus Bab Ini?', text: 'Bab yang sudah dihapus tidak dapat dikembalikan lagi!',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus Permanen'
             });
-
             if (konfirmasi.isConfirmed) {
                 Swal.fire({ title: 'Menghapus Bab...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     await deleteDoc(doc(db, "stories", storyId, "chapters", chapId));
-                    
                     const docRef = doc(db, "stories", storyId);
                     const snap = await getDoc(docRef);
                     const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 1;
                     await updateDoc(docRef, { chapterCount: Math.max(0, currentCount - 1), updatedAt: serverTimestamp() });
-                    
                     Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Bab Berhasil Dihapus', showConfirmButton: false, timer: 1500 });
-                } catch(e) {
-                    Swal.fire('Error', 'Sistem gagal menghapus bab.', 'error');
-                }
+                } catch(e) { Swal.fire('Error', 'Sistem gagal menghapus bab.', 'error'); }
             }
         };
 
         window.unpublishChapter = async (chapId, event) => {
             event.stopPropagation();
             const konfirmasi = await Swal.fire({
-                title: 'Batalkan Publikasi?',
-                text: 'Bab ini akan diubah statusnya menjadi draf dan tidak akan bisa dibaca lagi oleh publik.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#f59e0b',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Tarik ke Draf'
+                title: 'Batalkan Publikasi?', text: 'Bab ini akan diubah statusnya menjadi draf dan tidak akan bisa dibaca lagi oleh publik.',
+                icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Tarik ke Draf'
             });
-
             if (konfirmasi.isConfirmed) {
                 Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    await updateDoc(doc(db, "stories", storyId, "chapters", chapId), { 
-                        status: 'draft', 
-                        updatedAt: serverTimestamp() 
-                    });
-                    
+                    await updateDoc(doc(db, "stories", storyId, "chapters", chapId), { status: 'draft', updatedAt: serverTimestamp() });
                     Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Bab dikembalikan ke Draf', showConfirmButton: false, timer: 1500 });
-                } catch(e) {
-                    Swal.fire('Error', 'Gagal membatalkan publikasi bab.', 'error');
-                }
+                } catch(e) { Swal.fire('Error', 'Gagal membatalkan publikasi bab.', 'error'); }
             }
         };
     </script>
