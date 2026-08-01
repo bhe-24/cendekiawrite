@@ -56,7 +56,6 @@
             padding: 40px 20px 30px 20px; text-align: center; color: white;
             border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
         }
-        /* Efek latar blur dari cover */
         .cover-blur-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center;
@@ -71,8 +70,17 @@
         }
 
         .story-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; position: relative; z-index: 2; line-height: 1.2;}
-        .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 15px 0; position: relative; z-index: 2; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;}
+        .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 10px 0; position: relative; z-index: 2; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;}
         .story-author:hover { color: var(--gold); }
+
+        /* --- STATUS PROGRES (badge) --- */
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 700;
+            padding: 3px 12px; border-radius: 50px; margin: 0 0 15px 0; position: relative; z-index: 2;
+        }
+        .status-pill.ongoing { background: rgba(14,165,233,0.18); color: #7dd3fc; }
+        .status-pill.completed { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+        .status-pill.hiatus { background: rgba(245,158,11,0.18); color: #fcd34d; }
 
         .stats-row {
             display: flex; justify-content: center; gap: 25px; margin-bottom: 20px;
@@ -100,9 +108,11 @@
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
         .badge-genre { background: var(--nav-bg); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
         .badge-tag { background: #f1f5f9; color: var(--primary); border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .badge-copyright { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
         /* --- DAFTAR BAB --- */
         .chapter-list-preview { display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px;}
+        .chapter-list-preview.in-modal { max-height: 60vh; }
         .chapter-item-preview { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; 
@@ -110,12 +120,19 @@
             background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         .chapter-item-preview:hover { border-color: var(--primary); color: var(--primary); transform: translateX(4px); box-shadow: 0 4px 10px rgba(0,51,102,0.05); }
-        .chapter-title-wrapper { display: flex; align-items: center; gap: 12px; }
+        .chapter-title-wrapper { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .chapter-title-wrapper span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chapter-number {
             background: #f1f5f9; color: var(--primary); width: 30px; height: 30px; 
             display: flex; justify-content: center; align-items: center; 
             border-radius: 50%; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
         }
+        .btn-see-all-chapters {
+            width: 100%; margin-top: 2px; padding: 12px; border-radius: 12px; border: 1.5px dashed #cbd5e1;
+            background: #f8fafc; color: var(--primary); font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-see-all-chapters:hover { border-color: var(--primary); background: #eff6ff; }
 
         /* --- REKOMENDASI --- */
         .similar-section { padding: 25px 20px; background: var(--bg-color); }
@@ -148,9 +165,24 @@
         }
         .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
 
-        .spinner { width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px auto;}
-        @keyframes spin { to { transform: rotate(360deg); } }
         .empty-state { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; }
+
+        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-dark, .sk-light { background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.12) 25%, rgba(255,255,255,0.22) 37%, rgba(255,255,255,0.12) 63%); }
+        .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); }
+        .sk-line { border-radius: 6px; }
+        .sk-title-line { height: 22px; width: 70%; margin: 0 auto 10px auto; }
+        .sk-author-line { height: 13px; width: 45%; margin: 0 auto 12px auto; }
+        .sk-status-line { height: 18px; width: 30%; margin: 0 auto 15px auto; border-radius: 50px; }
+        .sk-desc-line { height: 11px; border-radius: 6px; margin-bottom: 8px; }
+        .sk-desc-line.short { width: 65%; }
+        .sk-tag-line { height: 24px; width: 70px; border-radius: 50px; }
+        .sk-chapter-row { height: 52px; border-radius: 12px; margin-bottom: 12px; }
+        .sk-sim-cover { width: 100%; height: 180px; border-radius: 12px; margin-bottom: 8px; }
+        .sk-sim-line { height: 10px; border-radius: 6px; margin-bottom: 5px; }
+        .sk-sim-line.short { width: 60%; }
     </style>
 </head>
 <body>
@@ -165,7 +197,6 @@
                 <button class="btn-icon" onclick="toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
             </div>
 
-            <!-- DROPDOWN 3 TITIK -->
             <div class="dropdown-menu" id="dropdown-menu">
                 <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka</button>
                 <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan</button>
@@ -174,11 +205,17 @@
 
         <!-- HERO BAGIAN ATAS -->
         <div class="preview-header">
-            <div class="cover-blur-bg" id="blur-bg"></div>
-            <div class="cover-image" id="p-cover"></div>
+            <div class="cover-blur-bg sk-dark" id="blur-bg"></div>
+            <div class="cover-image sk-dark" id="p-cover"></div>
             
-            <h2 class="story-title" id="p-title">Memuat...</h2>
-            <a href="#" class="story-author" id="p-author"><i class="fa-solid fa-pen-nib"></i> Memuat...</a>
+            <div class="sk-dark sk-line sk-title-line" id="p-title-skeleton"></div>
+            <h2 class="story-title" id="p-title" style="display:none;"></h2>
+
+            <div class="sk-dark sk-line sk-author-line" id="p-author-skeleton"></div>
+            <a href="#" class="story-author" id="p-author" style="display:none;"></a>
+
+            <div class="sk-dark sk-line sk-status-line" id="p-status-skeleton"></div>
+            <span class="status-pill" id="p-status" style="display:none;"></span>
 
             <div class="stats-row">
                 <div class="stat-item">
@@ -204,36 +241,117 @@
         <!-- SINOPSIS & TAGS -->
         <div class="info-section">
             <h3 class="section-title">Sinopsis</h3>
-            <p class="synopsis-text" id="p-desc">Memuat deskripsi cerita...</p>
-            
-            <div class="tags-container" id="p-tags">
-                <!-- Diisi oleh JS -->
+            <div id="p-desc-skeleton">
+                <div class="sk-light sk-line sk-desc-line"></div>
+                <div class="sk-light sk-line sk-desc-line"></div>
+                <div class="sk-light sk-line sk-desc-line short"></div>
             </div>
+            <p class="synopsis-text" id="p-desc" style="display:none;"></p>
+            
+            <div class="tags-container" id="p-tags-skeleton">
+                <div class="sk-light sk-tag-line"></div>
+                <div class="sk-light sk-tag-line"></div>
+                <div class="sk-light sk-tag-line"></div>
+            </div>
+            <div class="tags-container" id="p-tags" style="display:none;"></div>
         </div>
 
         <!-- DAFTAR BAB INTERAKTIF -->
         <div class="info-section">
             <h3 class="section-title">Daftar Bab</h3>
-            <div class="chapter-list-preview" id="p-chapter-list">
-                <div class="empty-state">
-                    <div class="spinner"></div>
-                    <p>Memuat daftar bab...</p>
-                </div>
+            <div class="chapter-list-preview" id="p-chapter-list-skeleton">
+                <div class="sk-light sk-chapter-row"></div>
+                <div class="sk-light sk-chapter-row"></div>
+                <div class="sk-light sk-chapter-row"></div>
             </div>
+            <div class="chapter-list-preview" id="p-chapter-list" style="display:none;"></div>
         </div>
 
         <!-- REKOMENDASI SERUPA -->
         <div class="similar-section">
             <h3 class="section-title">Mungkin Anda Suka</h3>
-            <div class="story-scroll" id="similar-container">
-                <div class="empty-state" style="padding:0;">Memuat rekomendasi...</div>
+            <div class="story-scroll" id="similar-container-skeleton">
+                <div class="story-card"><div class="sk-light sk-sim-cover"></div><div class="sk-light sk-sim-line"></div><div class="sk-light sk-sim-line short"></div></div>
+                <div class="story-card"><div class="sk-light sk-sim-cover"></div><div class="sk-light sk-sim-line"></div><div class="sk-light sk-sim-line short"></div></div>
+                <div class="story-card"><div class="sk-light sk-sim-cover"></div><div class="sk-light sk-sim-line"></div><div class="sk-light sk-sim-line short"></div></div>
             </div>
+            <div class="story-scroll" id="similar-container" style="display:none;"></div>
         </div>
 
     </div>
 
-    <!-- Script SweetAlert2 -->
+    <!-- Script SweetAlert2 (dimuat lebih awal agar tersedia untuk skrip cache instan) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ============================================================
+         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
+         sebelum Firebase SDK selesai diunduh. Kalau cerita ini pernah
+         dibuka sebelumnya, tampilan asli langsung muncul menggantikan
+         skeleton, dalam hitungan milidetik.
+         ============================================================ -->
+    <script>
+        (function () {
+            window.showAllChapters = function () {
+                Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Sedang menyiapkan daftar bab, coba lagi sesaat.', showConfirmButton: false, timer: 1800 });
+            };
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var sid = params.get('id');
+                if (!sid) return;
+                var raw = localStorage.getItem('cendekia_preview_cache_' + sid);
+                if (!raw) return;
+                var c = JSON.parse(raw);
+
+                function showReal(id) {
+                    document.getElementById(id).style.display = '';
+                    var skEl = document.getElementById(id + '-skeleton');
+                    if (skEl) skEl.style.display = 'none';
+                }
+
+                if (c.title) { document.getElementById('p-title').innerText = c.title; showReal('p-title'); }
+                if (c.authorHtml) {
+                    document.getElementById('p-author').innerHTML = c.authorHtml;
+                    document.getElementById('p-author').href = c.authorHref || '#';
+                    showReal('p-author');
+                }
+                if (c.statusClass) {
+                    var statusEl = document.getElementById('p-status');
+                    statusEl.className = 'status-pill ' + c.statusClass;
+                    statusEl.innerHTML = c.statusLabel || '';
+                    showReal('p-status');
+                }
+                if (c.descText) { document.getElementById('p-desc').innerText = c.descText; showReal('p-desc'); }
+                if (c.coverUrl) {
+                    document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
+                    document.getElementById('blur-bg').style.backgroundImage = c.coverUrl;
+                }
+                if (typeof c.views !== 'undefined') document.getElementById('p-views').innerText = c.views;
+                if (typeof c.votes !== 'undefined') document.getElementById('p-votes').innerText = c.votes;
+                if (typeof c.chapCount !== 'undefined') document.getElementById('p-chapters').innerText = c.chapCount;
+                if (c.tagsHtml) { document.getElementById('p-tags').innerHTML = c.tagsHtml; showReal('p-tags'); }
+                if (c.chapterListHtml) { document.getElementById('p-chapter-list').innerHTML = c.chapterListHtml; showReal('p-chapter-list'); }
+                if (c.similarHtml) { document.getElementById('similar-container').innerHTML = c.similarHtml; showReal('similar-container'); }
+                if (c.fullChapterListHtml) window.__previewFullChapterListHtml = c.fullChapterListHtml;
+                if (c.firstChapterId) {
+                    window.__previewFirstChapterId = c.firstChapterId;
+                    document.getElementById('btn-read-main').onclick = function () {
+                        window.location.href = 'read.html?id=' + sid + '&ch=' + c.firstChapterId;
+                    };
+                }
+                if (c.fullChapterListHtml) {
+                    window.showAllChapters = function () {
+                        Swal.fire({
+                            title: 'Daftar Bab Lengkap',
+                            html: '<div class="chapter-list-preview in-modal">' + c.fullChapterListHtml + '</div>',
+                            showConfirmButton: false, showCloseButton: true, width: 440
+                        });
+                    };
+                }
+            } catch (e) {
+                // Cache rusak/tidak valid -> abaikan, skeleton bawaan tetap tampil
+            }
+        })();
+    </script>
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
@@ -260,18 +378,32 @@
         let currentUser = null;
         let storyDataCache = null; 
         let currentGenre = '';
-        let firstChapterId = null; 
-        let isSavedInLibrary = false; 
+        let firstChapterId = window.__previewFirstChapterId || null;
+        let isSavedInLibrary = false;
+        let fullChapterListHtml = window.__previewFullChapterListHtml || '';
+
+        const PREVIEW_CACHE_KEY = 'cendekia_preview_cache_' + storyId;
+        const PREVIEW_CHAPTER_LIMIT = 10;
+
+        const statusLabels = {
+            ongoing: { label: '<i class="fa-solid fa-feather-pointed"></i> On Going', cls: 'ongoing' },
+            completed: { label: '<i class="fa-solid fa-flag-checkered"></i> Selesai', cls: 'completed' },
+            hiatus: { label: '<i class="fa-solid fa-pause"></i> Hiatus', cls: 'hiatus' }
+        };
+        const copyrightLabels = {
+            original: { label: 'Karya Asli', icon: 'fa-shield-heart' },
+            inspired: { label: 'Terinspirasi', icon: 'fa-lightbulb' },
+            adaptation: { label: 'Adaptasi Berizin', icon: 'fa-file-contract' },
+            fanfiction: { label: 'Fan-Fiksi', icon: 'fa-users' }
+        };
 
         if (!storyId) { window.location.href = 'index.html'; }
 
-        // CEK LOGIN
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) checkLibraryStatus(); 
         });
 
-        // TANGGULANGI HISTORY TRAP
         window.goBackToHome = () => {
             if (document.referrer && !document.referrer.includes('read.html')) {
                 history.back();
@@ -279,6 +411,24 @@
                 window.location.replace('index.html');
             }
         };
+
+        function showReal(id) {
+            document.getElementById(id).style.display = '';
+            const skEl = document.getElementById(id + '-skeleton');
+            if (skEl) skEl.style.display = 'none';
+        }
+
+        function buildChapterItemHtml(cData, chapId, index) {
+            return `
+                <div class="chapter-item-preview" onclick="window.location.href='read.html?id=${storyId}&ch=${chapId}'">
+                    <div class="chapter-title-wrapper">
+                        <div class="chapter-number">${index}</div>
+                        <span>${cData.title || 'Tanpa Judul'}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
+                </div>
+            `;
+        }
 
         async function loadPreview() {
             try {
@@ -294,96 +444,157 @@
                 storyDataCache = data; 
                 currentGenre = data.genre || 'Umum';
 
-                // Fetch Author Real Name
+                // Nama penulis asli (@username)
                 let realAuthorName = data.authorName || 'Anonim';
-                if(data.authorId) {
+                if (data.authorId) {
                     try {
                         const authorSnap = await getDoc(doc(db, "users", data.authorId));
-                        if(authorSnap.exists()) {
+                        if (authorSnap.exists()) {
                             const uData = authorSnap.data();
                             realAuthorName = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
                         }
-                    } catch(e) {}
+                    } catch(e) { console.error('Gagal ambil nama penulis:', e); }
                 }
 
-                // Render UI Header
+                // Render Header
                 document.getElementById('p-title').innerText = data.title || 'Tanpa Judul';
-                document.getElementById('p-author').innerHTML = `<i class="fa-solid fa-at"></i> ${realAuthorName}`;
-                document.getElementById('p-author').href = `profil.html?uid=${data.authorId}`;
-                document.getElementById('p-desc').innerText = data.synopsis || data.description || 'Penulis belum memberikan sinopsis untuk karya ini.';
+                showReal('p-title');
+
+                const authorHtml = `<i class="fa-solid fa-at"></i> ${realAuthorName}`;
+                const authorHref = `profil.html?uid=${data.authorId}`;
+                document.getElementById('p-author').innerHTML = authorHtml;
+                document.getElementById('p-author').href = authorHref;
+                showReal('p-author');
+
+                const statusInfo = statusLabels[data.progressStatus] || statusLabels.ongoing;
+                document.getElementById('p-status').className = 'status-pill ' + statusInfo.cls;
+                document.getElementById('p-status').innerHTML = statusInfo.label;
+                showReal('p-status');
+
+                const descText = data.synopsis || data.description || 'Penulis belum memberikan sinopsis untuk karya ini.';
+                document.getElementById('p-desc').innerText = descText;
+                showReal('p-desc');
+
                 document.getElementById('p-views').innerText = data.views || 0;
                 document.getElementById('p-votes').innerText = data.votes || 0;
 
+                let coverUrl = '';
                 if (data.coverBase64) {
-                    const coverUrl = `url('${data.coverBase64}')`;
+                    coverUrl = `url('${data.coverBase64}')`;
                     document.getElementById('p-cover').style.backgroundImage = coverUrl;
                     document.getElementById('blur-bg').style.backgroundImage = coverUrl;
                 }
 
-                // Render Tags & Genre
+                // Genre, Hak Cipta, dan Tagar
                 let tagsHtml = `<span class="badge-genre">${currentGenre}</span>`;
+                if (data.copyrightStatement && copyrightLabels[data.copyrightStatement]) {
+                    const cr = copyrightLabels[data.copyrightStatement];
+                    tagsHtml += `<span class="badge-copyright"><i class="fa-solid ${cr.icon}"></i> ${cr.label}</span>`;
+                }
                 if (data.tags && Array.isArray(data.tags)) {
                     data.tags.forEach(t => { tagsHtml += `<span class="badge-tag">#${t}</span>`; });
                 }
                 document.getElementById('p-tags').innerHTML = tagsHtml;
+                showReal('p-tags');
 
-                loadChapters();
-                loadSimilarStories();
+                const chapCount = await loadChapters();
+                const similarHtml = await loadSimilarStories();
+
+                // Simpan semua hasil render ke cache lokal untuk kunjungan berikutnya
+                savePreviewCache({
+                    title: data.title || 'Tanpa Judul',
+                    authorHtml, authorHref,
+                    statusClass: statusInfo.cls, statusLabel: statusInfo.label,
+                    descText, coverUrl,
+                    views: data.views || 0, votes: data.votes || 0, chapCount,
+                    tagsHtml,
+                    chapterListHtml: document.getElementById('p-chapter-list').innerHTML,
+                    fullChapterListHtml,
+                    similarHtml,
+                    firstChapterId
+                });
 
             } catch (error) {
-                console.error(error);
-                Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data.', 'error');
+                console.error('Gagal memuat pratinjau:', error);
+                // Kalau sudah ada tampilan dari cache, biarkan; jangan timpa dengan pesan error
+                if (document.getElementById('p-title').style.display === 'none') {
+                    Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data. Periksa koneksi Anda.', 'error');
+                }
             }
         }
 
+        function savePreviewCache(payload) {
+            try {
+                localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
+            } catch (e) {
+                console.warn('Cache pratinjau tidak tersimpan (kemungkinan penyimpanan penuh):', e);
+            }
+        }
+
+        // Daftar bab: tampilkan maksimal 10 di halaman utama, sisanya lewat popup "Lihat Semua Bab"
         async function loadChapters() {
             try {
                 const qChaps = query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc"));
                 const snapChaps = await getDocs(qChaps);
-                
-                let chapHtml = ''; 
-                let chapCount = 0;
 
+                let publishedChapters = [];
                 snapChaps.forEach(c => {
                     const cData = c.data();
-                    if(cData.status === 'published') {
-                        chapCount++;
-                        if(!firstChapterId) firstChapterId = c.id; 
-                        
-                        chapHtml += `
-                            <div class="chapter-item-preview" onclick="window.location.href='read.html?id=${storyId}&ch=${c.id}'">
-                                <div class="chapter-title-wrapper">
-                                    <div class="chapter-number">${chapCount}</div>
-                                    <span>${cData.title || 'Tanpa Judul'}</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
-                            </div>
-                        `;
-                    }
+                    if (cData.status === 'published') publishedChapters.push({ id: c.id, ...cData });
                 });
-                
-                document.getElementById('p-chapters').innerText = chapCount; 
-                document.getElementById('p-chapter-list').innerHTML = chapHtml || '<div class="empty-state">Penulis belum merilis bab satupun.</div>';
 
-                if(firstChapterId) {
+                const chapCount = publishedChapters.length;
+                document.getElementById('p-chapters').innerText = chapCount;
+
+                if (chapCount > 0) {
+                    firstChapterId = publishedChapters[0].id;
                     document.getElementById('btn-read-main').onclick = () => {
                         window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
                     };
                 }
 
+                fullChapterListHtml = publishedChapters.map((c, i) => buildChapterItemHtml(c, c.id, i + 1)).join('');
+                window.__previewFullChapterListHtml = fullChapterListHtml;
+
+                let previewHtml;
+                if (chapCount === 0) {
+                    previewHtml = '<div class="empty-state">Penulis belum merilis bab satupun.</div>';
+                } else if (chapCount <= PREVIEW_CHAPTER_LIMIT) {
+                    previewHtml = fullChapterListHtml;
+                } else {
+                    const previewChapters = publishedChapters.slice(0, PREVIEW_CHAPTER_LIMIT);
+                    previewHtml = previewChapters.map((c, i) => buildChapterItemHtml(c, c.id, i + 1)).join('');
+                    previewHtml += `<button type="button" class="btn-see-all-chapters" onclick="showAllChapters()"><i class="fa-solid fa-list"></i> Lihat Semua ${chapCount} Bab</button>`;
+                }
+
+                document.getElementById('p-chapter-list').innerHTML = previewHtml;
+                showReal('p-chapter-list');
+
+                // Update fungsi popup dengan data terbaru
+                window.showAllChapters = () => {
+                    Swal.fire({
+                        title: 'Daftar Bab Lengkap',
+                        html: `<div class="chapter-list-preview in-modal">${fullChapterListHtml}</div>`,
+                        showConfirmButton: false, showCloseButton: true, width: 440
+                    });
+                };
+
+                return chapCount;
             } catch(e) { 
                 console.error("Gagal load bab:", e); 
                 document.getElementById('p-chapter-list').innerHTML = '<div class="empty-state" style="color:#dc2626;">Gagal memuat daftar bab.</div>';
+                showReal('p-chapter-list');
+                return 0;
             }
         }
 
         async function loadSimilarStories() {
             try {
-                const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(5));
+                const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(6));
                 const snap = await getDocs(q);
                 let html = '';
                 snap.forEach(d => {
-                    if(d.id !== storyId) { 
+                    if (d.id !== storyId) { 
                         const sd = d.data();
                         const bg = sd.coverBase64 ? `url('${sd.coverBase64}')` : 'none';
                         html += `
@@ -394,14 +605,22 @@
                         `;
                     }
                 });
-                document.getElementById('similar-container').innerHTML = html || `<div class="empty-state" style="padding:0;">Belum ada cerita lain di genre ini.</div>`;
-            } catch (e) {}
+                const finalHtml = html || `<div class="empty-state" style="padding:0;">Belum ada cerita lain di genre ini.</div>`;
+                document.getElementById('similar-container').innerHTML = finalHtml;
+                showReal('similar-container');
+                return finalHtml;
+            } catch (e) {
+                console.error('Gagal memuat rekomendasi serupa:', e);
+                document.getElementById('similar-container').innerHTML = `<div class="empty-state" style="padding:0;">Gagal memuat rekomendasi.</div>`;
+                showReal('similar-container');
+                return '';
+            }
         }
 
         window.onload = loadPreview;
 
         window.startReading = () => {
-            if(firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
+            if (firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
             else window.location.href = `read.html?id=${storyId}`; 
         };
 
@@ -415,7 +634,6 @@
             document.getElementById('dropdown-menu').classList.remove('active');
         });
 
-        // Cek Status Pustaka
         async function checkLibraryStatus() {
             try {
                 const libSnap = await getDoc(doc(db, "users", currentUser.uid, "library", storyId));
@@ -423,10 +641,9 @@
                     isSavedInLibrary = true;
                     document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan di Pustaka`;
                 }
-            } catch(e) {}
+            } catch(e) { console.error('Gagal memeriksa status pustaka:', e); }
         }
 
-        // FUNGSI TAMBAH KE PUSTAKA
         window.toggleLibrary = async () => {
             document.getElementById('dropdown-menu').classList.remove('active');
             
@@ -442,19 +659,17 @@
                 return;
             }
 
-            if (!storyDataCache) return; // Mencegah klik cepat jika data belum load
+            if (!storyDataCache) return;
 
             try {
                 const libRef = doc(db, "users", currentUser.uid, "library", storyId);
                 
                 if (isSavedInLibrary) {
-                    // Jika sudah ada, hapus dari pustaka
                     await deleteDoc(libRef);
                     isSavedInLibrary = false;
                     document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka`;
                     Swal.fire({toast:true, position:'top', icon:'info', title:'Dihapus dari Pustaka', showConfirmButton:false, timer:1500});
                 } else {
-                    // Jika belum ada, masukkan ke pustaka (simpan seperti history awal)
                     await setDoc(libRef, {
                         storyId: storyId,
                         title: storyDataCache.title || 'Tanpa Judul',
