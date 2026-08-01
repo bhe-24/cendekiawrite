@@ -319,8 +319,8 @@
                 const colorIndex = hashCode(genre.name) % gradients.length;
                 const bgGradient = gradients[colorIndex];
 
-                // URL Tujuan saat genre diklik
-                const targetUrl = `search.html?q=${encodeURIComponent(genre.name)}`;
+                // --- PERBAIKAN TAUTAN: MENGARAH KE genre-list.html ---
+                const targetUrl = `genre-list.html?genre=${encodeURIComponent(genre.name)}`;
 
                 html += `
                     <a href="${targetUrl}" class="genre-card" style="background: ${bgGradient};">
