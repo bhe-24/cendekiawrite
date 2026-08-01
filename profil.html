@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; /* Spacer Navbar */
+            padding-top: 60px; /* Spacer Navbar -- HARUS sama persis dengan tinggi .top-navbar */
             min-height: 100vh;
         }
 
@@ -46,12 +46,16 @@
             .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- FIXED NAVBAR --- */
+        /* --- FIXED NAVBAR ---
+             PERBAIKAN: tinggi dikunci PERSIS 60px (sebelumnya hanya mengandalkan padding+konten,
+             sehingga tingginya ~40px -- beda dengan padding-top body 60px DAN beda lagi dengan
+             posisi sticky tab-container di 50px. Tiga angka yang tidak sinkron itulah yang
+             menyebabkan garis-garis putih tidak rapi di bawah header). Sekarang semuanya dikunci 60px. */
         .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: var(--nav-bg); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         .btn-icon {
@@ -66,13 +70,13 @@
         .profile-cover {
             width: 100%; height: 160px; background-color: var(--primary);
             background-size: cover; background-position: center;
-            position: relative;
+            position: relative; overflow: hidden;
         }
         .profile-avatar-wrapper {
             position: absolute; bottom: -45px; left: 20px;
             width: 90px; height: 90px; border-radius: 50%;
             border: 4px solid white; background-color: #cbd5e1;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 2; overflow: hidden;
         }
         .profile-avatar {
             width: 100%; height: 100%; border-radius: 50%;
@@ -103,10 +107,13 @@
         .stat-num { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
         .stat-lbl { font-size: 0.7rem; color: var(--text-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* --- TABS --- */
+        /* --- TABS ---
+             PERBAIKAN: top diselaraskan jadi 60px, persis mepet ke bawah navbar (sebelumnya 50px,
+             tidak sinkron dengan tinggi navbar sehingga saat halaman discroll, sedikit celah
+             putih ikut terlihat sesaat sebelum tab menempel sticky). */
         .tab-container {
             display: flex; background: white; border-bottom: 1px solid #e2e8f0;
-            position: sticky; top: 50px; z-index: 100;
+            position: sticky; top: 60px; z-index: 100;
         }
         .tab-btn {
             flex: 1; text-align: center; padding: 12px 0; cursor: pointer;
@@ -160,31 +167,30 @@
         .empty-state i { font-size: 2.5rem; margin-bottom: 10px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.85rem; }
 
-        #loading-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         /* --- MODAL LIST PENGIKUT/MENGIKUTI (via SweetAlert2) --- */
         .modal-follow-item {
             display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px;
             border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer; text-align: left;
         }
         .modal-follow-ava { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1; flex-shrink: 0; }
+
+        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-dark, .sk-light { background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.28) 37%, rgba(255,255,255,0.15) 63%); }
+        .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); }
+        .sk-line { border-radius: 6px; }
+        .sk-name-line { height: 20px; width: 55%; margin-bottom: 8px; }
+        .sk-username-line { height: 12px; width: 35%; }
+        .sk-book-card { width: 100px; flex-shrink: 0; }
+        .sk-book-cover { width: 100%; height: 140px; border-radius: 8px; margin-bottom: 8px; }
+        .sk-book-line { height: 10px; border-radius: 6px; }
+        .sk-follow-row { height: 60px; border-radius: 10px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <div class="app-wrapper">
-
-        <!-- OVERLAY LOADING -->
-        <div id="loading-overlay">
-            <div class="spinner"></div>
-            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyinkronkan Profil...</div>
-        </div>
 
         <!-- NAVBAR -->
         <header class="top-navbar">
@@ -195,9 +201,9 @@
         </header>
 
         <!-- HERO & HEADER -->
-        <div class="profile-cover" id="p-cover">
+        <div class="profile-cover sk-dark" id="p-cover">
             <div class="profile-avatar-wrapper">
-                <div class="profile-avatar" id="p-avatar"></div>
+                <div class="profile-avatar sk-dark" id="p-avatar"></div>
             </div>
             <div class="profile-actions">
                 <button class="btn-follow" id="btn-follow" onclick="toggleFollow()">Ikuti</button>
@@ -205,8 +211,11 @@
         </div>
 
         <div class="profile-info">
-            <h2 class="profile-name" id="p-name">Memuat...</h2>
-            <p class="profile-username" id="p-username">@username</p>
+            <div class="sk-light sk-line sk-name-line" id="p-name-skeleton"></div>
+            <h2 class="profile-name" id="p-name" style="display:none;"></h2>
+
+            <div class="sk-light sk-line sk-username-line" id="p-username-skeleton" style="margin-bottom:15px;"></div>
+            <p class="profile-username" id="p-username" style="display:none;">@username</p>
             
             <div class="stats-row">
                 <div class="stat-item">
@@ -235,29 +244,36 @@
             
             <div class="section-box">
                 <h3 class="section-title">Tentang Saya</h3>
-                <p class="bio-text" id="p-bio">Pengguna ini belum menuliskan bio.</p>
+                <p class="bio-text" id="p-bio">Memuat bio...</p>
             </div>
 
             <div class="section-box">
                 <h3 class="section-title">Karya Diterbitkan</h3>
-                <div class="scroll-row" id="list-karya">
-                    <!-- Dinamis via JS -->
+                <div class="scroll-row" id="list-karya-skeleton">
+                    <div class="sk-book-card"><div class="sk-light sk-book-cover"></div><div class="sk-light sk-book-line"></div></div>
+                    <div class="sk-book-card"><div class="sk-light sk-book-cover"></div><div class="sk-light sk-book-line"></div></div>
+                    <div class="sk-book-card"><div class="sk-light sk-book-cover"></div><div class="sk-light sk-book-line"></div></div>
                 </div>
+                <div class="scroll-row" id="list-karya" style="display:none;"></div>
             </div>
 
             <!-- Bagian Pustaka (Disembunyikan via JS jika pengunjung profil orang lain) -->
             <div class="section-box" id="section-pustaka">
                 <h3 class="section-title">Daftar Bacaan (Pustaka)</h3>
-                <div class="scroll-row" id="list-pustaka">
-                    <!-- Dinamis via JS -->
+                <div class="scroll-row" id="list-pustaka-skeleton">
+                    <div class="sk-book-card"><div class="sk-light sk-book-cover"></div><div class="sk-light sk-book-line"></div></div>
+                    <div class="sk-book-card"><div class="sk-light sk-book-cover"></div><div class="sk-light sk-book-line"></div></div>
                 </div>
+                <div class="scroll-row" id="list-pustaka" style="display:none;"></div>
             </div>
 
             <div class="section-box">
                 <h3 class="section-title">Mengikuti</h3>
-                <div id="list-following">
-                    <!-- Dinamis via JS -->
+                <div id="list-following-skeleton">
+                    <div class="sk-light sk-follow-row"></div>
+                    <div class="sk-light sk-follow-row"></div>
                 </div>
+                <div id="list-following" style="display:none;"></div>
             </div>
 
         </div>
@@ -274,15 +290,81 @@
             </div>
 
             <div id="feed-container">
-                <!-- Feed Pengumuman Dinamis -->
+                <div class="empty-state"><p>Memuat pengumuman...</p></div>
             </div>
 
         </div>
 
     </div>
 
-    <!-- Script SweetAlert2 -->
+    <!-- Script SweetAlert2 (dimuat lebih awal agar tersedia untuk skrip cache instan) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ============================================================
+         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
+         sebelum Firebase SDK selesai diunduh. Tata letak "profil sendiri
+         vs profil orang lain" langsung diterapkan (tanpa nunggu Auth),
+         dan isi profil langsung tampil dari kunjungan terakhir kalau ada.
+         ============================================================ -->
+    <script>
+        (function () {
+            function showReal(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = '';
+                var sk = document.getElementById(id + '-skeleton');
+                if (sk) sk.style.display = 'none';
+            }
+
+            var params = new URLSearchParams(window.location.search);
+            var queryUid = params.get('uid');
+            var lastUid = null;
+            try { lastUid = localStorage.getItem('cendekia_last_uid'); } catch (e) {}
+
+            // Kalau tidak ada ?uid= di URL, ini SELALU profil sendiri (logika ini juga
+            // dipakai di skrip Firebase di bawah), jadi tata letaknya bisa langsung
+            // diterapkan sekarang tanpa menunggu status login selesai diperiksa.
+            var isOwnGuess = !queryUid || (lastUid && queryUid === lastUid);
+
+            if (isOwnGuess) {
+                document.getElementById('btn-settings').style.display = 'block';
+                document.getElementById('nav-spacer').style.display = 'none';
+                document.getElementById('btn-follow').style.display = 'none';
+                document.getElementById('announce-box').style.display = 'block';
+                document.getElementById('section-pustaka').style.display = 'block';
+                document.getElementById('stat-pustaka-container').style.display = 'flex';
+            } else {
+                document.getElementById('btn-settings').style.display = 'none';
+                document.getElementById('nav-spacer').style.display = 'block';
+                document.getElementById('btn-follow').style.display = 'block';
+                document.getElementById('section-pustaka').style.display = 'none';
+                document.getElementById('stat-pustaka-container').style.display = 'none';
+            }
+
+            var guessUid = queryUid || lastUid;
+            if (!guessUid) return;
+
+            try {
+                var raw = localStorage.getItem('cendekia_profile_cache_' + guessUid);
+                if (!raw) return;
+                var c = JSON.parse(raw);
+
+                if (c.name) { document.getElementById('p-name').innerText = c.name; showReal('p-name'); }
+                if (c.username) { document.getElementById('p-username').innerText = c.username; showReal('p-username'); }
+                if (c.bio) document.getElementById('p-bio').innerText = c.bio;
+                if (c.coverUrl) document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
+                if (c.avatarUrl) document.getElementById('p-avatar').style.backgroundImage = c.avatarUrl;
+                if (typeof c.statKarya !== 'undefined') document.getElementById('stat-karya').innerText = c.statKarya;
+                if (typeof c.statPustaka !== 'undefined') document.getElementById('stat-pustaka').innerText = c.statPustaka;
+                if (typeof c.statPengikut !== 'undefined') document.getElementById('stat-pengikut').innerText = c.statPengikut;
+                if (c.karyaHtml) { document.getElementById('list-karya').innerHTML = c.karyaHtml; showReal('list-karya'); }
+                if (c.pustakaHtml) { document.getElementById('list-pustaka').innerHTML = c.pustakaHtml; showReal('list-pustaka'); }
+                if (c.followingHtml) { document.getElementById('list-following').innerHTML = c.followingHtml; showReal('list-following'); }
+                if (c.feedHtml) document.getElementById('feed-container').innerHTML = c.feedHtml;
+            } catch (e) {
+                // Cache rusak/tidak valid -> abaikan, skeleton bawaan tetap tampil
+            }
+        })();
+    </script>
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
@@ -311,13 +393,20 @@
         let isOwnProfile = false;
         let targetUserData = null;
         let isFollowing = false;
-        let isFollowActionPending = false; // Cegah tap ganda / race condition
+        let isFollowActionPending = false;
 
         function toMillisSafe(ts) {
             if (!ts) return 0;
             if (typeof ts.toMillis === 'function') return ts.toMillis();
             if (typeof ts.seconds === 'number') return ts.seconds * 1000;
             return 0;
+        }
+
+        function showReal(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+            const sk = document.getElementById(id + '-skeleton');
+            if (sk) sk.style.display = 'none';
         }
 
         window.switchTab = (tabName) => {
@@ -341,6 +430,7 @@
             if (user) {
                 currentUserId = user.uid;
                 targetUserId = queryUid ? queryUid : currentUserId;
+                try { localStorage.setItem('cendekia_last_uid', user.uid); } catch (e) {}
             } else {
                 targetUserId = queryUid;
                 if (!targetUserId) {
@@ -381,6 +471,8 @@
         async function fetchProfileData() {
             await setupUI(); 
 
+            let displayName = '', displayUsername = '', bioText = '', coverUrl = '', avatarUrl = '';
+
             try {
                 const userDoc = await getDoc(doc(db, "users", targetUserId));
                 if (!userDoc.exists()) {
@@ -390,41 +482,72 @@
 
                 targetUserData = userDoc.data();
                 
-                // PERBAIKAN: Gunakan prioritas penName -> name -> Penulis Cendekia
-                let displayName = targetUserData.penName || targetUserData.name || 'Penulis Cendekia';
-                
+                displayName = targetUserData.penName || targetUserData.name || 'Penulis Cendekia';
+                displayUsername = '@' + (targetUserData.username || `user${targetUserId.substring(0,5)}`);
+                bioText = targetUserData.bio || 'Pengguna ini belum menuliskan bio.';
+
                 document.getElementById('p-name').innerText = displayName;
-                document.getElementById('p-username').innerText = '@' + (targetUserData.username || `user${targetUserId.substring(0,5)}`);
-                document.getElementById('p-bio').innerText = targetUserData.bio || 'Pengguna ini belum menuliskan bio.';
+                showReal('p-name');
+                document.getElementById('p-username').innerText = displayUsername;
+                showReal('p-username');
+                document.getElementById('p-bio').innerText = bioText;
                 
-                if(targetUserData.coverBase64) document.getElementById('p-cover').style.backgroundImage = `url('${targetUserData.coverBase64}')`;
-                if(targetUserData.profilePicBase64) document.getElementById('p-avatar').style.backgroundImage = `url('${targetUserData.profilePicBase64}')`;
+                if (targetUserData.coverBase64) {
+                    coverUrl = `url('${targetUserData.coverBase64}')`;
+                    document.getElementById('p-cover').style.backgroundImage = coverUrl;
+                }
+                if (targetUserData.profilePicBase64) {
+                    avatarUrl = `url('${targetUserData.profilePicBase64}')`;
+                    document.getElementById('p-avatar').style.backgroundImage = avatarUrl;
+                }
 
                 document.getElementById('stat-pengikut').innerText = targetUserData.followersCount || 0;
             } catch (error) {
                 console.error("Gagal memuat data utama profil:", error);
-                document.getElementById('loading-overlay').style.display = 'none';
-                Swal.fire('Error Sistem', 'Gagal memuat data profil. Periksa koneksi Anda.', 'error');
+                // Kalau sudah ada tampilan dari cache, biarkan; jangan timpa dengan pesan error total
+                if (document.getElementById('p-name').style.display === 'none') {
+                    Swal.fire('Error Sistem', 'Gagal memuat data profil. Periksa koneksi Anda.', 'error');
+                }
                 return; 
             }
 
-            await Promise.allSettled([
+            const [karyaResult, pustakaResult, followingResult, followersResult, feedResult] = await Promise.allSettled([
                 loadKarya(),
-                (isOwnProfile ? loadPustaka() : Promise.resolve()),
+                (isOwnProfile ? loadPustaka() : Promise.resolve(null)),
                 loadFollowing(),
                 loadFollowersCount(),
                 fetchAnnouncements()
             ]);
 
-            document.getElementById('loading-overlay').style.display = 'none';
+            // Simpan semua hasil render ke cache lokal untuk kunjungan berikutnya
+            saveProfileCache({
+                name: displayName, username: displayUsername, bio: bioText, coverUrl, avatarUrl,
+                statKarya: karyaResult.status === 'fulfilled' ? karyaResult.value.count : undefined,
+                statPustaka: pustakaResult.status === 'fulfilled' && pustakaResult.value ? pustakaResult.value.count : undefined,
+                statPengikut: followersResult.status === 'fulfilled' ? followersResult.value : undefined,
+                karyaHtml: karyaResult.status === 'fulfilled' ? karyaResult.value.html : undefined,
+                pustakaHtml: pustakaResult.status === 'fulfilled' && pustakaResult.value ? pustakaResult.value.html : undefined,
+                followingHtml: followingResult.status === 'fulfilled' ? followingResult.value : undefined,
+                feedHtml: feedResult.status === 'fulfilled' ? feedResult.value : undefined
+            });
+        }
+
+        function saveProfileCache(payload) {
+            try {
+                localStorage.setItem('cendekia_profile_cache_' + targetUserId, JSON.stringify({ ...payload, cachedAt: Date.now() }));
+            } catch (e) {
+                console.warn('Cache profil tidak tersimpan (kemungkinan penyimpanan penuh):', e);
+            }
         }
 
         async function loadFollowersCount() {
             try {
                 const snapFollowers = await getDocs(collection(db, "users", targetUserId, "followers"));
                 document.getElementById('stat-pengikut').innerText = snapFollowers.size;
+                return snapFollowers.size;
             } catch (error) {
                 console.error("Gagal menghitung pengikut:", error);
+                return undefined;
             }
         }
 
@@ -482,7 +605,6 @@
                         console.error("Gagal mengambil data profil sendiri:", e);
                     }
 
-                    // PERBAIKAN: Gunakan penName
                     let myDisplayName = myProfileData.penName || myProfileData.name || 'Penulis Cendekia';
                     let targetDisplayName = targetUserData.penName || targetUserData.name || 'Penulis Cendekia';
 
@@ -545,7 +667,6 @@
                 snap.forEach(d => {
                     const f = d.data();
                     const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
-                    // Field f.name sudah berisi penName dari proses writeBatch follow sebelumnya (atau nama asli jika akun lama)
                     listHtml += `
                         <div class="modal-follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
                             <div class="modal-follow-ava" style="background-image: ${bg};"></div>
@@ -599,10 +720,15 @@
                     `;
                 });
 
-                document.getElementById('list-karya').innerHTML = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
+                const finalHtml = karyaHtml || `<div class="empty-state" style="padding:20px;"><p>Belum ada karya.</p></div>`;
+                document.getElementById('list-karya').innerHTML = finalHtml;
+                showReal('list-karya');
+                return { html: finalHtml, count: karyaList.length };
             } catch (error) {
                 console.error("Error Karya:", error);
                 document.getElementById('list-karya').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat karya.</p></div>`;
+                showReal('list-karya');
+                return { html: undefined, count: undefined };
             }
         }
 
@@ -610,7 +736,6 @@
             try {
                 const qPustaka = query(collection(db, "users", targetUserId, "library"), where("isArchived", "==", false));
                 const snapPustaka = await getDocs(qPustaka);
-                document.getElementById('stat-pustaka').innerText = snapPustaka.size;
 
                 let pustakaHtml = '';
                 snapPustaka.forEach(d => {
@@ -623,10 +748,16 @@
                         </div>
                     `;
                 });
-                document.getElementById('list-pustaka').innerHTML = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
+                const finalHtml = pustakaHtml || `<div class="empty-state" style="padding:20px;"><p>Pustaka kosong.</p></div>`;
+                document.getElementById('stat-pustaka').innerText = snapPustaka.size;
+                document.getElementById('list-pustaka').innerHTML = finalHtml;
+                showReal('list-pustaka');
+                return { html: finalHtml, count: snapPustaka.size };
             } catch (error) {
                 console.error("Error Pustaka:", error);
                 document.getElementById('list-pustaka').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat pustaka.</p></div>`;
+                showReal('list-pustaka');
+                return { html: undefined, count: undefined };
             }
         }
 
@@ -639,7 +770,6 @@
                 snapFollow.forEach(d => {
                     const f = d.data();
                     const bg = f.avatarBase64 ? `url('${f.avatarBase64}')` : 'none';
-                    // Field f.name sudah berisi penName dari proses writeBatch follow (atau nama asli jika akun lama)
                     followHtml += `
                         <div class="follow-item" onclick="window.location.href='profil.html?uid=${d.id}'">
                             <div class="follow-ava" style="background-image: ${bg};"></div>
@@ -650,10 +780,15 @@
                         </div>
                     `;
                 });
-                document.getElementById('list-following').innerHTML = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
+                const finalHtml = followHtml || `<div class="empty-state" style="padding:20px;"><p>Belum mengikuti siapapun.</p></div>`;
+                document.getElementById('list-following').innerHTML = finalHtml;
+                showReal('list-following');
+                return finalHtml;
             } catch (error) {
                 console.error("Error Follow:", error);
                 document.getElementById('list-following').innerHTML = `<div class="empty-state" style="padding:20px;"><p>Gagal memuat daftar mengikuti.</p></div>`;
+                showReal('list-following');
+                return undefined;
             }
         }
 
@@ -664,11 +799,11 @@
                 const container = document.getElementById('feed-container');
 
                 if (snapFeed.empty) {
-                    container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-comment-slash"></i><p>Belum ada pengumuman.</p></div>`;
-                    return;
+                    const emptyHtml = `<div class="empty-state"><i class="fa-solid fa-comment-slash"></i><p>Belum ada pengumuman.</p></div>`;
+                    container.innerHTML = emptyHtml;
+                    return emptyHtml;
                 }
 
-                // PERBAIKAN: Gunakan penName
                 let displayName = targetUserData.penName || targetUserData.name || 'Penulis Cendekia';
 
                 let html = '';
@@ -692,10 +827,11 @@
                     `;
                 });
                 container.innerHTML = html;
-
+                return html;
             } catch(e) {
                 console.error("Error Feed:", e);
                 document.getElementById('feed-container').innerHTML = `<div class="empty-state"><p>Gagal memuat pengumuman.</p></div>`;
+                return undefined;
             }
         }
 
