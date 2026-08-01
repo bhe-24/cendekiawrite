@@ -432,7 +432,8 @@
 
         async function loadPreview() {
             try {
-                const storyRef = doc(db, "published_stories", storyId);
+                // DIPERBAIKI: Mengambil dokumen dari koleksi 'stories' bukan 'published_stories'
+                const storyRef = doc(db, "stories", storyId);
                 const snap = await getDoc(storyRef);
 
                 if (!snap.exists()) {
@@ -590,7 +591,8 @@
 
         async function loadSimilarStories() {
             try {
-                const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(6));
+                // DIPERBAIKI: Mengambil data cerita serupa dari koleksi 'stories' bukan 'published_stories'
+                const q = query(collection(db, "stories"), where("genre", "==", currentGenre), limit(6));
                 const snap = await getDocs(q);
                 let html = '';
                 snap.forEach(d => {
