@@ -8,15 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <!-- Library untuk Generate Poster & QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         /* TEMA & VARIABEL */
         :root {
             --reader-bg: #ffffff; --reader-text: #1e293b; --reader-font: 'Lora', serif; --reader-size: 1.05rem;
             --nav-bg: rgba(255, 255, 255, 0.95); --nav-text: #1e293b; --primary: #003366; --gold: #d4af37;
+            --panel-bg: #f8fafc; --border-color: #e2e8f0;
         }
-        [data-theme="dark"] { --reader-bg: #0f172a; --reader-text: #cbd5e1; --nav-bg: rgba(15, 23, 42, 0.95); --nav-text: #ffffff; }
-        [data-theme="sepia"] { --reader-bg: #fbf0d9; --reader-text: #5f4b32; --nav-bg: rgba(251, 240, 217, 0.95); --nav-text: #5f4b32; }
+        [data-theme="dark"] { 
+            --reader-bg: #0f172a; --reader-text: #cbd5e1; --nav-bg: rgba(15, 23, 42, 0.95); --nav-text: #ffffff;
+            --panel-bg: #1e293b; --border-color: #334155; 
+        }
+        [data-theme="sepia"] { 
+            --reader-bg: #fbf0d9; --reader-text: #5f4b32; --nav-bg: rgba(251, 240, 217, 0.95); --nav-text: #5f4b32;
+            --panel-bg: #f3e5c8; --border-color: #e6d3af; 
+        }
 
         /* ANTI COPY & PERLINDUNGAN HAK CIPTA */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -25,94 +36,154 @@
             -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
-        body { background-color: var(--reader-bg); color: var(--reader-text); margin: 0; padding: 0; font-family: var(--reader-font); transition: background 0.3s, color 0.3s; min-height: 100vh; }
+        body { background-color: var(--reader-bg); color: var(--reader-text); margin: 0; padding: 0; font-family: var(--reader-font); transition: background 0.3s, color 0.3s; min-height: 100vh; display: flex; flex-direction: column;}
         
         .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: var(--reader-bg); min-height: 100vh; display: flex; flex-direction: column; position: relative; }
         @media (min-width: 768px) { body { background-color: #cbd5e1; } .app-wrapper { border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; box-shadow: 0 0 40px rgba(0,0,0,0.15); } .top-navbar, .drawer { max-width: 480px; left: 50% !important; transform: translateX(-50%); } }
 
         /* NAVBAR ATAS */
-        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: var(--nav-bg); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.3s ease; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: var(--nav-bg); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.3s ease; border-bottom: 1px solid var(--border-color); }
         .top-navbar.hidden { transform: translateY(-100%); }
-        .btn-icon { background: none; border: none; color: var(--nav-text); font-size: 1.1rem; cursor: pointer; transition: 0.2s; padding: 5px; }
-        .btn-icon:hover { color: var(--gold); }
+        .btn-icon { background: none; border: none; color: var(--nav-text); font-size: 1.1rem; cursor: pointer; transition: 0.2s; padding: 5px; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; border-radius: 50%;}
+        .btn-icon:hover { color: var(--gold); background: rgba(212, 175, 55, 0.1);}
         .nav-title-group { text-align: center; flex: 1; overflow: hidden; padding: 0 10px; cursor: pointer; }
         .nav-story-title { font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--nav-text); }
         .nav-chapter-title { font-family: 'Poppins', sans-serif; font-size: 0.7rem; opacity:0.7; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--nav-text); }
 
         /* AREA BACA */
-        .reader-container { padding: 80px 25px 20px 25px; flex: 1; font-size: var(--reader-size); line-height: 1.9; }
+        .reader-container { padding: 80px 25px 40px 25px; flex: 1; font-size: var(--reader-size); line-height: 1.9; }
         .chapter-heading { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 25px; text-align: center; }
-        .chapter-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px auto; display: block; pointer-events: none; /* Cegah tahan-gambar untuk disave */ }
+        .chapter-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px auto; display: block; pointer-events: none; }
         .chapter-body p { margin-bottom: 1.2em; text-align: justify; }
 
-        /* FOOTER (VOTE & KOMENTAR & NEXT BAB) */
-        .reader-footer { padding: 30px 20px; border-top: 2px dashed rgba(148, 163, 184, 0.3); margin-top: 40px; text-align: center; font-family: 'Poppins'; }
+        /* INTERAKSI BAWAH (KOKOH & PROPORSIONAL) */
+        .reader-footer { padding: 25px 20px; border-top: 1px solid var(--border-color); background: var(--panel-bg); font-family: 'Poppins'; margin-top: auto;}
         
-        .vote-section { margin-bottom: 30px; }
-        .btn-vote { background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 10px 25px; border-radius: 50px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; font-family: 'Poppins';}
-        .btn-vote:hover { background: rgba(212, 175, 55, 0.1); }
-        .btn-vote.voted { background: var(--gold); color: white; }
-        .vote-count { font-size: 0.8rem; color: var(--reader-text); opacity: 0.7; margin-top: 8px; display: block;}
+        .action-bar { display: flex; justify-content: space-between; align-items: center; background: var(--reader-bg); padding: 10px 15px; border-radius: 50px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02); margin-bottom: 25px;}
+        .action-btn { background: none; border: none; font-size: 1.2rem; color: var(--nav-text); cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Poppins'; font-weight: 600; padding: 8px 12px; border-radius: 50px; transition: 0.2s;}
+        .action-btn:hover { background: rgba(0, 51, 102, 0.05); color: var(--primary); }
+        .action-btn i { font-size: 1.2rem; }
+        .action-btn.btn-star.voted { color: var(--gold); }
+        .action-btn.btn-star.voted i { animation: pop 0.3s ease; }
+
+        @keyframes pop { 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
         .btn-next-chap { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 0.95rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 51, 102, 0.2); transition: 0.2s; font-family: 'Poppins'; display: flex; justify-content: space-between; align-items: center;}
         .btn-next-chap:hover { transform: translateY(-2px); }
-        .btn-next-chap.disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; justify-content: center; }
+        .btn-next-chap.disabled { background: var(--border-color); color: var(--nav-text); box-shadow: none; cursor: not-allowed; justify-content: center; }
 
-        /* KOMENTAR */
-        .comment-section { background: rgba(148, 163, 184, 0.1); padding: 20px; border-radius: 16px; text-align: left; margin-top: 30px; margin-bottom: 30px;}
-        .comment-section h3 { font-size: 1rem; margin: 0 0 15px 0; font-family: 'Poppins'; color: var(--reader-text); }
-        .comment-input-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .comment-input-box input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 50px; font-family: 'Poppins'; font-size: 0.85rem; outline: none; background: white; color: #1e293b;}
-        .btn-send { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;}
+        /* KOMENTAR & BALASAN */
+        .comment-section { display: none; background: var(--reader-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 25px; animation: fadeIn 0.3s ease; }
+        .comment-section.active { display: block; }
+        .comment-section h3 { font-size: 1rem; margin: 0 0 15px 0; color: var(--nav-text); }
         
-        .comment-list { display: flex; flex-direction: column; gap: 15px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
-        .comment-item { display: flex; gap: 10px; }
-        .c-ava { width: 35px; height: 35px; border-radius: 50%; background: #cbd5e1; background-size: cover; background-position: center; flex-shrink:0;}
-        .c-body { background: white; padding: 10px 15px; border-radius: 0 12px 12px 12px; flex: 1; color: #1e293b;}
-        .c-name { font-size: 0.8rem; font-weight: 700; margin: 0 0 3px 0; color: var(--primary); }
-        .c-text { font-size: 0.8rem; margin: 0; line-height: 1.4; }
+        .replying-indicator { font-size: 0.75rem; color: var(--gold); font-weight: 600; margin-bottom: 8px; display: none; align-items: center; justify-content: space-between; background: rgba(212, 175, 55, 0.1); padding: 5px 10px; border-radius: 8px;}
+        .replying-indicator i { cursor: pointer; color: var(--nav-text); }
+        
+        .comment-input-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .comment-input-box input { flex: 1; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 50px; font-family: 'Poppins'; font-size: 0.85rem; outline: none; background: var(--panel-bg); color: var(--nav-text);}
+        .comment-input-box input:focus { border-color: var(--primary); }
+        .btn-send { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
+        
+        .comment-list { display: flex; flex-direction: column; gap: 15px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .comment-item { display: flex; gap: 10px; flex-direction: column; }
+        .c-main { display: flex; gap: 10px; }
+        .c-ava { width: 35px; height: 35px; border-radius: 50%; background: var(--border-color); background-size: cover; background-position: center; flex-shrink:0;}
+        .c-body { background: var(--panel-bg); padding: 10px 15px; border-radius: 0 12px 12px 12px; flex: 1; color: var(--nav-text);}
+        .c-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .c-name { font-size: 0.8rem; font-weight: 700; margin: 0; color: var(--primary); display: flex; align-items: center; gap: 5px;}
+        .author-badge { background: var(--gold); color: white; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; letter-spacing: 0.5px;}
+        .c-time { font-size: 0.65rem; color: var(--text-gray); }
+        .c-text { font-size: 0.8rem; margin: 0 0 5px 0; line-height: 1.4; }
+        .c-reply-btn { font-size: 0.75rem; color: var(--text-gray); font-weight: 600; cursor: pointer; border: none; background: none; padding: 0; }
+        .c-reply-btn:hover { color: var(--primary); }
+        
+        .c-replies { margin-left: 45px; display: flex; flex-direction: column; gap: 10px; border-left: 2px solid var(--border-color); padding-left: 10px;}
 
         /* LACI BAWAH (DRAWERS: TOC & SETTING) */
-        .drawer { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: white; color: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family: 'Poppins'; max-height: 80vh; display: flex; flex-direction: column;}
+        .drawer { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 2000; background: var(--nav-bg); color: var(--nav-text); border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family: 'Poppins'; max-height: 80vh; display: flex; flex-direction: column;}
         .drawer.active { transform: translateY(0); }
         .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .drawer-header h3 { margin:0; font-size: 1.1rem; font-weight: 700; }
         
-        /* Daftar Isi (TOC) */
         .toc-list { overflow-y: auto; flex: 1; padding-right: 5px; }
-        .toc-item { padding: 15px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;}
-        .toc-item:hover { color: var(--primary); font-weight: 600; background: #f8fafc;}
+        .toc-item { padding: 15px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;}
+        .toc-item:hover { color: var(--primary); font-weight: 600; background: var(--panel-bg);}
         .toc-item.active { color: var(--gold); font-weight: 700; border-left: 3px solid var(--gold); padding-left: 15px; }
 
-        /* Setting Tampilan */
         .setting-row { margin-bottom: 20px; }
-        .setting-row label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase;}
+        .setting-row label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-gray); margin-bottom: 8px; text-transform: uppercase;}
         .font-options, .theme-options { display: flex; gap: 10px; }
-        .font-btn, .theme-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-weight: 600; background: #f8fafc; color: #1e293b; transition: 0.2s;}
-        .theme-btn.dark { background: #0f172a; color: #cbd5e1; }
-        .theme-btn.sepia { background: #fbf0d9; color: #5f4b32; }
+        .font-btn, .theme-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-weight: 600; background: var(--panel-bg); color: var(--nav-text); transition: 0.2s;}
+        .theme-btn.dark { background: #0f172a; color: #cbd5e1; border-color: #334155;}
+        .theme-btn.sepia { background: #fbf0d9; color: #5f4b32; border-color: #e6d3af;}
         .font-btn.active, .theme-btn.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
         .slider-group { display: flex; align-items: center; gap: 15px; }
         .slider-group input { flex: 1; accent-color: var(--primary); cursor: pointer; }
 
-        /* LAYER KEREDUPAN MALAM */
+        /* HIDDEN POSTER TEMPLATE (TIDAK TERLIHAT TAPI ADA DI DOM) */
+        #poster-container {
+            position: absolute; top: -9999px; left: -9999px; width: 1080px; height: 1080px;
+            background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Poppins', sans-serif; color: white; padding: 60px; box-sizing: border-box;
+            border: 20px solid #d4af37;
+        }
+        .poster-header { text-align: center; margin-bottom: 40px; }
+        .poster-header img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #d4af37; background: white; padding: 5px; margin-bottom: 15px; }
+        .poster-header h1 { font-family: 'Aleo', serif; font-size: 2.5rem; color: #d4af37; margin: 0; letter-spacing: 2px;}
+        .poster-body { display: flex; align-items: center; gap: 50px; background: rgba(255,255,255,0.1); padding: 40px; border-radius: 30px; backdrop-filter: blur(10px); width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);}
+        .poster-cover { width: 300px; height: 430px; border-radius: 20px; background-size: cover; background-position: center; border: 5px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.4); flex-shrink: 0; background-color: #cbd5e1;}
+        .poster-info { flex: 1; }
+        .poster-info h2 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0 0 15px 0; line-height: 1.1; color: white;}
+        .poster-info p.author { font-size: 1.5rem; color: #d4af37; margin: 0 0 30px 0; font-weight: 600;}
+        .poster-qr-row { display: flex; align-items: center; gap: 25px; background: white; border-radius: 20px; padding: 20px; width: fit-content;}
+        #poster-qrcode { width: 120px; height: 120px; }
+        .poster-cta { color: #003366; }
+        .poster-cta h4 { margin: 0 0 5px 0; font-size: 1.8rem; font-weight: 800; }
+        .poster-cta p { margin: 0; font-size: 1rem; font-weight: 500; }
+
+        /* LOADING & OVERLAYS */
         #brightness-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.1s; }
-        
-        /* LOADING */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--reader-bg); z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--primary); }
-        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        #loading-overlay, #share-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--reader-bg); z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--primary); }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
     </style>
 </head>
 <body class="noselect" data-theme="light">
 
-    <!-- OVERLAY KEREDUPAN -->
+    <!-- TEMPLATE POSTER (HIDDEN) -->
+    <div id="poster-container">
+        <div class="poster-header">
+            <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo">
+            <h1>CENDEKIA AKSARA</h1>
+        </div>
+        <div class="poster-body">
+            <div class="poster-cover" id="poster-cover-img"></div>
+            <div class="poster-info">
+                <h2 id="poster-story-title">Judul Cerita</h2>
+                <p class="author">Karya: <span id="poster-author-name">Penulis</span></p>
+                <div class="poster-qr-row">
+                    <div id="poster-qrcode"></div>
+                    <div class="poster-cta">
+                        <h4>Scan & Baca Sekarang</h4>
+                        <p>Eksklusif di Cendekia Aksara</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAYS -->
     <div id="brightness-overlay"></div>
-    
-    <!-- LOADING -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <div style="font-family:'Poppins';font-weight:500;">Memuat Lembar Cerita...</div>
+    </div>
+    <div id="share-overlay" style="display:none; background: rgba(15,23,42,0.9); color: white;">
+        <div class="spinner"></div>
+        <div style="font-family:'Poppins';font-weight:500;">Menyiapkan Poster...</div>
     </div>
 
     <div class="app-wrapper">
@@ -130,27 +201,46 @@
             </div>
         </header>
 
-        <!-- KONTEN BACAAN (Hanya Menampilkan 1 Bab Saja) -->
+        <!-- KONTEN BACAAN -->
         <main class="reader-container" id="reader-container" onclick="toggleNavbarByClick()">
             <div class="chapter-block" id="chapter-content">
                 <!-- Teks Naskah Diisi JavaScript -->
             </div>
         </main>
 
-        <!-- FOOTER: VOTE, KOMENTAR & NEXT -->
+        <!-- FOOTER: INTERAKSI & NEXT -->
         <div class="reader-footer" id="reader-footer" style="display: none;">
             
-            <div class="vote-section">
-                <button class="btn-vote" id="btn-vote" onclick="toggleVote()"><i class="fa-solid fa-star"></i> Beri Dukungan</button>
-                <span class="vote-count" id="vote-count-display">0 Dukungan</span>
+            <div class="action-bar">
+                <button class="action-btn btn-star" id="btn-vote" onclick="handleVote()">
+                    <i class="fa-solid fa-star"></i> <span id="vote-count-display" style="font-size:0.9rem;">0</span>
+                </button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="action-btn" onclick="toggleCommentSection()" title="Komentar">
+                        <i class="fa-solid fa-comment-dots"></i> <span id="comment-count" style="font-size:0.9rem;">0</span>
+                    </button>
+                    <button class="action-btn" onclick="generatePoster()" title="Bagikan">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </button>
+                    <button class="action-btn" onclick="quickThemeToggle()" title="Mode Malam">
+                        <i class="fa-solid fa-moon" id="quick-theme-icon"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="comment-section">
-                <h3>Komentar Pembaca (<span id="comment-count">0</span>)</h3>
+            <div class="comment-section" id="comment-section-box">
+                <h3>Komentar Pembaca</h3>
+                
+                <div class="replying-indicator" id="replying-indicator">
+                    <span>Membalas <b id="replying-to-name">Seseorang</b></span>
+                    <i class="fa-solid fa-xmark" onclick="cancelReply()"></i>
+                </div>
+
                 <div class="comment-input-box">
                     <input type="text" id="comment-input" placeholder="Sampaikan pendapatmu untuk bab ini...">
                     <button class="btn-send" onclick="sendComment()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
+                
                 <div class="comment-list" id="comment-list">
                     <!-- Komentar Diisi JavaScript -->
                 </div>
@@ -185,7 +275,7 @@
         import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, updateDoc, addDoc, increment, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
+        // Konfigurasi Database
         const firebaseConfig = { 
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0", authDomain: "mading-cf676.firebaseapp.com", projectId: "mading-cf676", 
             storageBucket: "mading-cf676.firebasestorage.app", messagingSenderId: "72175203671", appId: "1:72175203671:web:7a0676a55beb64bc96ba12" 
@@ -194,28 +284,28 @@
         const db = getFirestore(app); 
         const auth = getAuth(app);
 
-        // --- SISTEM PERLINDUNGAN KONTEN (ANTI COPY) ---
+        // Anti Copy
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('copy', event => { 
             event.preventDefault(); 
-            Swal.fire({toast:true, position:'top', icon:'error', title:'Tindakan Dilarang', text: 'Menyalin naskah melanggar Hak Cipta penulis.', showConfirmButton:false, timer:2000}); 
+            Swal.fire({toast:true, position:'top', icon:'error', title:'Tindakan Dilarang', text: 'Menyalin naskah melanggar Hak Cipta.', showConfirmButton:false, timer:2000}); 
         });
 
-        // --- PENGAMBILAN DATA URL ---
+        // Variabel Global
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
-        let requestedChapterId = urlParams.get('ch'); // ID bab spesifik
+        let requestedChapterId = urlParams.get('ch'); 
         
         let currentUser = null; 
         let storyData = {}; 
         let chaptersList = []; 
-        let currentActiveIndex = 0; // Index bab yang sedang dibaca
-        let isVoted = false; 
+        let currentActiveIndex = 0;
+        
+        let replyingToCommentId = null;
 
-        // Redirect jika URL tidak valid
         if (!storyId) { window.location.href = 'index.html'; }
 
-        // --- SMART BACK BUTTON (Perbaikan History Trap) ---
+        // Smart Back Button
         document.getElementById('btn-back').onclick = () => { 
             if (document.referrer && !document.referrer.includes('read.html')) {
                 history.back(); 
@@ -234,7 +324,6 @@
                 let storyRef = doc(db, "published_stories", storyId);
                 let storySnap = await getDoc(storyRef);
                 
-                // Cari di draf jika yang buka adalah si penulis dari editor
                 if (!storySnap.exists()) {
                     storyRef = doc(db, "stories", storyId);
                     storySnap = await getDoc(storyRef);
@@ -243,9 +332,27 @@
                 
                 storyData = storySnap.data();
                 document.getElementById('nav-story-title').innerText = storyData.title || "Tanpa Judul";
-                document.getElementById('vote-count-display').innerText = `${storyData.votes || 0} Dukungan`;
+                document.getElementById('vote-count-display').innerText = storyData.votes || 0;
 
-                // Ambil SEMUA Bab yang berstatus 'published'
+                // Cek Status Vote (Database Check)
+                if (currentUser) {
+                    const voteSnap = await getDoc(doc(db, "published_stories", storyId, "voters", currentUser.uid));
+                    if (voteSnap.exists()) {
+                        const btn = document.getElementById('btn-vote');
+                        btn.classList.add('voted');
+                        btn.innerHTML = `<i class="fa-solid fa-star"></i> <span id="vote-count-display" style="font-size:0.9rem;">${storyData.votes || 0}</span>`;
+                        btn.onclick = () => { Swal.fire({toast:true, position:'top', icon:'info', title:'Anda sudah memberi bintang.', showConfirmButton:false, timer:2000}); };
+                    }
+                }
+
+                // Setup Poster Data
+                document.getElementById('poster-story-title').innerText = storyData.title || "Tanpa Judul";
+                document.getElementById('poster-author-name').innerText = storyData.authorName || "Penulis Cendekia";
+                if(storyData.coverBase64) {
+                    document.getElementById('poster-cover-img').style.backgroundImage = `url('${storyData.coverBase64}')`;
+                }
+
+                // Ambil Bab
                 const chapSnap = await getDocs(query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc")));
                 chapSnap.forEach(d => { 
                     if (d.data().status === 'published') chaptersList.push({ id: d.id, ...d.data() }); 
@@ -257,23 +364,19 @@
                     return; 
                 }
 
-                // Jika ada 'ch' di URL, cari posisinya. Jika tidak, buka Bab 1 (index 0).
                 if (requestedChapterId) {
                     currentActiveIndex = chaptersList.findIndex(ch => ch.id === requestedChapterId);
                     if(currentActiveIndex === -1) currentActiveIndex = 0;
                 }
 
-                // Render konten ke layar
                 renderCurrentChapter();
                 renderTableOfContents();
                 
-                // UPDATE VIEWS CERITA SECARA CERDAS (Pencegah Spam Refresh)
                 if (storySnap.ref.path.includes("published_stories") && !sessionStorage.getItem(`viewed_story_${storyId}`)) {
                     await updateDoc(storyRef, { views: increment(1) });
                     sessionStorage.setItem(`viewed_story_${storyId}`, 'true');
                 }
                 
-                // Simpan Riwayat
                 saveReadProgress(); 
                 document.getElementById('loading-overlay').style.display = 'none';
 
@@ -284,20 +387,16 @@
             }
         }
 
-        // --- SISTEM PER-BAB TUNGGAL ---
         function renderCurrentChapter() {
             const ch = chaptersList[currentActiveIndex];
             
-            // Set Navbar Title
             document.getElementById('nav-chapter-title').innerHTML = `Bab ${currentActiveIndex + 1}: ${ch.title || 'Tanpa Judul'} <i class="fa-solid fa-angle-down" style="font-size:0.6rem;"></i>`;
             
-            // Render Naskah
             document.getElementById('chapter-content').innerHTML = `
                 <h2 class="chapter-heading">Bab ${currentActiveIndex + 1}<br>${ch.title || 'Tanpa Judul'}</h2>
                 <div class="chapter-body">${ch.content || '<p>Naskah masih kosong.</p>'}</div>
             `;
             
-            // Setup Tombol Bab Selanjutnya
             const nextContainer = document.getElementById('next-chap-container');
             if (currentActiveIndex < chaptersList.length - 1) {
                 const nextChId = chaptersList[currentActiveIndex + 1].id;
@@ -306,20 +405,20 @@
                 nextContainer.innerHTML = `<div class="btn-next-chap disabled" style="justify-content:center;">Cerita Berakhir di Sini</div>`;
             }
 
-            // Reset Status Vote & Komentar untuk bab ini
-            isVoted = false;
-            document.getElementById('btn-vote').classList.remove('voted');
-            document.getElementById('btn-vote').innerHTML = '<i class="fa-solid fa-star"></i> Beri Dukungan';
-
-            // Tampilkan Footer & Tarik Komentar
             document.getElementById('reader-footer').style.display = 'block';
-            loadComments(ch.id);
             
-            // Gulir otomatis ke paling atas saat bab diganti
+            // Generate QR Code untuk Chapter Ini (Untuk Poster)
+            document.getElementById("poster-qrcode").innerHTML = "";
+            const currentUrl = `${window.location.origin}${window.location.pathname}?id=${storyId}`;
+            new QRCode(document.getElementById("poster-qrcode"), {
+                text: currentUrl,
+                width: 120, height: 120, colorDark : "#003366", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+
+            loadComments(ch.id);
             window.scrollTo(0, 0); 
         }
 
-        // --- DAFTAR ISI (TOC) ---
         function renderTableOfContents() {
             let html = '';
             chaptersList.forEach((ch, idx) => {
@@ -338,62 +437,120 @@
             if (!currentUser) return;
             const progressPercentage = Math.round(((currentActiveIndex + 1) / chaptersList.length) * 100);
             await setDoc(doc(db, "users", currentUser.uid, "library", storyId), {
-                storyId: storyId, 
-                title: storyData.title, 
-                coverBase64: storyData.coverBase64 || null,
+                storyId: storyId, title: storyData.title, coverBase64: storyData.coverBase64 || null,
                 lastChapterId: chaptersList[currentActiveIndex].id,
                 lastChapterTitle: `Bab ${currentActiveIndex + 1}: ${chaptersList[currentActiveIndex].title || 'Tanpa Judul'}`,
-                progressPercentage: progressPercentage, 
-                isArchived: false, 
-                lastReadAt: serverTimestamp()
+                progressPercentage: progressPercentage, isArchived: false, lastReadAt: serverTimestamp()
             }, { merge: true });
         }
 
-        // --- SISTEM VOTE MURNI ---
-        window.toggleVote = async () => {
-            if(!currentUser) { Swal.fire('Login Diperlukan', 'Silakan masuk untuk memberikan dukungan.', 'info'); return; }
+        // --- SISTEM VOTE (Satu Kali, Simpan ke Database) ---
+        window.handleVote = async () => {
+            if(!currentUser) { Swal.fire('Login Diperlukan', 'Silakan masuk untuk memberikan bintang.', 'info'); return; }
             
-            if(isVoted) return; // Cegah double vote di sesi yang sama
-
             const btn = document.getElementById('btn-vote');
-            const storyRef = doc(db, "published_stories", storyId);
-            
+            if(btn.classList.contains('voted')) return;
+
+            // Optimistic UI Update
             btn.classList.add('voted'); 
-            btn.innerHTML = '<i class="fa-solid fa-star"></i> Terima Kasih!';
+            const voteDisplay = document.getElementById('vote-count-display');
+            const newCount = parseInt(voteDisplay.innerText) + 1;
+            voteDisplay.innerText = newCount;
             
             try {
+                const storyRef = doc(db, "published_stories", storyId);
+                const voterRef = doc(db, "published_stories", storyId, "voters", currentUser.uid);
+                
+                await setDoc(voterRef, { votedAt: serverTimestamp() });
                 await updateDoc(storyRef, { votes: increment(1) });
-                // Update UI Display Murni
-                const currentVoteCount = parseInt(document.getElementById('vote-count-display').innerText) || 0;
-                document.getElementById('vote-count-display').innerText = `${currentVoteCount + 1} Dukungan`;
-                isVoted = true;
-                Swal.fire({toast:true, position:'center', icon:'success', title:'Dukungan Berhasil Diberikan!', showConfirmButton:false, timer:1500});
+
+                Swal.fire({toast:true, position:'center', icon:'success', title:'Terima kasih atas bintangnya!', showConfirmButton:false, timer:1500});
+                btn.onclick = () => { Swal.fire({toast:true, position:'top', icon:'info', title:'Anda sudah memberi bintang.', showConfirmButton:false, timer:2000}); };
             } catch (error) {
                 console.error("Gagal Vote:", error);
+                btn.classList.remove('voted');
+                voteDisplay.innerText = newCount - 1;
             }
         };
 
-        // --- SISTEM KOMENTAR CERDAS ---
+        // --- SISTEM KOMENTAR BERUTAS & LENCANA PENULIS ---
+        window.toggleCommentSection = () => {
+            document.getElementById('comment-section-box').classList.toggle('active');
+            // Scroll sedikit ke bawah agar form komentar terlihat
+            window.scrollBy({ top: 150, behavior: 'smooth' });
+        };
+
+        window.prepReply = (commentId, authorName) => {
+            replyingToCommentId = commentId;
+            document.getElementById('replying-to-name').innerText = authorName;
+            document.getElementById('replying-indicator').style.display = 'flex';
+            document.getElementById('comment-input').placeholder = `Membalas komentar ${authorName}...`;
+            document.getElementById('comment-input').focus();
+        };
+
+        window.cancelReply = () => {
+            replyingToCommentId = null;
+            document.getElementById('replying-indicator').style.display = 'none';
+            document.getElementById('comment-input').placeholder = `Sampaikan pendapatmu untuk bab ini...`;
+            document.getElementById('comment-input').value = '';
+        };
+
         function loadComments(chapterId) {
-            const q = query(collection(db, "published_stories", storyId, "chapters", chapterId, "comments"), orderBy("createdAt", "desc"));
+            const q = query(collection(db, "published_stories", storyId, "chapters", chapterId, "comments"), orderBy("createdAt", "asc"));
             onSnapshot(q, (snap) => {
-                document.getElementById('comment-count').innerText = snap.size;
+                
+                let commentsData = [];
+                snap.forEach(d => commentsData.push({ id: d.id, ...d.data() }));
+                
+                document.getElementById('comment-count').innerText = commentsData.length;
+
+                // Pisahkan Parent dan Child (Replies)
+                let parents = commentsData.filter(c => !c.parentId);
+                let replies = commentsData.filter(c => c.parentId);
+
+                // Urutkan parent dari yang terbaru
+                parents.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
+
                 let html = '';
-                snap.forEach(d => {
-                    const c = d.data();
-                    const bg = c.avatarBase64 ? `url('${c.avatarBase64}')` : 'none';
-                    html += `
-                        <div class="comment-item">
-                            <div class="c-ava" style="background-image: ${bg};"></div>
-                            <div class="c-body">
-                                <h4 class="c-name">${c.authorName}</h4>
-                                <p class="c-text">${c.text}</p>
-                            </div>
-                        </div>
-                    `;
+                parents.forEach(p => {
+                    html += buildCommentHtml(p, false);
+                    
+                    // Cari balasannya
+                    let pReplies = replies.filter(r => r.parentId === p.id);
+                    if(pReplies.length > 0) {
+                        html += `<div class="c-replies">`;
+                        pReplies.forEach(r => { html += buildCommentHtml(r, true); });
+                        html += `</div>`;
+                    }
                 });
-                document.getElementById('comment-list').innerHTML = html || `<div style="font-size:0.8rem; color:#94a3b8; text-align:center;">Jadilah yang pertama berkomentar!</div>`;
+
+                document.getElementById('comment-list').innerHTML = html || `<div style="font-size:0.85rem; color:#94a3b8; text-align:center; padding: 20px;">Jadilah yang pertama berkomentar!</div>`;
             });
+        }
+
+        function buildCommentHtml(c, isReply) {
+            const bg = c.avatarBase64 ? `url('${c.avatarBase64}')` : 'none';
+            const isAuthor = (c.authorId === storyData.authorId);
+            const badge = isAuthor ? `<span class="author-badge">PENULIS</span>` : '';
+            
+            const timeObj = c.createdAt ? c.createdAt.toDate() : new Date();
+            const timeStr = timeObj.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + ' ' + timeObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+
+            return `
+                <div class="comment-item">
+                    <div class="c-main">
+                        <div class="c-ava" style="background-image: ${bg};"></div>
+                        <div class="c-body">
+                            <div class="c-name-row">
+                                <h4 class="c-name">${c.authorName} ${badge}</h4>
+                                <span class="c-time">${timeStr}</span>
+                            </div>
+                            <p class="c-text">${c.text}</p>
+                            ${!isReply ? `<button class="c-reply-btn" onclick="prepReply('${c.id}', '${c.authorName}')">Balas</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         window.sendComment = async () => {
@@ -402,31 +559,65 @@
             const text = input.value.trim();
             if(!text) return;
             
-            input.value = ''; // Kosongkan input
+            input.value = ''; 
             const chId = chaptersList[currentActiveIndex].id;
             
-            // Cari nama dan ava pengguna secara langsung (Real-time Name Fetching)
             const userSnap = await getDoc(doc(db, "users", currentUser.uid));
             let ava = null, name = currentUser.displayName || 'Pembaca Cendekia';
-            
             if (userSnap.exists()) { 
                 const uData = userSnap.data();
                 ava = uData.profilePicBase64 || null; 
-                name = uData.username ? `@${uData.username}` : (uData.name || name); 
+                name = uData.penName || uData.name || name; 
             }
 
+            const payload = {
+                text: text, 
+                authorId: currentUser.uid, 
+                authorName: name, 
+                avatarBase64: ava, 
+                createdAt: serverTimestamp(),
+                parentId: replyingToCommentId // Null jika bukan balasan
+            };
+
             try {
-                await addDoc(collection(db, "published_stories", storyId, "chapters", chId, "comments"), {
-                    text: text, 
-                    authorId: currentUser.uid, 
-                    authorName: name, 
-                    avatarBase64: ava, 
-                    createdAt: serverTimestamp()
-                });
+                await addDoc(collection(db, "published_stories", storyId, "chapters", chId, "comments"), payload);
+                cancelReply(); // Reset status balasan
             } catch(e) {
-                console.error("Gagal Kirim Komentar:", e);
                 Swal.fire({toast:true, position:'top', icon:'error', title:'Gagal Mengirim Komentar', showConfirmButton:false, timer:1500});
             }
+        };
+
+        // --- SISTEM GENERATE POSTER ---
+        window.generatePoster = async () => {
+            const overlay = document.getElementById('share-overlay');
+            overlay.style.display = 'flex';
+
+            setTimeout(async () => {
+                try {
+                    const posterNode = document.getElementById('poster-container');
+                    const canvas = await html2canvas(posterNode, {
+                        scale: 2, // Kualitas HD
+                        useCORS: true,
+                        backgroundColor: "#001f3f"
+                    });
+                    
+                    const imgData = canvas.toDataURL("image/png");
+                    
+                    // Trigger Download
+                    const link = document.createElement('a');
+                    link.download = `Cendekia_${storyData.title.replace(/\s+/g, '_')}.png`;
+                    link.href = imgData;
+                    link.click();
+
+                    overlay.style.display = 'none';
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Poster Berhasil Disimpan!', showConfirmButton:false, timer:2000});
+
+                } catch (error) {
+                    console.error("Gagal generate poster:", error);
+                    overlay.style.display = 'none';
+                    Swal.fire('Error', 'Gagal membuat poster.', 'error');
+                }
+            }, 1000); // Beri waktu QRCode selesai dirender
         };
 
         // --- SISTEM UI INTERAKSI BACAAN ---
@@ -435,7 +626,6 @@
             const st = window.pageYOffset || document.documentElement.scrollTop;
             const navbar = document.getElementById('top-navbar');
             
-            // Sembunyikan navbar jika digulir ke bawah, munculkan jika ke atas
             if (st > lastScrollTop && st > 100) { 
                 navbar.classList.add('hidden'); 
             } else { 
@@ -444,42 +634,52 @@
             lastScrollTop = st <= 0 ? 0 : st;
         });
 
-        // Klik tengah layar sembunyikan semua UI
         window.toggleNavbarByClick = () => { 
             document.getElementById('top-navbar').classList.toggle('hidden'); 
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('active')); 
         };
 
-        // Kontrol Laci (Drawer) Bawah
         window.toggleDrawer = (id) => { 
-            // Tutup drawer lain jika terbuka
             document.querySelectorAll('.drawer').forEach(d => { if(d.id !== id) d.classList.remove('active'); });
-            
             document.getElementById(id).classList.toggle('active'); 
             event.stopPropagation(); 
         };
 
-        // Tampilan Tema
         window.setTheme = (themeName, btn) => { 
             document.body.setAttribute('data-theme', themeName); 
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
-            btn.classList.add('active'); 
+            if(btn) btn.classList.add('active'); 
+            
+            // Update ikon toggle cepat
+            const quickIcon = document.getElementById('quick-theme-icon');
+            if(themeName === 'dark') {
+                quickIcon.className = "fa-solid fa-sun";
+            } else {
+                quickIcon.className = "fa-solid fa-moon";
+            }
         };
 
-        // Ganti Font (Serif/Sans)
+        // Quick Toggle Dark/Light Mode
+        window.quickThemeToggle = () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            if(currentTheme === 'dark') {
+                setTheme('light', document.querySelector('.theme-btn.light'));
+            } else {
+                setTheme('dark', document.querySelector('.theme-btn.dark'));
+            }
+        };
+
         window.setFont = (fontFamily, btn) => { 
             document.documentElement.style.setProperty('--reader-font', fontFamily === 'Lora' ? "'Lora', serif" : "'Poppins', sans-serif"); 
             document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active')); 
             btn.classList.add('active'); 
         };
 
-        // Ganti Ukuran Font
         window.changeFontSize = (val) => { 
             document.documentElement.style.setProperty('--reader-size', val + 'rem'); 
             document.getElementById('size-val').innerText = val; 
         };
 
-        // Atur Keredupan (Mode Malam)
         window.changeBrightness = (val) => { 
             document.getElementById('brightness-overlay').style.opacity = val; 
         };
