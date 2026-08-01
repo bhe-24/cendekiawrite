@@ -136,7 +136,7 @@
             font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; z-index: 2;
         }
 
-        /* --- PERBAIKAN: MENGIKUTI (FOLLOWING) BULAT --- */
+        /* --- MENGIKUTI (FOLLOWING) BULAT --- */
         .following-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; scrollbar-width: none; }
         .following-scroll::-webkit-scrollbar { display: none; }
         
@@ -170,15 +170,6 @@
         .empty-state i { font-size: 2.5rem; margin-bottom: 10px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.85rem; }
 
-        /* LOADING */
-        #loading-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         /* --- MODAL LIST PENGIKUT/MENGIKUTI (via SweetAlert2) --- */
         .modal-follow-item {
             display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px;
@@ -186,11 +177,11 @@
         }
         .modal-follow-ava { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: center; background-color: #cbd5e1; flex-shrink: 0; }
 
-        /* --- SKELETON SHIMMER --- */
-        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-        .sk-dark, .sk-light { background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
-        .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.28) 37%, rgba(255,255,255,0.15) 63%); }
-        .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); }
+        /* --- PLACEHOLDER STATIS (TANPA ANIMASI) ---
+             Sebelumnya ada efek shimmer bergerak; sesuai permintaan, sekarang diam total,
+             hanya warna solid netral sebagai penanda "sedang dimuat". */
+        .sk-dark { background: rgba(255,255,255,0.18); }
+        .sk-light { background: #e2e8f0; }
         .sk-line { border-radius: 6px; }
         .sk-name-line { height: 20px; width: 55%; margin-bottom: 8px; }
         .sk-username-line { height: 12px; width: 35%; }
@@ -202,12 +193,6 @@
 <body>
 
     <div class="app-wrapper">
-
-        <!-- OVERLAY LOADING -->
-        <div id="loading-overlay">
-            <div class="spinner"></div>
-            <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyinkronkan Profil...</div>
-        </div>
 
         <!-- NAVBAR -->
         <header class="top-navbar">
@@ -284,7 +269,7 @@
                 <div class="scroll-row" id="list-pustaka" style="display:none;"></div>
             </div>
 
-            <!-- PERBAIKAN: Skeleton Untuk Mengikuti (Bulat) -->
+            <!-- Mengikuti (bulat) -->
             <div class="section-box">
                 <h3 class="section-title">Mengikuti</h3>
                 <div class="following-scroll" id="list-following-skeleton">
@@ -518,7 +503,6 @@
                     document.getElementById('p-avatar').style.backgroundImage = avatarUrl;
                 }
                 
-                // Pastikan class animasi dihilangkan
                 document.getElementById('p-cover').classList.remove('sk-dark');
                 document.getElementById('p-avatar').classList.remove('sk-dark');
 
@@ -700,7 +684,6 @@
             }
         };
 
-        // --- FUNGSI BARU UNTUK MODAL MENGIKUTI ---
         window.openFollowingModal = async () => {
             Swal.fire({ title: 'Memuat Mengikuti...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
@@ -807,7 +790,6 @@
             }
         }
 
-        // --- PERBAIKAN: Fungsi Mengikuti Menjadi Lingkaran Horisontal ---
         async function loadFollowing() {
             try {
                 const qFollow = query(collection(db, "users", targetUserId, "following"), orderBy("followedAt", "desc"));
