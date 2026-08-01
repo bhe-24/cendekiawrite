@@ -112,10 +112,22 @@
         .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); }
 
-        /* SKELETON / LOADING TEXT STYLE */
         .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px auto;}
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .skeleton-card { width: clamp(120px, 15vw, 165px); flex-shrink: 0; }
+        .skeleton-cover, .skeleton-line, .skeleton-banner {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%);
+            background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite;
+        }
+        .skeleton-cover { width: 100%; height: clamp(170px, 21vw, 235px); border-radius: 12px; margin-bottom: 10px; }
+        .skeleton-line { height: 11px; border-radius: 6px; margin-bottom: 6px; }
+        .skeleton-line.short { width: 55%; }
+        .skeleton-banner {
+            min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px); border-radius: 16px; flex-shrink: 0;
+            background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%); background-size: 400% 100%;
+        }
 
         /* --- 7. CTA BOTTOM & FOOTER --- */
         .cta-write { margin: clamp(16px,3vw,20px); padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 24px; text-align: center; color: white; box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden; }
@@ -156,7 +168,6 @@
                 <h1>Cendekia</h1>
             </div>
             <div class="nav-actions">
-                <!-- Langsung pindah ke halaman search.html -->
                 <button class="btn-search" onclick="window.location.href='search.html'"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="btn-login" id="btn-login-header" onclick="goToLogin()">Masuk</button>
             </div>
@@ -165,11 +176,10 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS -->
+        <!-- BANNERS (skeleton default, langsung ditimpa cache/data asli) -->
         <div class="banner-container" id="banner-container">
-            <div class="empty-state" style="border:none; margin-top:20px;">
-                <div class="spinner"></div><p>Memuat Etalase...</p>
-            </div>
+            <div class="skeleton-banner"></div>
+            <div class="skeleton-banner"></div>
         </div>
 
         <!-- QUICK ACTIONS ICONS -->
@@ -213,7 +223,10 @@
                 <a href="search.html">Lihat Semua</a>
             </div>
             <div class="story-scroll" id="rekomendasi-container">
-                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Rekomendasi...</p></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
             </div>
         </div>
 
@@ -224,7 +237,10 @@
                 <a href="search.html">Lihat Semua</a>
             </div>
             <div class="story-scroll" id="terbaru-container">
-                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Cerita Terbaru...</p></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
             </div>
         </div>
 
@@ -234,7 +250,9 @@
                 <h2>Pilihan Editor</h2>
             </div>
             <div class="story-scroll" id="editor-container">
-                <div class="empty-state" style="border:none;"><div class="spinner"></div><p>Memuat Pilihan Editor...</p></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
             </div>
         </div>
 
@@ -257,6 +275,29 @@
             <span class="version">Versi Web Publik v1.0.0</span>
         </footer>
     </div>
+
+    <!-- ============================================================
+         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
+         SEBELUM Firebase SDK selesai diunduh. Kalau ada cache dari
+         kunjungan sebelumnya, skeleton di atas langsung ditimpa
+         dengan tampilan nyata dalam hitungan milidetik, jadi
+         pengguna (hampir) tidak pernah melihat proses "memuat".
+         ============================================================ -->
+    <script>
+        (function () {
+            try {
+                var raw = localStorage.getItem('cendekia_home_cache_v1');
+                if (!raw) return; // Belum ada cache (kunjungan pertama) -> biarkan skeleton tampil
+                var cache = JSON.parse(raw);
+                if (cache.bannersHtml) document.getElementById('banner-container').innerHTML = cache.bannersHtml;
+                if (cache.recHtml) document.getElementById('rekomendasi-container').innerHTML = cache.recHtml;
+                if (cache.terbaruHtml) document.getElementById('terbaru-container').innerHTML = cache.terbaruHtml;
+                if (cache.edHtml) document.getElementById('editor-container').innerHTML = cache.edHtml;
+            } catch (e) {
+                // Cache rusak/tidak valid -> abaikan saja, skeleton bawaan tetap tampil
+            }
+        })();
+    </script>
 
     <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -284,6 +325,10 @@
         let isUserLoggedIn = false;
         let allPublishedStories = []; 
 
+        const HOME_CACHE_KEY = 'cendekia_home_cache_v1';
+        const AUTHOR_CACHE_KEY = 'cendekia_author_cache_v1';
+        const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 jam, nama penulis jarang berubah
+
         // 1. Cek Status Login
         onAuthStateChanged(auth, (user) => {
             const btnLogin = document.getElementById('btn-login-header');
@@ -310,12 +355,20 @@
         }
 
         // Tautan ke pratinjau.html & Sistem Vote murni (Bukan Rating 5.0 lagi)
+        // authorSlot: kalau true, nama penulis dibungkus <span class="author-slot"> agar bisa
+        // "ditempel" belakangan setelah nama asli (@username) berhasil diambil, tanpa render ulang kartu.
         function buildStoryCard(data, opts = {}) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
-            
-            // FIX: Hanya menggunakan data.votes, jika kosong maka 0
-            const metaHtml = opts.metaHtml || `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0}`;
+
+            let metaHtml = opts.metaHtml;
+            if (!metaHtml) {
+                metaHtml = `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0}`;
+            }
+            if (opts.authorSlot) {
+                const fallbackName = data.authorName || 'Anonim';
+                metaHtml = `<i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${fallbackName}</span>`;
+            }
             
             const coverBorder = opts.goldBorder ? 'border-color: var(--gold);' : '';
             return `
@@ -328,39 +381,42 @@
             `;
         }
 
-        // 2. Tarik Data Utama (Langsung Tampil di Layar Tanpa Overlay)
+        function buildBannerHtml(snapBanner) {
+            if (snapBanner.empty) {
+                return `<div class="empty-state" style="margin-top:15px; width:100%; border:none;">Belum ada event atau rilis terbaru saat ini.</div>`;
+            }
+            let htmlBanner = '';
+            snapBanner.forEach(docSnap => {
+                const data = docSnap.data();
+                const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
+                htmlBanner += `
+                    <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};">
+                        <div class="banner-content">
+                            <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; color: white;">${data.tag || 'INFO'}</span>
+                            <h3 style="margin: 8px 0 0 0; font-family: 'Playfair Display', serif;">${data.title}</h3>
+                        </div>
+                    </div>
+                `;
+            });
+            return htmlBanner;
+        }
+
+        // 2. Tarik Data Utama — render kartu SEGERA setelah published_stories datang,
+        // tidak lagi menunggu proses pencarian @username penulis (itu dijalankan belakangan).
         async function fetchAllData() {
             try {
                 // A. Load Banners
                 const qBanner = query(collection(db, "app_banners"), where("isActive", "==", true), limit(5));
                 const snapBanner = await getDocs(qBanner);
-                const bannerContainer = document.getElementById('banner-container');
-                if (snapBanner.empty) {
-                    bannerContainer.innerHTML = `<div class="empty-state" style="margin-top:15px; width:100%; border:none;">Belum ada event atau rilis terbaru saat ini.</div>`;
-                } else {
-                    let htmlBanner = '';
-                    snapBanner.forEach(doc => {
-                        const data = doc.data();
-                        const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
-                        htmlBanner += `
-                            <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};">
-                                <div class="banner-content">
-                                    <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; color: white;">${data.tag || 'INFO'}</span>
-                                    <h3 style="margin: 8px 0 0 0; font-family: 'Playfair Display', serif;">${data.title}</h3>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    bannerContainer.innerHTML = htmlBanner;
-                }
+                const bannersHtml = buildBannerHtml(snapBanner);
+                document.getElementById('banner-container').innerHTML = bannersHtml;
 
                 // B. Load Stories
                 const qStories = query(collection(db, "published_stories"));
                 const snapStories = await getDocs(qStories);
                 allPublishedStories = [];
-
-                snapStories.forEach(doc => {
-                    allPublishedStories.push({ id: doc.id, ...doc.data() });
+                snapStories.forEach(docSnap => {
+                    allPublishedStories.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
                 const recContainer = document.getElementById('rekomendasi-container');
@@ -372,39 +428,18 @@
                     recContainer.innerHTML = emptyMsg;
                     terbaruContainer.innerHTML = emptyMsg;
                     edContainer.innerHTML = emptyMsg;
+                    saveHomeCache(bannersHtml, emptyMsg, emptyMsg, emptyMsg);
                     return;
                 }
 
-                // FIX NAMA PENULIS: Menarik @username asli dari database users 
-                // agar tidak tampil "Penulis Cendekia" di cerita lama
-                const authorIds = [...new Set(allPublishedStories.map(s => s.authorId).filter(id => id))];
-                const authorMap = {};
-                
-                await Promise.all(authorIds.map(async (uid) => {
-                    try {
-                        const uSnap = await getDoc(doc(db, "users", uid));
-                        if(uSnap.exists()) {
-                            const uData = uSnap.data();
-                            // Prioritaskan username (@...), jika tidak ada pakai nama
-                            authorMap[uid] = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
-                        }
-                    } catch(e) {}
-                }));
-
-                // Timpa nama penulis di cache dengan nama/username asli
-                allPublishedStories.forEach(s => {
-                    if(authorMap[s.authorId]) {
-                        s.authorName = authorMap[s.authorId];
-                    }
-                });
-
-                // C. REKOMENDASI UTAMA (Sort by Views)
+                // C. REKOMENDASI UTAMA (Sort by Views) -- langsung dirender, tidak menunggu apapun
                 const recommendedList = [...allPublishedStories]
                     .sort((a, b) => (b.views || 0) - (a.views || 0))
                     .slice(0, 10);
-                recContainer.innerHTML = recommendedList.map(data => buildStoryCard(data)).join('');
+                const recHtml = recommendedList.map(data => buildStoryCard(data)).join('');
+                recContainer.innerHTML = recHtml;
 
-                // D. CERITA TERBARU (Sort by Waktu)
+                // D. CERITA TERBARU (Sort by Waktu) -- pakai authorSlot agar nama bisa ditempel belakangan
                 const latestList = [...allPublishedStories]
                     .sort((a, b) => {
                         const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
@@ -412,28 +447,83 @@
                         return timeB - timeA;
                     })
                     .slice(0, 10);
-                terbaruContainer.innerHTML = latestList.length > 0
-                    ? latestList.map(data => buildStoryCard(data, {
-                        badge: 'Baru', badgeClass: 'badge-new',
-                        metaHtml: `<i class="fa-solid fa-at"></i> ${data.authorName || 'Anonim'}` // Icon @ untuk Penulis
-                    })).join('')
+                const terbaruHtml = latestList.length > 0
+                    ? latestList.map(data => buildStoryCard(data, { badge: 'Baru', badgeClass: 'badge-new', authorSlot: true })).join('')
                     : `<div class="empty-state" style="border:none;">Belum ada cerita baru yang terbit.</div>`;
+                terbaruContainer.innerHTML = terbaruHtml;
 
                 // E. PILIHAN EDITOR (Filter isEditorChoice)
                 const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
-                edContainer.innerHTML = editorList.length > 0
+                const edHtml = editorList.length > 0
                     ? editorList.map(data => buildStoryCard(data, {
                         goldBorder: true,
                         badge: '<i class="fa-solid fa-award"></i> Sorotan', badgeClass: 'badge-editor',
-                        // FIX: Menggunakan data.votes
                         metaHtml: `<i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0} &middot; <i class="fa-solid fa-eye"></i> ${data.views || 0}`
                     })).join('')
                     : `<div class="empty-state" style="border:none;">Editor belum memilih cerita sorotan.</div>`;
+                edContainer.innerHTML = edHtml;
+
+                // Simpan hasil render ke cache lokal untuk kunjungan berikutnya (tampil instan)
+                saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml);
+
+                // F. Baru SEKARANG cari nama @username asli penulis, di belakang layar,
+                // lalu tempelkan ke slot yang sudah tampil (tidak ada render ulang / flicker).
+                enrichAuthorNames(latestList);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('rekomendasi-container').innerHTML = `<div class="empty-state" style="border:none; color:#dc2626;">Gagal memuat. Periksa koneksi internet Anda.</div>`;
+                // Kalau ada cache lama yang sudah tampil, biarkan saja (lebih baik daripada kosong).
+                // Kalau belum ada apa-apa di layar, baru tampilkan pesan gagal.
+                const recContainer = document.getElementById('rekomendasi-container');
+                if (recContainer.querySelector('.skeleton-card')) {
+                    recContainer.innerHTML = `<div class="empty-state" style="border:none; color:#dc2626;">Gagal memuat. Periksa koneksi internet Anda.</div>`;
+                }
             }
+        }
+
+        // Simpan HTML hasil render ke localStorage (dibungkus try/catch karena kuota
+        // penyimpanan browser terbatas dan tidak boleh sampai mengganggu tampilan).
+        function saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml) {
+            try {
+                localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({
+                    bannersHtml, recHtml, terbaruHtml, edHtml, cachedAt: Date.now()
+                }));
+            } catch (e) {
+                console.warn('Cache beranda tidak tersimpan (kemungkinan penyimpanan penuh):', e);
+            }
+        }
+
+        // Ambil nama/username asli penulis secara diam-diam, dengan cache 24 jam
+        // supaya tidak perlu query berulang setiap kali beranda dibuka.
+        async function enrichAuthorNames(stories) {
+            const authorIds = [...new Set(stories.map(s => s.authorId).filter(Boolean))];
+            if (authorIds.length === 0) return;
+
+            let authorCache = {};
+            try { authorCache = JSON.parse(localStorage.getItem(AUTHOR_CACHE_KEY) || '{}'); } catch (e) {}
+
+            const now = Date.now();
+            const idsToFetch = authorIds.filter(id => !authorCache[id] || (now - authorCache[id].cachedAt) > AUTHOR_CACHE_TTL);
+
+            if (idsToFetch.length > 0) {
+                await Promise.all(idsToFetch.map(async (uid) => {
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", uid));
+                        if (uSnap.exists()) {
+                            const uData = uSnap.data();
+                            const label = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
+                            authorCache[uid] = { label, cachedAt: now };
+                        }
+                    } catch (e) { /* Lewati penulis ini, tidak fatal */ }
+                }));
+                try { localStorage.setItem(AUTHOR_CACHE_KEY, JSON.stringify(authorCache)); } catch (e) {}
+            }
+
+            // Tempel nama asli ke slot yang sudah ada di layar (tanpa re-render kartu)
+            document.querySelectorAll('.author-slot').forEach(el => {
+                const uid = el.dataset.uid;
+                if (uid && authorCache[uid]) el.innerText = authorCache[uid].label;
+            });
         }
 
         async function loadContinueReading(uid) {
@@ -445,8 +535,8 @@
                 if (!snap.empty) {
                     section.style.display = 'block';
                     let html = '';
-                    snap.forEach(doc => {
-                        const data = doc.data();
+                    snap.forEach(docSnap => {
+                        const data = docSnap.data();
                         const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                         html += `
                             <div class="continue-card" onclick="window.location.href='read.html?id=${data.storyId}&ch=${data.lastChapterId}'">
