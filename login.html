@@ -412,7 +412,7 @@
             document.getElementById('captcha-input').value = "";
         }
 
-        window.addEventListener('resize', generateCaptcha); // Regenerate on resize
+        // PERBAIKAN: Listener window resize dihapus agar captcha tidak berubah saat keyboard HP muncul
         window.addEventListener('DOMContentLoaded', generateCaptcha);
         document.getElementById('btn-refresh-captcha').addEventListener('click', generateCaptcha);
 
