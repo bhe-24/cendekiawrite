@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laporkan Pelanggaran - Cendekia Aksara</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --nav-bg: #0f172a;       
+            --primary: #003366;      
+            --gold: #d4af37;         
+            --bg-color: #f8fafc;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+        }
+
+        .app-wrapper {
+            width: 100%; max-width: 480px; margin: 0 auto;
+            background-color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #e2e8f0; } 
+            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+        }
+
+        /* NAVBAR */
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 15px;
+            padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .btn-back { background: none; border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; transition: 0.2s; padding: 0;}
+        .btn-back:hover { color: var(--danger); }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: var(--danger); margin: 0; }
+
+        .content-area { padding: 25px 20px; flex: 1; }
+        
+        .info-alert {
+            background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px;
+            padding: 15px; margin-bottom: 25px; display: flex; gap: 12px; align-items: flex-start;
+        }
+        .info-alert i { color: var(--danger); font-size: 1.2rem; margin-top: 2px;}
+        .info-alert p { margin: 0; font-size: 0.8rem; color: #991b1b; line-height: 1.5;}
+
+        /* FORM GROUPS */
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
+        .form-hint { font-size: 0.75rem; color: var(--text-gray); margin-top: -5px; margin-bottom: 10px; line-height: 1.4;}
+
+        /* PILIHAN TIPE LAPORAN (RADIO CARDS) */
+        .type-list { display: flex; flex-direction: column; gap: 10px; }
+        .type-card {
+            display: flex; gap: 12px; align-items: center; padding: 15px;
+            border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer;
+            transition: 0.2s; background: #f8fafc;
+        }
+        .type-card:hover { border-color: var(--danger); }
+        .type-card.selected { border-color: var(--danger); background: #fef2f2; }
+        .type-radio {
+            width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
+            flex-shrink: 0; position: relative; background: white;
+        }
+        .type-card.selected .type-radio { border-color: var(--danger); }
+        .type-card.selected .type-radio::after {
+            content: ''; position: absolute; inset: 3px; background: var(--danger); border-radius: 50%;
+        }
+        .type-text h4 { margin: 0 0 2px 0; font-size: 0.9rem; color: var(--text-dark); }
+        .type-text p { margin: 0; font-size: 0.75rem; color: var(--text-gray); line-height: 1.4; }
+
+        /* TEXTAREA */
+        textarea {
+            width: 100%; padding: 15px; border: 1.5px solid #cbd5e1; border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 0.9rem; background: #f8fafc;
+            color: var(--text-dark); outline: none; transition: 0.3s; resize: vertical; min-height: 120px;
+        }
+        textarea:focus { background: white; border-color: var(--danger); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
+
+        /* UPLOAD BUKTI */
+        .evidence-uploader {
+            width: 100%; height: 160px; border: 2px dashed #cbd5e1; border-radius: 12px;
+            background: #f8fafc; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; position: relative; overflow: hidden; transition: 0.3s;
+        }
+        .evidence-uploader:hover { border-color: var(--danger); background: #fef2f2; }
+        .evidence-uploader i { font-size: 2rem; color: #94a3b8; margin-bottom: 10px; z-index: 1;}
+        .evidence-uploader span { font-size: 0.85rem; color: var(--text-gray); font-weight: 500; z-index: 1;}
+        .evidence-preview {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            background-color: #e2e8f0; z-index: 2; display: none;
+        }
+        .remove-evidence {
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white;
+            border: none; border-radius: 50%; width: 30px; height: 30px; display: none;
+            justify-content: center; align-items: center; cursor: pointer; z-index: 3;
+        }
+        .remove-evidence:hover { background: var(--danger); }
+        #evidence-file { display: none; }
+
+        .btn-submit {
+            width: 100%; background: var(--danger); color: white; border: none; padding: 16px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+            margin-top: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        .btn-submit:hover { background: #b91c1c; transform: translateY(-2px); }
+        .btn-submit:disabled { background: #fca5a5; cursor: not-allowed; transform: none; box-shadow: none;}
+
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 5000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--danger); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay"><div class="spinner"></div><div style="color: var(--danger); font-weight: 600;">Mengirim Laporan...</div></div>
+
+    <div class="app-wrapper">
+        <header class="top-navbar">
+            <button class="btn-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="nav-title">Laporkan Pelanggaran</h1>
+        </header>
+
+        <div class="content-area">
+            <div class="info-alert">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <p>Laporan Anda akan ditinjau oleh Admin. Jika terbukti melanggar Pedoman Cendekia Aksara, konten tersebut akan diturunkan secara permanen.</p>
+            </div>
+
+            <!-- Tipe Pelanggaran -->
+            <div class="form-group">
+                <label>Jenis Pelanggaran <span style="color:var(--danger);">*</span></label>
+                <div class="type-list">
+                    <div class="type-card" data-value="plagiasi" onclick="selectType('plagiasi')">
+                        <div class="type-radio"></div>
+                        <div class="type-text">
+                            <h4>Plagiasi / Pelanggaran Hak Cipta</h4>
+                            <p>Menyalin karya orang lain tanpa izin atau mengklaimnya sebagai milik sendiri.</p>
+                        </div>
+                    </div>
+                    <div class="type-card" data-value="toksik" onclick="selectType('toksik')">
+                        <div class="type-radio"></div>
+                        <div class="type-text">
+                            <h4>Konten Toksik / Kekerasan</h4>
+                            <p>Mengandung ujaran kebencian, pelecehan, atau kekerasan eksplisit ekstrem.</p>
+                        </div>
+                    </div>
+                    <div class="type-card" data-value="spam" onclick="selectType('spam')">
+                        <div class="type-radio"></div>
+                        <div class="type-text">
+                            <h4>Spam / Iklan Terlarang</h4>
+                            <p>Promosi tidak relevan, tautan berbahaya, atau konten berulang-ulang.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bukti Gambar -->
+            <div class="form-group">
+                <label>Unggah Bukti Gambar (Opsional)</label>
+                <p class="form-hint">Sertakan tangkapan layar (screenshot) untuk memperkuat laporan Anda.</p>
+                <div class="evidence-uploader" id="uploader-box" onclick="document.getElementById('evidence-file').click()">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Klik untuk pilih gambar</span>
+                    <div class="evidence-preview" id="evidence-preview"></div>
+                </div>
+                <button class="remove-evidence" id="btn-remove-evidence" onclick="removeEvidence(event)"><i class="fa-solid fa-xmark"></i></button>
+                <input type="file" id="evidence-file" accept="image/png, image/jpeg, image/jpg" onchange="handleEvidenceUpload(event)">
+            </div>
+
+            <!-- Alasan Detail -->
+            <div class="form-group">
+                <label>Deskripsi Laporan <span style="color:var(--danger);">*</span></label>
+                <p class="form-hint">Jelaskan secara detail bagian mana yang melanggar dan mengapa.</p>
+                <textarea id="report-reason" placeholder="Contoh: Pada bab 3, penulis menyalin persis dialog dari novel X..."></textarea>
+            </div>
+
+            <button class="btn-submit" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> Kirim Laporan</button>
+        </div>
+    </div>
+
+    <!-- Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let selectedType = '';
+        let evidenceBase64 = null;
+
+        // Ambil ID target dari URL (misal: lapor.html?type=story&id=ABC)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetId = urlParams.get('id');
+        const targetType = urlParams.get('type') || 'story'; // story, chapter, comment, dll.
+
+        if (!targetId) {
+            Swal.fire('Error', 'Data target tidak valid.', 'error').then(() => { history.back(); });
+        }
+
+        // Cek Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+            } else {
+                Swal.fire({
+                    title: 'Sesi Berakhir', text: 'Silakan masuk ke akun Anda untuk melanjutkan.', icon: 'warning', allowOutsideClick: false
+                }).then(() => { window.location.replace('login.html'); });
+            }
+        });
+
+        window.goBack = () => {
+            if (document.referrer) history.back();
+            else window.location.href = 'index.html';
+        };
+
+        window.selectType = (type) => {
+            selectedType = type;
+            document.querySelectorAll('.type-card').forEach(el => {
+                el.classList.toggle('selected', el.dataset.value === type);
+            });
+        };
+
+        // --- SISTEM UPLOAD BUKTI (Dengan Kompresi Base64) ---
+        window.handleEvidenceUpload = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                Swal.fire('Format Salah', 'Harap unggah file gambar (JPG/PNG).', 'warning');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Kompresi ketat: max width 600px, kualitas 60% agar muat di 1 document Firestore
+                    const canvas = document.createElement('canvas');
+                    const maxWidth = 600;
+                    let w = img.width, h = img.height;
+                    
+                    if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+                    
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    
+                    evidenceBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+                    // Tampilkan Preview
+                    document.getElementById('evidence-preview').style.backgroundImage = `url('${evidenceBase64}')`;
+                    document.getElementById('evidence-preview').style.display = 'block';
+                    document.getElementById('btn-remove-evidence').style.display = 'flex';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.removeEvidence = (event) => {
+            event.stopPropagation();
+            evidenceBase64 = null;
+            document.getElementById('evidence-file').value = '';
+            document.getElementById('evidence-preview').style.backgroundImage = '';
+            document.getElementById('evidence-preview').style.display = 'none';
+            document.getElementById('btn-remove-evidence').style.display = 'none';
+        };
+
+        // --- SUBMIT LAPORAN ---
+        window.submitReport = async () => {
+            const reason = document.getElementById('report-reason').value.trim();
+
+            if (!selectedType) {
+                Swal.fire('Peringatan', 'Harap pilih jenis pelanggaran terlebih dahulu.', 'warning');
+                return;
+            }
+            if (!reason) {
+                Swal.fire('Peringatan', 'Harap tuliskan deskripsi/alasan laporan Anda.', 'warning');
+                return;
+            }
+            if (reason.length < 15) {
+                Swal.fire('Peringatan', 'Deskripsi terlalu singkat. Harap jelaskan lebih detail.', 'warning');
+                return;
+            }
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                // Simpan ke collection 'reports'
+                await addDoc(collection(db, "reports"), {
+                    type: selectedType,
+                    reason: reason,
+                    targetType: targetType,
+                    storyId: targetId, // Sengaja disimpan sebagai storyId agar nyambung ke admin/reports
+                    reporterId: currentUser.uid,
+                    evidenceBase64: evidenceBase64, // Bisa null jika tidak ada bukti
+                    status: 'open',
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+                Swal.fire({
+                    title: 'Laporan Terkirim',
+                    text: 'Terima kasih telah membantu menjaga komunitas Cendekia Aksara.',
+                    icon: 'success',
+                    confirmButtonColor: '#dc2626'
+                }).then(() => {
+                    goBack();
+                });
+
+            } catch (error) {
+                console.error("Error submitting report:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire('Gagal', 'Terjadi kesalahan saat mengirim laporan. Silakan coba lagi nanti.', 'error');
+            }
+        };
+
+    </script>
+</body>
+</html>
