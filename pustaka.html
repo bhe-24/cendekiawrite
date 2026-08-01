@@ -216,7 +216,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Konfigurasi Database Cendekia Aksara
@@ -235,6 +235,8 @@
 
         let currentUserUid = null;
         let libraryItems = [];
+        let authorCache = {}; // Untuk mempercepat sistem jika ada penulis yang sama
+        let storyCache = {}; 
 
         // 1. Cek Status Login
         onAuthStateChanged(auth, (user) => {
@@ -242,7 +244,6 @@
                 currentUserUid = user.uid;
                 fetchLibrary();
             } else {
-                // Jika belum login, tolak akses masuk halaman pustaka
                 Swal.fire({
                     title: 'Akses Ditolak',
                     text: 'Silakan masuk ke akun Anda terlebih dahulu untuk membuka pustaka.',
@@ -269,17 +270,77 @@
             }
         };
 
-        // 3. Ambil Data Pustaka User
+        // 3. Ambil Data Pustaka User (TERMASUK MELACAK NAMA ASLI PENULIS)
         async function fetchLibrary() {
             try {
-                // Asumsi: data pustaka disimpan di sub-collection 'library' dalam doc user
-                const q = query(collection(db, "users", currentUserUid, "library"), orderBy("addedAt", "desc"));
+                // Kita ambil tanpa orderBy untuk mencegah error "Missing Index" di database lawas
+                const q = query(collection(db, "users", currentUserUid, "library"));
                 const snap = await getDocs(q);
                 
-                libraryItems = [];
-                snap.forEach(doc => {
-                    libraryItems.push({ docId: doc.id, ...doc.data() });
+                let rawItems = [];
+                snap.forEach(docSnap => {
+                    rawItems.push({ docId: docSnap.id, ...docSnap.data() });
                 });
+
+                // Mengurutkan buku berdasarkan yang terbaru ditambahkan (secara lokal/aman)
+                rawItems.sort((a, b) => {
+                    let timeA = a.addedAt ? a.addedAt.toMillis() : 0;
+                    let timeB = b.addedAt ? b.addedAt.toMillis() : 0;
+                    return timeB - timeA; 
+                });
+
+                libraryItems = [];
+
+                // Pengecekan silang ke data cerita untuk mendapatkan nama asli penulis
+                for (let i = 0; i < rawItems.length; i++) {
+                    let item = rawItems[i];
+                    let realAuthorName = 'Anonim';
+
+                    if (item.storyId) {
+                        // Cari detail ceritanya
+                        if (!storyCache[item.storyId]) {
+                            try {
+                                const storySnap = await getDoc(doc(db, "published_stories", item.storyId));
+                                if (storySnap.exists()) {
+                                    storyCache[item.storyId] = storySnap.data();
+                                } else {
+                                    // Fallback ke draf jika cerita belum rilis
+                                    const draftSnap = await getDoc(doc(db, "stories", item.storyId));
+                                    if (draftSnap.exists()) {
+                                        storyCache[item.storyId] = draftSnap.data();
+                                    }
+                                }
+                            } catch(e) { console.error(e); }
+                        }
+
+                        const storyData = storyCache[item.storyId];
+                        
+                        // Jika cerita ditemukan, ambil ID penulisnya untuk mencari usernamenya
+                        if (storyData) {
+                            realAuthorName = storyData.authorName || 'Anonim';
+                            const authorId = storyData.authorId;
+
+                            if (authorId) {
+                                if (!authorCache[authorId]) {
+                                    try {
+                                        const authorSnap = await getDoc(doc(db, "users", authorId));
+                                        if (authorSnap.exists()) {
+                                            const uData = authorSnap.data();
+                                            authorCache[authorId] = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
+                                        }
+                                    } catch(e) { console.error(e); }
+                                }
+                                if (authorCache[authorId]) {
+                                    realAuthorName = authorCache[authorId];
+                                }
+                            }
+                        }
+                    }
+
+                    // Terapkan nama asli yang sudah ditemukan
+                    item.realAuthorName = realAuthorName;
+                    libraryItems.push(item);
+                }
 
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderLibrary();
@@ -310,7 +371,7 @@
                             <div class="story-cover" style="background-image: ${coverBg}; filter: grayscale(100%);"></div>
                             <div class="story-info">
                                 <h3 style="color:var(--text-gray);">${item.title}</h3>
-                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.authorName || 'Anonim'}</p>
+                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.realAuthorName}</p>
                                 <div class="card-actions">
                                     <button class="btn-action btn-restore" onclick="unarchiveStory('${item.docId}')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>
                                     <button class="btn-action btn-delete" onclick="removeStory('${item.docId}')"><i class="fa-solid fa-trash"></i> Hapus Permanen</button>
@@ -325,7 +386,7 @@
                             <div class="story-cover" style="background-image: ${coverBg};"></div>
                             <div class="story-info">
                                 <h3>${item.title}</h3>
-                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.authorName || 'Anonim'}</p>
+                                <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.realAuthorName}</p>
                                 <div class="progress-container">
                                     <div class="progress-label"><span>Progres Baca</span> <span>${progress}%</span></div>
                                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
