@@ -81,6 +81,7 @@
         .banner-preview-box {
             width: 100%; height: 140px; border-radius: 12px; background-size: cover; background-position: center;
             position: relative; overflow: hidden; background-color: #0f172a;
+            transition: background-color 0.1s ease; /* Transisi smooth untuk color picker */
         }
         .banner-preview-box::after {
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
@@ -88,7 +89,7 @@
         }
         .banner-content { position: absolute; bottom: 15px; left: 15px; right: 15px; color: white; z-index: 2; }
         .banner-content h3 { font-size: 1.1rem; margin: 8px 0 0 0; font-family: 'Playfair Display', serif; }
-        .banner-tag { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; color: white; }
+        .banner-tag { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; color: white; transition: background-color 0.1s ease;}
 
         .banner-info { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
         .status-badge {
@@ -211,11 +212,13 @@
             <div class="color-pickers">
                 <div class="form-group">
                     <label>Warna Latar</label>
-                    <input type="color" id="b-bgcolor" class="color-input" value="#0f172a" onchange="updatePreview()">
+                    <!-- PERBAIKAN: onchange diubah menjadi oninput agar warna berubah secara live / instan -->
+                    <input type="color" id="b-bgcolor" class="color-input" value="#0f172a" oninput="updatePreview()">
                 </div>
                 <div class="form-group">
                     <label>Warna Label</label>
-                    <input type="color" id="b-tagcolor" class="color-input" value="#d4af37" onchange="updatePreview()">
+                    <!-- PERBAIKAN: onchange diubah menjadi oninput agar warna berubah secara live / instan -->
+                    <input type="color" id="b-tagcolor" class="color-input" value="#d4af37" oninput="updatePreview()">
                 </div>
             </div>
 
@@ -395,19 +398,39 @@
             }
         };
 
-        window.handleImageUpload = (event) => {
+        // PERBAIKAN: Fungsi kompresi gambar agar ukurannya kecil sebelum disimpan ke Firestore
+        function compressImage(file, maxWidth) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        // Kualitas dikurangi jadi 80% agar base64 tidak terlalu berat
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.handleImageUpload = async (event) => {
             const file = event.target.files[0];
             if (!file) return;
-            if (file.size > 2 * 1024 * 1024) { Swal.fire('Terlalu Besar', 'Maksimal ukuran gambar 2MB.', 'warning'); return; }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                tempBase64 = e.target.result;
-                document.getElementById('b-img-preview').style.backgroundImage = `url('${tempBase64}')`;
-                document.getElementById('b-img-preview').style.display = 'block';
-                updatePreview();
-            };
-            reader.readAsDataURL(file);
+            // Kompres gambar dengan lebar maksimal 800px untuk banner
+            tempBase64 = await compressImage(file, 800);
+            
+            document.getElementById('b-img-preview').style.backgroundImage = `url('${tempBase64}')`;
+            document.getElementById('b-img-preview').style.display = 'block';
+            updatePreview();
         };
 
         window.saveBanner = async () => {
@@ -439,7 +462,7 @@
                 loadBanners();
             } catch (error) {
                 console.error("Gagal simpan banner:", error);
-                Swal.fire('Error', 'Gagal menyimpan banner ke server.', 'error');
+                Swal.fire('Error', 'Gagal menyimpan banner ke server. Gambar mungkin masih terlalu besar.', 'error');
             }
         };
 
