@@ -123,9 +123,12 @@
             display: flex; justify-content: center; align-items: center;
             font-size: 1.1rem; flex-shrink: 0; color: white;
         }
+        /* Palet Warna Kategori Notifikasi */
         .icon-comment { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 4px 10px rgba(59,130,246,0.3);}
-        .icon-like { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 10px rgba(239,68,68,0.3);}
-        .icon-update { background: linear-gradient(135deg, var(--gold), #b45309); box-shadow: 0 4px 10px rgba(212,175,55,0.3);}
+        .icon-vote { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 10px rgba(245,158,11,0.3);}
+        .icon-follow { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 10px rgba(16,185,129,0.3);}
+        .icon-editor { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 10px rgba(139,92,246,0.3);}
+        .icon-release { background: linear-gradient(135deg, #0ea5e9, #0284c7); box-shadow: 0 4px 10px rgba(14,165,233,0.3);}
         .icon-system { background: linear-gradient(135deg, #64748b, #334155); box-shadow: 0 4px 10px rgba(100,116,139,0.3);}
 
         .notif-content { flex: 1; }
@@ -209,12 +212,12 @@
         let currentUserUid = null;
         let unreadNotifIds = [];
 
-        // 1. Cek Status Login & Sinkronisasi OneSignal Secara Aman (Bug Fixed)
+        // 1. Cek Status Login & Sinkronisasi OneSignal
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 
-                // Mendaftarkan user ke OneSignal dengan cara yang aman (Menunggu SDK Siap)
+                // Mendaftarkan user ke OneSignal dengan cara yang aman
                 if (window.OneSignalDeferred) {
                     window.OneSignalDeferred.push(async function(OneSignal) {
                         try {
@@ -240,7 +243,7 @@
             }
         });
 
-        // 2. Fungsi Formatting Waktu (Mirip Instagram/Wattpad)
+        // 2. Fungsi Formatting Waktu
         function timeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
             let interval = seconds / 31536000;
@@ -256,7 +259,7 @@
             return "Baru saja";
         }
 
-        // 3. Listener Real-time ke Firestore
+        // 3. Listener Real-time ke Firestore (Menangkap SEMUA Progres)
         function listenToNotifications() {
             const q = query(collection(db, "users", currentUserUid, "notifications"), orderBy("createdAt", "desc"));
             
@@ -267,7 +270,7 @@
                     container.innerHTML = `
                         <div class="empty-state">
                             <i class="fa-regular fa-bell-slash"></i>
-                            <p>Belum ada pemberitahuan baru.</p>
+                            <p>Belum ada aktivitas atau pemberitahuan baru.</p>
                         </div>
                     `;
                     return;
@@ -282,13 +285,21 @@
                     
                     if (isUnread) unreadNotifIds.push(docSnap.id);
 
-                    // Penentuan Ikon berdasarkan Tipe Notifikasi
+                    // PENGKONDISIAN IKON BERDASARKAN TIPE NOTIFIKASI
                     let iconClass = 'fa-solid fa-bell';
                     let bgClass = 'icon-system';
                     
-                    if (data.type === 'comment') { iconClass = 'fa-solid fa-comment-dots'; bgClass = 'icon-comment'; }
-                    else if (data.type === 'like') { iconClass = 'fa-solid fa-heart'; bgClass = 'icon-like'; }
-                    else if (data.type === 'update') { iconClass = 'fa-solid fa-book-open'; bgClass = 'icon-update'; }
+                    if (data.type === 'comment') { 
+                        iconClass = 'fa-solid fa-comment-dots'; bgClass = 'icon-comment'; 
+                    } else if (data.type === 'vote' || data.type === 'like') { 
+                        iconClass = 'fa-solid fa-star'; bgClass = 'icon-vote'; 
+                    } else if (data.type === 'follow') { 
+                        iconClass = 'fa-solid fa-user-plus'; bgClass = 'icon-follow'; 
+                    } else if (data.type === 'editor') { 
+                        iconClass = 'fa-solid fa-award'; bgClass = 'icon-editor'; 
+                    } else if (data.type === 'release' || data.type === 'update') { 
+                        iconClass = 'fa-solid fa-book-open'; bgClass = 'icon-release'; 
+                    }
 
                     const timeStr = data.createdAt ? timeAgo(data.createdAt.toDate()) : 'Baru saja';
 
@@ -319,7 +330,6 @@
 
         // 4. Handle Klik pada Notifikasi
         window.handleNotifClick = async (docId, url, isUnread) => {
-            // Jika belum dibaca, ubah status di database
             if (isUnread) {
                 try {
                     await updateDoc(doc(db, "users", currentUserUid, "notifications", docId), {
@@ -330,7 +340,6 @@
                 }
             }
 
-            // Arahkan ke URL target (Misal: read.html?id=xxx)
             if (url && url !== "null" && url !== "undefined") {
                 window.location.href = url;
             }
@@ -355,7 +364,6 @@
                 await batch.commit();
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Semua telah ditandai dibaca', showConfirmButton: false, timer: 1500 });
                 
-                // Array akan dikosongkan otomatis oleh listener onSnapshot
             } catch (error) {
                 console.error("Gagal menandai semua dibaca:", error);
                 Swal.fire('Error', 'Terjadi kesalahan sistem saat memproses.', 'error');
