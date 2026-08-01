@@ -60,7 +60,6 @@
         </div>
 
         <div class="search-body" id="search-body">
-            <!-- Tampilan Awal (Riwayat & Rekomendasi) -->
             <div id="default-view">
                 <h3 class="section-title">Riwayat Pencarian <button class="clear-btn" onclick="clearHistory()">Hapus</button></h3>
                 <div class="history-list" id="history-list"></div>
@@ -86,12 +85,13 @@
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
         let allStories = [];
-        let authorCache = {}; // Cache untuk menyimpan username asli penulis
+        let authorCache = {}; 
         let searchTimer;
 
-        // Load semua data cerita dan map username penulis
         async function loadStories() {
             try {
+                // Catatan: Mencari dari koleksi "published_stories" 
+                // (Cerita Draf tidak akan muncul di sini)
                 const snap = await getDocs(collection(db, "published_stories"));
                 let authorIdsToFetch = new Set();
                 
@@ -101,7 +101,6 @@
                     if(sData.authorId) authorIdsToFetch.add(sData.authorId);
                 });
 
-                // Tarik data asli Penulis (Untuk mengganti nama "Penulis Cendekia")
                 for (let uid of authorIdsToFetch) {
                     try {
                         const uSnap = await getDoc(doc(db, "users", uid));
@@ -112,7 +111,6 @@
                     } catch(e) {}
                 }
 
-                // Terapkan nama asli ke array lokal
                 allStories.forEach(story => {
                     if(authorCache[story.authorId]) {
                         story.realAuthorName = authorCache[story.authorId];
@@ -124,7 +122,6 @@
         }
         loadStories();
 
-        // Riwayat Pencarian (LocalStorage)
         function loadHistory() {
             let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
             const container = document.getElementById('history-list');
@@ -147,7 +144,6 @@
             }
         }
 
-        // Logika Eksekusi Pencarian
         document.getElementById('search-input').addEventListener('keyup', (e) => {
             const val = e.target.value.toLowerCase().trim();
             clearTimeout(searchTimer);
@@ -160,7 +156,7 @@
 
             if(e.key === 'Enter') saveHistory(val);
             
-            searchTimer = setTimeout(() => { executeSearch(val); }, 400); // Debounce 400ms agar smooth
+            searchTimer = setTimeout(() => { executeSearch(val); }, 400); 
         });
 
         function executeSearch(queryText) {
@@ -173,23 +169,23 @@
                 const results = allStories.filter(story => {
                     const safeTitle = (story.title || '').toLowerCase();
                     const safeGenre = (story.genre || '').toLowerCase();
-                    const safeAuthor = (story.realAuthorName || '').toLowerCase(); // Cek pakai nama ASLI
+                    const safeAuthor = (story.realAuthorName || '').toLowerCase(); 
+                    
+                    // PERBAIKAN: Ambil semua teks tagar lalu gabungkan untuk dibaca saat pencarian umum
+                    const safeTags = (story.tags && Array.isArray(story.tags)) ? story.tags.join(' ').toLowerCase() : '';
 
                     if (queryText.startsWith('#')) {
-                        // Pencarian khusus TAGAR
                         const tQuery = queryText.substring(1).trim();
                         if(!tQuery) return false;
                         return story.tags && Array.isArray(story.tags) && story.tags.some(t => t.toLowerCase().includes(tQuery));
                     } else if (queryText.startsWith('@')) {
-                        // Pencarian khusus PENULIS
                         const aQuery = queryText.substring(1).trim();
                         if(!aQuery) return false;
-                        // Hapus karakter '@' dari realAuthorName untuk dicocokkan
                         const cleanAuthorName = safeAuthor.replace('@', '');
                         return cleanAuthorName.includes(aQuery);
                     } else {
-                        // Pencarian UMUM (Judul / Genre / Nama Penulis tanpa @)
-                        return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText);
+                        // PERBAIKAN: Pencarian UMUM kini juga mengecek teks di dalam `safeTags`
+                        return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText) || safeTags.includes(queryText);
                     }
                 });
 
@@ -220,7 +216,7 @@
                 });
                 html += '</div>';
                 resView.innerHTML = html;
-            }, 300); // Simulasi delay jaringan agar animasi spinner terlihat profesional
+            }, 300); 
         }
 
         loadHistory();
