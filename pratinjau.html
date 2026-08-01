@@ -106,8 +106,10 @@
         .synopsis-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; text-align: justify; white-space: pre-wrap;}
         
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
-        .badge-genre { background: var(--nav-bg); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
-        .badge-tag { background: #f1f5f9; color: var(--primary); border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .badge-genre { background: var(--nav-bg); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;}
+        .badge-genre:hover { background: var(--primary); transform: translateY(-2px); }
+        .badge-tag { background: #f1f5f9; color: var(--primary); border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;}
+        .badge-tag:hover { background: #e2e8f0; border-color: var(--primary); transform: translateY(-2px); }
         .badge-copyright { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
         /* --- DAFTAR BAB --- */
@@ -153,7 +155,7 @@
         .dropdown-menu {
             position: absolute; top: 50px; right: 15px; background: white;
             border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 200px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
+            width: 230px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
         }
         .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
         @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
@@ -167,7 +169,7 @@
 
         .empty-state { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; }
 
-        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        /* --- SKELETON SHIMMER --- */
         @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .sk-dark, .sk-light { background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
         .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.12) 25%, rgba(255,255,255,0.22) 37%, rgba(255,255,255,0.12) 63%); }
@@ -198,8 +200,9 @@
             </div>
 
             <div class="dropdown-menu" id="dropdown-menu">
-                <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka</button>
-                <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan</button>
+                <!-- Teks diperbarui menjadi Masukkan ke Daftar Bacaan -->
+                <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Masukkan ke Daftar Bacaan</button>
+                <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan Cerita</button>
             </div>
         </header>
 
@@ -280,7 +283,7 @@
 
     </div>
 
-    <!-- Script SweetAlert2 (dimuat lebih awal agar tersedia untuk skrip cache instan) -->
+    <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- RENDER INSTAN DARI CACHE LOKAL -->
@@ -319,7 +322,6 @@
                 if (c.coverUrl) {
                     document.getElementById('p-cover').style.backgroundImage = c.coverUrl;
                     document.getElementById('blur-bg').style.backgroundImage = c.coverUrl;
-                    // Hilangkan efek animasi jika load dari cache
                     document.getElementById('p-cover').classList.remove('sk-dark');
                     document.getElementById('blur-bg').classList.remove('sk-dark');
                 }
@@ -330,12 +332,8 @@
                 if (c.chapterListHtml) { document.getElementById('p-chapter-list').innerHTML = c.chapterListHtml; showReal('p-chapter-list'); }
                 if (c.similarHtml) { document.getElementById('similar-container').innerHTML = c.similarHtml; showReal('similar-container'); }
                 if (c.fullChapterListHtml) window.__previewFullChapterListHtml = c.fullChapterListHtml;
-                if (c.firstChapterId) {
-                    window.__previewFirstChapterId = c.firstChapterId;
-                    document.getElementById('btn-read-main').onclick = function () {
-                        window.location.href = 'read.html?id=' + sid + '&ch=' + c.firstChapterId;
-                    };
-                }
+                if (c.firstChapterId) window.__previewFirstChapterId = c.firstChapterId;
+                
                 if (c.fullChapterListHtml) {
                     window.showAllChapters = function () {
                         Swal.fire({
@@ -398,7 +396,6 @@
 
         if (!storyId) { window.location.href = 'index.html'; }
 
-        // REVISI 2: Tunggu konfirmasi status login sebelum memuat data agar Firebase tidak menolak (Permission Denied)
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
@@ -438,7 +435,6 @@
 
         async function loadPreview() {
             try {
-                // Ambil semua data (judul, genre, cover, dll) dari draf penulis
                 const storyRef = doc(db, "stories", storyId);
                 const snap = await getDoc(storyRef);
 
@@ -449,8 +445,6 @@
 
                 const data = snap.data();
 
-                // REVISI 3: Data Views & Votes diambil dari "published_stories" 
-                // Karena draf (stories) tidak mencatat views publik
                 try {
                     const pubSnap = await getDoc(doc(db, "published_stories", storyId));
                     if (pubSnap.exists()) {
@@ -459,13 +453,12 @@
                         data.votes = pubData.votes || data.votes || 0;
                     }
                 } catch(e) {
-                    console.warn("Karya belum dirilis publik, menggunakan stats bawaan draf.");
+                    console.warn("Karya belum dirilis publik.");
                 }
 
                 storyDataCache = data; 
                 currentGenre = data.genre || 'Umum';
 
-                // Nama penulis asli (@username)
                 let realAuthorName = data.authorName || 'Anonim';
                 if (data.authorId) {
                     try {
@@ -477,7 +470,6 @@
                     } catch(e) { console.error('Gagal ambil nama penulis:', e); }
                 }
 
-                // Render Header
                 document.getElementById('p-title').innerText = data.title || 'Tanpa Judul';
                 showReal('p-title');
 
@@ -506,18 +498,19 @@
                     document.getElementById('blur-bg').style.backgroundImage = coverUrl;
                 }
                 
-                // REVISI 1: Hapus class animasi "sk-dark" agar cover tidak bergerak / berkelip terus
                 document.getElementById('p-cover').classList.remove('sk-dark');
                 document.getElementById('blur-bg').classList.remove('sk-dark');
 
-                // Genre, Hak Cipta, dan Tagar
-                let tagsHtml = `<span class="badge-genre">${currentGenre}</span>`;
+                // PERBAIKAN: Tagar sekarang dibungkus dengan link yang mengarah ke search.html
+                let tagsHtml = `<span class="badge-genre" onclick="window.location.href='search.html?q=${encodeURIComponent(currentGenre)}'">${currentGenre}</span>`;
                 if (data.copyrightStatement && copyrightLabels[data.copyrightStatement]) {
                     const cr = copyrightLabels[data.copyrightStatement];
                     tagsHtml += `<span class="badge-copyright"><i class="fa-solid ${cr.icon}"></i> ${cr.label}</span>`;
                 }
                 if (data.tags && Array.isArray(data.tags)) {
-                    data.tags.forEach(t => { tagsHtml += `<span class="badge-tag">#${t}</span>`; });
+                    data.tags.forEach(t => { 
+                        tagsHtml += `<span class="badge-tag" onclick="window.location.href='search.html?q=%23${encodeURIComponent(t)}'">#${t}</span>`; 
+                    });
                 }
                 document.getElementById('p-tags').innerHTML = tagsHtml;
                 showReal('p-tags');
@@ -525,7 +518,6 @@
                 const chapCount = await loadChapters();
                 const similarHtml = await loadSimilarStories();
 
-                // Simpan semua hasil render ke cache lokal untuk kunjungan berikutnya
                 savePreviewCache({
                     title: data.title || 'Tanpa Judul',
                     authorHtml, authorHref,
@@ -542,20 +534,16 @@
             } catch (error) {
                 console.error('Gagal memuat pratinjau:', error);
                 if (document.getElementById('p-title').style.display === 'none') {
-                    // Animasi dimatikan jika terjadi error
                     document.getElementById('p-cover').classList.remove('sk-dark');
                     document.getElementById('blur-bg').classList.remove('sk-dark');
-                    Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data. Periksa koneksi Anda.', 'error');
+                    Swal.fire('Error', 'Terjadi kesalahan sistem saat memuat data.', 'error');
                 }
             }
         }
 
         function savePreviewCache(payload) {
-            try {
-                localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
-            } catch (e) {
-                console.warn('Cache pratinjau tidak tersimpan:', e);
-            }
+            try { localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() })); } 
+            catch (e) { console.warn('Cache pratinjau tidak tersimpan:', e); }
         }
 
         async function loadChapters() {
@@ -574,9 +562,6 @@
 
                 if (chapCount > 0) {
                     firstChapterId = publishedChapters[0].id;
-                    document.getElementById('btn-read-main').onclick = () => {
-                        window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
-                    };
                 }
 
                 fullChapterListHtml = publishedChapters.map((c, i) => buildChapterItemHtml(c, c.id, i + 1)).join('');
@@ -596,7 +581,6 @@
                 document.getElementById('p-chapter-list').innerHTML = previewHtml;
                 showReal('p-chapter-list');
 
-                // Update fungsi popup dengan data terbaru
                 window.showAllChapters = () => {
                     Swal.fire({
                         title: 'Daftar Bab Lengkap',
@@ -643,7 +627,21 @@
             }
         }
 
+        // PERBAIKAN: Fungsi Mulai Membaca sekarang mengecek status Login terlebih dahulu
         window.startReading = () => {
+            if (!currentUser) {
+                Swal.fire({
+                    title: 'Login Diperlukan',
+                    text: 'Anda harus masuk ke akun untuk membaca cerita ini.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login Sekarang',
+                    confirmButtonColor: '#003366',
+                    cancelButtonText: 'Batal'
+                }).then((res) => { if (res.isConfirmed) window.location.href = 'login.html'; });
+                return;
+            }
+
             if (firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
             else window.location.href = `read.html?id=${storyId}`; 
         };
@@ -663,7 +661,8 @@
                 const libSnap = await getDoc(doc(db, "users", currentUser.uid, "library", storyId));
                 if (libSnap.exists() && libSnap.data().isArchived === false) {
                     isSavedInLibrary = true;
-                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan di Pustaka`;
+                    // Teks mengikuti permintaan baru
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Ada di Daftar Bacaan`;
                 }
             } catch(e) { console.error('Gagal memeriksa status pustaka:', e); }
         }
@@ -674,7 +673,7 @@
             if (!currentUser) {
                 Swal.fire({
                     title: 'Login Diperlukan',
-                    text: 'Silakan masuk ke akun Anda untuk menyimpan cerita ke Pustaka pribadi.',
+                    text: 'Silakan masuk ke akun Anda untuk memasukkan cerita ke daftar bacaan.',
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Login Sekarang',
@@ -691,8 +690,8 @@
                 if (isSavedInLibrary) {
                     await deleteDoc(libRef);
                     isSavedInLibrary = false;
-                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-book-medical"></i> Tambahkan ke Pustaka`;
-                    Swal.fire({toast:true, position:'top', icon:'info', title:'Dihapus dari Pustaka', showConfirmButton:false, timer:1500});
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-book-medical"></i> Masukkan ke Daftar Bacaan`;
+                    Swal.fire({toast:true, position:'top', icon:'info', title:'Dihapus dari Daftar Bacaan', showConfirmButton:false, timer:1500});
                 } else {
                     await setDoc(libRef, {
                         storyId: storyId,
@@ -702,11 +701,12 @@
                         lastChapterTitle: 'Belum dibaca',
                         progressPercentage: 0,
                         isArchived: false,
+                        addedAt: serverTimestamp(),
                         lastReadAt: serverTimestamp()
                     });
                     isSavedInLibrary = true;
-                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan di Pustaka`;
-                    Swal.fire({toast:true, position:'top', icon:'success', title:'Ditambahkan ke Pustaka', showConfirmButton:false, timer:1500});
+                    document.getElementById('btn-add-lib').innerHTML = `<i class="fa-solid fa-check"></i> Ada di Daftar Bacaan`;
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Dimasukkan ke Daftar Bacaan', showConfirmButton:false, timer:1500});
                 }
             } catch (error) {
                 console.error("Gagal update pustaka:", error);
@@ -714,19 +714,20 @@
             }
         };
 
+        // PERBAIKAN: Tombol laporkan sekarang mengarah ke halaman lapor khusus, tidak lagi menggunakan popup
         window.reportStory = () => {
-            Swal.fire({
-                title: 'Laporkan Cerita',
-                input: 'select',
-                inputOptions: { 'plagiasi': 'Plagiasi / Hak Cipta', 'toksik': 'Konten Kekerasan / Toksik', 'spam': 'Spam / Iklan' },
-                inputPlaceholder: 'Pilih alasan...',
-                showCancelButton: true,
-                confirmButtonText: 'Kirim Laporan',
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#64748b'
-            }).then((res) => {
-                if(res.isConfirmed && res.value) { Swal.fire({toast:true, position:'top', icon:'success', title:'Laporan terkirim ke Admin.', showConfirmButton:false, timer:1500}); }
-            });
+            if (!currentUser) {
+                Swal.fire({
+                    title: 'Login Diperlukan',
+                    text: 'Anda harus masuk ke akun untuk melaporkan cerita.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login Sekarang',
+                    confirmButtonColor: '#003366'
+                }).then((res) => { if(res.isConfirmed) window.location.href = 'login.html'; });
+                return;
+            }
+            window.location.href = `lapor.html?type=story&id=${storyId}`;
         };
     </script>
 </body>
