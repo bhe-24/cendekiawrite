@@ -69,7 +69,7 @@
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
         /* --- 4. BANNERS --- */
-        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none; }
+        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none; scroll-behavior: smooth;}
         .banner-container::-webkit-scrollbar { display: none; }
         .banner-card { min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px); border-radius: 16px; scroll-snap-align: center; flex-shrink: 0; background-size: cover; background-position: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a; }
         .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
@@ -101,7 +101,15 @@
         .story-meta { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .story-badge { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; z-index: 5; }
         .badge-new { background: #ecfdf5; color: #059669; }
-        .badge-editor { background: #eff6ff; color: var(--primary); }
+
+        /* --- PILIHAN EDITOR EKSKLUSIF --- */
+        .editor-card { width: clamp(280px, 80vw, 360px); display: flex; gap: 15px; background: linear-gradient(135deg, #fff 0%, #f8fafc 100%); padding: 15px; border-radius: 16px; border: 1px solid var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; }
+        .editor-card:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.25); }
+        .editor-cover { width: 85px; height: 120px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background-color: #cbd5e1; border: 1px solid #e2e8f0;}
+        .editor-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden; }
+        .editor-badge { font-size: 0.65rem; color: var(--gold); font-weight: 700; margin-bottom: 5px; display:flex; align-items:center; gap:4px; letter-spacing:0.5px;}
+        .editor-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--primary); margin: 0 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;}
+        .editor-desc { font-size: 0.75rem; color: var(--text-gray); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 
         .continue-card { width: clamp(240px, 30vw, 300px); display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
         .continue-card:hover { border-color: var(--primary); transform: translateY(-3px); }
@@ -114,7 +122,7 @@
 
         .empty-state { font-size: 0.9rem; color: #94a3b8; text-align: center; width: 100%; padding: 30px; border: 2px dashed #cbd5e1; border-radius: 16px; }
 
-        /* --- SKELETON SHIMMER (placeholder saat memuat pertama kali / belum ada cache) --- */
+        /* --- SKELETON SHIMMER --- */
         @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .skeleton-card { width: clamp(120px, 15vw, 165px); flex-shrink: 0; }
         .skeleton-cover, .skeleton-line, .skeleton-banner {
@@ -137,7 +145,7 @@
         .btn-cta { background: var(--gold); color: white; border: none; padding: 12px clamp(22px, 4vw, 30px); border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s; }
         .btn-cta:hover { background: #b45309; transform: translateY(-3px); }
 
-        .app-footer { margin-top: auto; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center; background: var(--nav-bg); color: white; }
+        .app-footer { width: 100%; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center; background: var(--nav-bg); color: white; margin-top: auto; }
         .app-footer p { margin: 0 0 10px 0; font-size: 0.85rem; color: #cbd5e1; }
         .app-footer a { color: var(--gold); text-decoration: none; font-weight: 600; margin: 0 10px; transition: 0.2s;}
         .app-footer a:hover { color: white; }
@@ -164,8 +172,9 @@
     <header class="top-navbar">
         <div class="navbar-content">
             <div class="nav-brand">
-                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Cendekia">
-                <h1>Cendekia</h1>
+                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo">
+                <!-- PERBAIKAN: Ganti Nama Menjadi Aksara Narasi -->
+                <h1>Aksara Narasi</h1>
             </div>
             <div class="nav-actions">
                 <button class="btn-search" onclick="window.location.href='search.html'"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -176,7 +185,7 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS (skeleton default, langsung ditimpa cache/data asli) -->
+        <!-- BANNERS -->
         <div class="banner-container" id="banner-container">
             <div class="skeleton-banner"></div>
             <div class="skeleton-banner"></div>
@@ -244,15 +253,29 @@
             </div>
         </div>
 
-        <!-- PILIHAN EDITOR -->
+        <!-- PILIHAN EDITOR EKSKLUSIF -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Pilihan Editor</h2>
             </div>
             <div class="story-scroll" id="editor-container">
-                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-cover"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <!-- Skeleton Khusus Editor Card -->
+                <div class="editor-card">
+                    <div class="skeleton-cover" style="width:85px; height:120px; margin:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line" style="margin-top:10px;"></div>
+                    </div>
+                </div>
+                <div class="editor-card">
+                    <div class="skeleton-cover" style="width:85px; height:120px; margin:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line" style="margin-top:10px;"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -265,41 +288,68 @@
             <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
             <button class="btn-cta" onclick="requireLogin('menulis', 'menulis.html')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis Karya</button>
         </div>
-
-        <footer class="app-footer">
-            <p>&copy; 2026 Cendekia Aksara. Seluruh Hak Cipta Dilindungi.</p>
-            <p>
-                <a href="kebijakan-privasi.html">Kebijakan Privasi</a> &middot; 
-                <a href="syarat-ketentuan.html">Syarat & Ketentuan</a>
-            </p>
-            <span class="version">Versi Web Publik v1.0.0</span>
-        </footer>
     </div>
 
-    <!-- ============================================================
-         RENDER INSTAN DARI CACHE LOKAL — dijalankan sesegera mungkin,
-         SEBELUM Firebase SDK selesai diunduh. Kalau ada cache dari
-         kunjungan sebelumnya, skeleton di atas langsung ditimpa
-         dengan tampilan nyata dalam hitungan milidetik, jadi
-         pengguna (hampir) tidak pernah melihat proses "memuat".
-         ============================================================ -->
+    <!-- PERBAIKAN: FOOTER FULL WIDTH DILUAR APP-WRAPPER -->
+    <footer class="app-footer">
+        <p>&copy; <span id="current-year"></span> Aksara Narasi. Seluruh Hak Cipta Dilindungi.</p>
+        <p>
+            <a href="kebijakan-privasi.html">Kebijakan Privasi</a> &middot; 
+            <a href="syarat-ketentuan.html">Syarat & Ketentuan</a>
+        </p>
+        <span class="version" id="app-version">Memuat versi...</span>
+    </footer>
+
+    <!-- RENDER INSTAN DARI CACHE LOKAL -->
     <script>
         (function () {
+            // Skrip Footer Dinamis
+            document.getElementById('current-year').innerText = new Date().getFullYear();
+            var d = new Date();
+            var verStr = "Versi Web Publik v1." + (d.getMonth() + 1) + "." + d.getDate() + "." + d.getHours();
+            document.getElementById('app-version').innerText = verStr;
+
             try {
                 var raw = localStorage.getItem('cendekia_home_cache_v1');
-                if (!raw) return; // Belum ada cache (kunjungan pertama) -> biarkan skeleton tampil
+                if (!raw) return; 
                 var cache = JSON.parse(raw);
                 if (cache.bannersHtml) document.getElementById('banner-container').innerHTML = cache.bannersHtml;
                 if (cache.recHtml) document.getElementById('rekomendasi-container').innerHTML = cache.recHtml;
                 if (cache.terbaruHtml) document.getElementById('terbaru-container').innerHTML = cache.terbaruHtml;
                 if (cache.edHtml) document.getElementById('editor-container').innerHTML = cache.edHtml;
+
+                // Coba jalankan auto-slide jika ambil dari cache
+                initBannerSlider();
             } catch (e) {
-                // Cache rusak/tidak valid -> abaikan saja, skeleton bawaan tetap tampil
+                // Abaikan jika error
             }
         })();
+
+        // PERBAIKAN: Logika Slide Banner Otomatis
+        let bannerInterval = null;
+        function initBannerSlider() {
+            if (bannerInterval) clearInterval(bannerInterval);
+            const container = document.getElementById('banner-container');
+            if (!container) return;
+            const banners = container.querySelectorAll('.banner-card');
+            
+            // Jika banner 1 atau kurang (termasuk jika masih format skeleton), diam saja
+            if (!banners || banners.length <= 1) return;
+
+            let currentIndex = 0;
+            bannerInterval = setInterval(() => {
+                currentIndex++;
+                if (currentIndex >= banners.length) {
+                    currentIndex = 0;
+                    container.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    const scrollTarget = banners[currentIndex].offsetLeft - container.offsetLeft;
+                    container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                }
+            }, 5000); // Ganti setiap 5 detik
+        }
     </script>
 
-    <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- FIREBASE INTEGRATION -->
@@ -308,7 +358,6 @@
         import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
             authDomain: "mading-cf676.firebaseapp.com",
@@ -327,9 +376,8 @@
 
         const HOME_CACHE_KEY = 'cendekia_home_cache_v1';
         const AUTHOR_CACHE_KEY = 'cendekia_author_cache_v1';
-        const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 jam, nama penulis jarang berubah
+        const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000; 
 
-        // 1. Cek Status Login
         onAuthStateChanged(auth, (user) => {
             const btnLogin = document.getElementById('btn-login-header');
             if (user) {
@@ -346,7 +394,6 @@
             }
         });
 
-        // Helper Tanggal
         function toMillisSafe(ts) {
             if (!ts) return 0;
             if (typeof ts.toMillis === 'function') return ts.toMillis();
@@ -354,9 +401,6 @@
             return 0;
         }
 
-        // Tautan ke pratinjau.html & Sistem Vote murni (Bukan Rating 5.0 lagi)
-        // authorSlot: kalau true, nama penulis dibungkus <span class="author-slot"> agar bisa
-        // "ditempel" belakangan setelah nama asli (@username) berhasil diambil, tanpa render ulang kartu.
         function buildStoryCard(data, opts = {}) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
@@ -381,6 +425,25 @@
             `;
         }
 
+        // PERBAIKAN: Builder khusus Pilihan Editor (Layout Eksklusif)
+        function buildEditorChoiceCard(data) {
+            const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+            const synopsis = data.synopsis || "Baca kisah selengkapnya secara eksklusif...";
+            const fallbackName = data.authorName || 'Anonim';
+            
+            return `
+                <div class="editor-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
+                    <div class="editor-cover" style="background-image: ${coverBg};"></div>
+                    <div class="editor-info">
+                        <span class="editor-badge"><i class="fa-solid fa-award"></i> PILIHAN EDITOR</span>
+                        <h3 class="editor-title">${data.title}</h3>
+                        <div style="font-size:0.75rem; font-weight:600; color:var(--text-dark); margin-bottom:4px;"><i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${fallbackName}</span></div>
+                        <p class="editor-desc">${synopsis}</p>
+                    </div>
+                </div>
+            `;
+        }
+
         function buildBannerHtml(snapBanner) {
             if (snapBanner.empty) {
                 return `<div class="empty-state" style="margin-top:15px; width:100%; border:none;">Belum ada event atau rilis terbaru saat ini.</div>`;
@@ -401,8 +464,6 @@
             return htmlBanner;
         }
 
-        // 2. Tarik Data Utama — render kartu SEGERA setelah published_stories datang,
-        // tidak lagi menunggu proses pencarian @username penulis (itu dijalankan belakangan).
         async function fetchAllData() {
             try {
                 // A. Load Banners
@@ -410,6 +471,7 @@
                 const snapBanner = await getDocs(qBanner);
                 const bannersHtml = buildBannerHtml(snapBanner);
                 document.getElementById('banner-container').innerHTML = bannersHtml;
+                initBannerSlider(); // Mulai jalankan auto-slide setelah data ditarik
 
                 // B. Load Stories
                 const qStories = query(collection(db, "published_stories"));
@@ -432,14 +494,14 @@
                     return;
                 }
 
-                // C. REKOMENDASI UTAMA (Sort by Views) -- langsung dirender, tidak menunggu apapun
+                // C. REKOMENDASI UTAMA
                 const recommendedList = [...allPublishedStories]
                     .sort((a, b) => (b.views || 0) - (a.views || 0))
                     .slice(0, 10);
                 const recHtml = recommendedList.map(data => buildStoryCard(data)).join('');
                 recContainer.innerHTML = recHtml;
 
-                // D. CERITA TERBARU (Sort by Waktu) -- pakai authorSlot agar nama bisa ditempel belakangan
+                // D. CERITA TERBARU
                 const latestList = [...allPublishedStories]
                     .sort((a, b) => {
                         const timeA = toMillisSafe(a.publishedAt) || toMillisSafe(a.updatedAt);
@@ -452,28 +514,20 @@
                     : `<div class="empty-state" style="border:none;">Belum ada cerita baru yang terbit.</div>`;
                 terbaruContainer.innerHTML = terbaruHtml;
 
-                // E. PILIHAN EDITOR (Filter isEditorChoice)
+                // E. PILIHAN EDITOR (Format Kartu Eksklusif)
                 const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
                 const edHtml = editorList.length > 0
-                    ? editorList.map(data => buildStoryCard(data, {
-                        goldBorder: true,
-                        badge: '<i class="fa-solid fa-award"></i> Sorotan', badgeClass: 'badge-editor',
-                        metaHtml: `<i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0} &middot; <i class="fa-solid fa-eye"></i> ${data.views || 0}`
-                    })).join('')
+                    ? editorList.map(data => buildEditorChoiceCard(data)).join('')
                     : `<div class="empty-state" style="border:none;">Editor belum memilih cerita sorotan.</div>`;
                 edContainer.innerHTML = edHtml;
 
-                // Simpan hasil render ke cache lokal untuk kunjungan berikutnya (tampil instan)
                 saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml);
 
-                // F. Baru SEKARANG cari nama @username asli penulis, di belakang layar,
-                // lalu tempelkan ke slot yang sudah tampil (tidak ada render ulang / flicker).
                 enrichAuthorNames(latestList);
+                enrichAuthorNames(editorList);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                // Kalau ada cache lama yang sudah tampil, biarkan saja (lebih baik daripada kosong).
-                // Kalau belum ada apa-apa di layar, baru tampilkan pesan gagal.
                 const recContainer = document.getElementById('rekomendasi-container');
                 if (recContainer.querySelector('.skeleton-card')) {
                     recContainer.innerHTML = `<div class="empty-state" style="border:none; color:#dc2626;">Gagal memuat. Periksa koneksi internet Anda.</div>`;
@@ -481,8 +535,6 @@
             }
         }
 
-        // Simpan HTML hasil render ke localStorage (dibungkus try/catch karena kuota
-        // penyimpanan browser terbatas dan tidak boleh sampai mengganggu tampilan).
         function saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml) {
             try {
                 localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({
@@ -493,8 +545,6 @@
             }
         }
 
-        // Ambil nama/username asli penulis secara diam-diam, dengan cache 24 jam
-        // supaya tidak perlu query berulang setiap kali beranda dibuka.
         async function enrichAuthorNames(stories) {
             const authorIds = [...new Set(stories.map(s => s.authorId).filter(Boolean))];
             if (authorIds.length === 0) return;
@@ -514,12 +564,11 @@
                             const label = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
                             authorCache[uid] = { label, cachedAt: now };
                         }
-                    } catch (e) { /* Lewati penulis ini, tidak fatal */ }
+                    } catch (e) {}
                 }));
                 try { localStorage.setItem(AUTHOR_CACHE_KEY, JSON.stringify(authorCache)); } catch (e) {}
             }
 
-            // Tempel nama asli ke slot yang sudah ada di layar (tanpa re-render kartu)
             document.querySelectorAll('.author-slot').forEach(el => {
                 const uid = el.dataset.uid;
                 if (uid && authorCache[uid]) el.innerText = authorCache[uid].label;
@@ -556,7 +605,6 @@
 
         window.onload = () => { fetchAllData(); };
 
-        // --- SISTEM LINK DINAMIS & INTERSEP ---
         window.goToLogin = () => { window.location.href = 'login.html'; };
 
         window.requireLogin = (actionName, targetUrl) => {
