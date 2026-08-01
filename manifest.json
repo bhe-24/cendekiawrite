@@ -2,7 +2,7 @@
   "name": "Aksara Narasi",
   "short_name": "Aksana",
   "description": "Platform membaca dan menulis cerita.",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#003366",
