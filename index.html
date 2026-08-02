@@ -4,7 +4,14 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cendekia Aksara - Platform Membaca & Menulis</title>
+    
+    <!-- SEO & META TAGS UNTUK GOOGLE -->
+    <title>Aksara Narasi - Platform Membaca & Menulis Cerpen, Puisi, Novel Digital</title>
+    <meta name="description" content="Aksara Narasi adalah platform digital gratis untuk membaca, menulis, dan membagikan cerpen, puisi, novel, serta karya literasi terbaik dari penulis indie Indonesia.">
+    <meta name="keywords" content="baca cerpen online, platform menulis indie, kumpulan puisi, cerita pendek, novel digital gratis, aksara narasi, literasi digital, baca cerita gratis">
+    <meta name="author" content="Aksara Narasi">
+    <meta property="og:title" content="Aksara Narasi - Ruang Berkarya & Membaca">
+    <meta property="og:description" content="Temukan ribuan cerpen, puisi, dan novel digital dari penulis-penulis berbakat Indonesia.">
     
     <!-- PWA MANIFEST & THEME -->
     <link rel="manifest" href="manifest.json">
@@ -15,7 +22,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Cendekia">
+    <meta name="apple-mobile-web-app-title" content="Aksana">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -61,7 +68,13 @@
         }
 
         /* --- 2. WRAPPER & RESPONSIVE GRID --- */
-        .app-wrapper { width: 100%; max-width: 1280px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; overflow-x: hidden; }
+        /* Dihilangkan max-width agar background banner & editor bisa full layar */
+        .app-wrapper { width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; overflow-x: hidden; }
+
+        /* Container khusus untuk menengahkan konten (cerita, dll) maksimal 1280px */
+        .section-container, .quick-actions, #dynamic-genre-sections, #install-btn {
+            width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto;
+        }
 
         /* --- 3. FIXED NAVBAR --- */
         .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--gold); display: flex; justify-content: center; padding: 0;}
@@ -77,21 +90,23 @@
         .btn-login { background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
-        /* --- 4. BANNERS --- */
+        /* --- 4. BANNERS (FULL WIDTH BACKGROUND) --- */
         .hero-banner-wrap {
+            width: 100%; /* Membentang penuh di laptop */
             background-color: var(--nav-bg);
             background-image:
                 linear-gradient(45deg, rgba(212,175,55,0.05) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.05) 75%, rgba(212,175,55,0.05)),
                 linear-gradient(45deg, rgba(212,175,55,0.05) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.05) 75%, rgba(212,175,55,0.05));
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
-            padding: 15px 0 20px 0;
+            padding: 25px 0 30px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         .banner-container {
             --banner-w: clamp(260px, 85vw, 480px);
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
             gap: clamp(12px, 3vw, 20px);
-            padding: 4px calc((100% - var(--banner-w)) / 2);
+            padding: 4px calc((100% - var(--banner-w)) / 2); /* Centering otomatis cerdas */
             scrollbar-width: none; scroll-behavior: smooth;
         }
         .banner-container::-webkit-scrollbar { display: none; }
@@ -101,14 +116,13 @@
             border-radius: 18px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center; position: relative; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: #1e293b;
-            /* PERBAIKAN: Semua transparansi dan animasi dinamis dihapus agar scroll ringan */
         }
         .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
         .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; margin:0;}
 
         /* --- 5. QUICK ACTION ICONS --- */
-        .quick-actions { display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 10px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px); scrollbar-width: none; justify-content: flex-start; }
+        .quick-actions { display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 15px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px); scrollbar-width: none; justify-content: flex-start; }
         .quick-actions::-webkit-scrollbar { display: none; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; cursor: pointer; width: clamp(65px, 8vw, 80px); text-decoration: none; }
         .action-icon { width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%; background: white; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -133,21 +147,25 @@
         .story-badge { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; z-index: 5; }
         .badge-new { background: #ecfdf5; color: #059669; }
 
-        /* --- PILIHAN EDITOR --- */
+        /* --- PILIHAN EDITOR (FULL WIDTH BACKGROUND) --- */
         .editor-section-wrap {
+            width: 100%;
             background: linear-gradient(160deg, var(--nav-bg) 0%, #1e293b 100%);
-            padding: 25px 0 30px 0; margin-bottom: clamp(28px,5vw,40px); position: relative; 
+            padding: 35px 0 40px 0; margin-bottom: clamp(28px,5vw,40px); position: relative; 
             contain: paint;
         }
         .editor-section-wrap::before {
             content: ''; position: absolute; inset: 0; pointer-events: none;
             background-image: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08), transparent 70%);
         }
-        .editor-section-wrap .section-header { position: relative; z-index: 2; }
+        /* Menengahkan konten di dalam Editor Section */
+        .editor-section-wrap .section-header, 
+        .editor-section-wrap .story-scroll {
+            width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; position: relative; z-index: 2;
+        }
         .editor-section-wrap .section-header h2 { color: var(--gold); }
         .editor-section-wrap .section-header .editor-subtitle { display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
         .editor-section-wrap .section-header a { color: #fcd34d; }
-        .editor-section-wrap .story-scroll { position: relative; z-index: 2; }
 
         .editor-card {
             width: clamp(260px, 80vw, 360px); display: flex; gap: 16px; 
@@ -192,7 +210,7 @@
         }
 
         /* --- 7. CTA BOTTOM --- */
-        .cta-write { margin: clamp(14px,2.5vw,18px); padding: clamp(20px, 4vw, 28px) clamp(18px, 4vw, 24px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 22px rgba(0, 51, 102, 0.18); position: relative; overflow: hidden; }
+        .cta-write { max-width: calc(1280px - 32px); margin: clamp(14px,2.5vw,18px) auto; padding: clamp(20px, 4vw, 28px) clamp(18px, 4vw, 24px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 22px rgba(0, 51, 102, 0.18); position: relative; overflow: hidden; }
         .cta-write::after { content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; right: -15px; bottom: -15px; font-size: 8rem; color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg); }
         .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.6vw, 1.35rem); margin: 0 0 6px 0; color: var(--gold); position: relative; z-index: 2;}
         .cta-write p { font-size: clamp(0.78rem, 1.6vw, 0.85rem); color: #cbd5e1; margin: 0 auto 16px auto; max-width: 520px; line-height: 1.5; position: relative; z-index: 2;}
@@ -226,7 +244,7 @@
     <header class="top-navbar">
         <div class="navbar-content">
             <div class="nav-brand">
-                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo">
+                <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Aksara Narasi">
                 <h1>Aksara Narasi</h1>
             </div>
             <div class="nav-actions">
@@ -238,7 +256,7 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS (Mulus Tanpa JS Scroll Tracking) -->
+        <!-- BANNERS (Membentang Full Layar Desktop) -->
         <div class="hero-banner-wrap">
             <div class="banner-container" id="banner-container">
                 <div class="skeleton-banner"></div>
@@ -308,7 +326,7 @@
             </div>
         </div>
 
-        <!-- PILIHAN EDITOR EKSKLUSIF -->
+        <!-- PILIHAN EDITOR EKSKLUSIF (Membentang Full Layar Desktop) -->
         <div class="editor-section-wrap">
             <div class="section-header">
                 <h2>Pilihan Editor<span class="editor-subtitle">Sorotan Kurasi Khusus</span></h2>
@@ -337,12 +355,12 @@
         <div id="dynamic-genre-sections"></div>
 
         <!-- TOMBOL PWA INSTALL -->
-        <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Cendekia Aksara</button>
+        <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Aksara Narasi</button>
 
         <!-- CTA MULAI MENULIS -->
         <div class="cta-write">
             <h2>Punya Cerita Menarik?</h2>
-            <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu dan jadilah inspirasi!</p>
+            <p>Bergabunglah dengan ribuan penulis Aksana lainnya. Terbitkan karyamu dan jadilah inspirasi!</p>
             <button class="btn-cta" onclick="requireLogin('menulis', 'menulis.html')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis Karya</button>
         </div>
     </div>
@@ -381,7 +399,6 @@
         })();
 
         // --- CAROUSEL BANNER ANTI-LAG ---
-        // Skrip pergerakan scroll telah dibersihkan secara total dari event listener "scroll"
         let bannerInterval = null;
 
         function initBannerSlider() {
@@ -391,7 +408,6 @@
             const banners = container.querySelectorAll('.banner-card');
             if (!banners || banners.length <= 1) return;
 
-            // Simpan ukuran elemen di memory agar tidak memberatkan browser
             container.dataset.cWidth = container.clientWidth;
             banners.forEach(card => {
                 card.dataset.cLeft = card.offsetLeft;
