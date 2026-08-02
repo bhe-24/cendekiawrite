@@ -58,7 +58,7 @@
             font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; cursor: pointer;
             box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s;
         }
-        .btn-publish:hover { transform: translateY(-2px); }
+        .btn-publish:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
         /* Dropdown Opsi (Titik Tiga) */
         .dropdown-menu {
@@ -103,7 +103,7 @@
         .rich-editor {
             flex: 1; padding: 20px; font-family: 'Lora', serif; font-size: 1.05rem;
             line-height: 1.8; color: #334155; outline: none; overflow-y: auto;
-            min-height: 50vh;
+            min-height: 50vh; padding-bottom: 40px;
         }
         .rich-editor[empty="true"]::before {
             content: attr(placeholder); color: #94a3b8; pointer-events: none; display: block;
@@ -123,14 +123,19 @@
         .save-status.saving { color: #f59e0b; }
         .save-status.saved { color: #10b981; }
 
-        /* LOADING */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95); z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+        /* SKELETON SHIMMER (INSTANT LOAD) */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        
+        /* UI KALENDER (CUSTOM DATETIME) */
+        input[type="datetime-local"].custom-datetime-input {
+            width: 100%; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 600; color: #5b21b6;
+            background-color: #f8fafc; outline: none; transition: 0.3s ease; cursor: pointer; text-align: center;
         }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
-        @keyframes spin { to { transform: rotate(360deg); } }
+        input[type="datetime-local"].custom-datetime-input:focus {
+            border-color: #8b5cf6; background-color: white; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
 
         /* MODAL CUSTOM REVISI */
         .revision-item {
@@ -146,12 +151,6 @@
 </head>
 <body>
 
-    <!-- OVERLAY LOADING -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyiapkan Ruang Editor...</div>
-    </div>
-
     <div class="app-wrapper">
         
         <!-- NAVBAR -->
@@ -166,15 +165,33 @@
 
             <!-- MENU DROPDOWN -->
             <div class="dropdown-menu" id="dropdown-menu">
-                <!-- PERBAIKAN: Tambah Tombol Jadwalkan Rilis -->
-                <button class="dropdown-item" onclick="openScheduleModal()"><i class="fa-solid fa-calendar-check" style="color: #8b5cf6;"></i> Jadwalkan Rilis</button>
                 <button class="dropdown-item" onclick="forceSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan Pratinjau</button>
                 <button class="dropdown-item" onclick="viewRevisions()"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Revisi</button>
                 <button class="dropdown-item danger" onclick="deleteChapter()"><i class="fa-solid fa-trash-can"></i> Hapus Bab Ini</button>
             </div>
         </header>
 
-        <div class="editor-container">
+        <!-- SKELETON (Muncul Instan Sebelum Data Tiba) -->
+        <div id="skeleton-container" style="flex:1; display:flex; flex-direction:column; padding-top: 10px;">
+            <div style="padding: 20px 20px 10px 20px;">
+                <div class="sk-light" style="height: 45px; width: 70%; border-radius: 8px;"></div>
+            </div>
+            <div style="padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display:flex; gap:10px;">
+                <div class="sk-light" style="height: 35px; width: 35px; border-radius: 6px;"></div>
+                <div class="sk-light" style="height: 35px; width: 35px; border-radius: 6px;"></div>
+                <div class="sk-light" style="height: 35px; width: 35px; border-radius: 6px;"></div>
+            </div>
+            <div style="padding: 20px;">
+                <div class="sk-light" style="height: 20px; width: 100%; border-radius: 4px; margin-bottom:12px;"></div>
+                <div class="sk-light" style="height: 20px; width: 90%; border-radius: 4px; margin-bottom:12px;"></div>
+                <div class="sk-light" style="height: 20px; width: 95%; border-radius: 4px; margin-bottom:12px;"></div>
+                <div class="sk-light" style="height: 20px; width: 80%; border-radius: 4px; margin-bottom:12px;"></div>
+                <div class="sk-light" style="height: 20px; width: 85%; border-radius: 4px; margin-bottom:12px;"></div>
+            </div>
+        </div>
+
+        <!-- EDITOR ASLI -->
+        <div class="editor-container" id="real-content" style="display: none;">
             
             <input type="text" id="chapter-title" class="chapter-title-input" placeholder="Judul Bab" oninput="triggerAutoSave()">
 
@@ -189,9 +206,8 @@
             </div>
 
             <!-- AREA MENGETIK NASKAH -->
-            <!-- PERBAIKAN: Menambahkan listener `onpaste` untuk membersihkan format teks yang disalin dari luar -->
+            <!-- Fitur handlePaste untuk membersihkan format font/css asing -->
             <div id="editor" class="rich-editor" contenteditable="true" placeholder="Tuliskan naskahmu di sini..." oninput="handleEditorInput()" onpaste="handlePaste(event)"></div>
-
         </div>
 
         <!-- FOOTER STATUS -->
@@ -276,7 +292,10 @@
 
                     checkEditorEmpty();
                     countWords();
-                    document.getElementById('loading-overlay').style.display = 'none';
+                    
+                    // Transisi Skeleton ke Konten Asli
+                    document.getElementById('skeleton-container').style.display = 'none';
+                    document.getElementById('real-content').style.display = 'flex';
 
                 } else {
                     Swal.fire('Error', 'Bab tidak ditemukan.', 'error').then(()=>window.location.href = `menulis-info.html?id=${storyId}`);
@@ -290,11 +309,7 @@
         // --- FUNGSI MENCEGAH PASTE FORMAT BERANTAKAN ---
         window.handlePaste = (e) => {
             e.preventDefault();
-            // Ambil teks murni
             let text = (e.originalEvent || e).clipboardData.getData('text/plain');
-            
-            // Masukkan ke dalam editor dan ubah \n (enter) menjadi paragraf/br html yang standar
-            // agar sesuai dengan Lora font dan spacing di editor ini
             document.execCommand('insertText', false, text);
             triggerAutoSave();
         };
@@ -380,7 +395,6 @@
                 indicator.className = 'save-status saved';
                 indicator.innerHTML = '<i class="fa-solid fa-check"></i> Tersimpan';
 
-                // Simpan snapshot revisi
                 if (logRevision) {
                     await addDoc(collection(db, "stories", storyId, "chapters", chapterId, "revisions"), {
                         contentSnapshot: content,
@@ -395,7 +409,7 @@
             }
         }
 
-        // 4. Fitur Dropdown Menu & Eksekusi Tombol
+        // 4. Fitur Dropdown Menu
         window.toggleMenu = () => {
             document.getElementById('dropdown-menu').classList.toggle('active');
         };
@@ -413,13 +427,10 @@
         window.forceSave = async () => {
             document.getElementById('dropdown-menu').classList.remove('active');
             Swal.fire({ title: 'Menyimpan Draf & Revisi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            
             await saveChapterData(true);
-            
             Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Naskah saat ini telah disimpan ke Riwayat Revisi.', timer: 1500, showConfirmButton: false });
         };
 
-        // BUKA RIWAYAT REVISI
         window.viewRevisions = async () => {
             document.getElementById('dropdown-menu').classList.remove('active');
             Swal.fire({ title: 'Memuat Riwayat...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -437,7 +448,6 @@
                 snapRev.forEach(d => {
                     const r = d.data();
                     const dateStr = r.savedAt && typeof r.savedAt.toDate === 'function' ? r.savedAt.toDate().toLocaleString('id-ID') : 'Versi Draf';
-                    
                     listHtml += `
                         <div class="revision-item">
                             <div class="revision-info">
@@ -450,15 +460,8 @@
                 });
                 listHtml += '</div>';
 
-                Swal.fire({
-                    title: 'Riwayat Revisi',
-                    html: listHtml,
-                    showConfirmButton: false,
-                    showCloseButton: true
-                });
-
+                Swal.fire({ title: 'Riwayat Revisi', html: listHtml, showConfirmButton: false, showCloseButton: true });
             } catch (e) {
-                console.error("Gagal ambil revisi:", e);
                 Swal.fire('Error', 'Gagal memuat riwayat revisi.', 'error');
             }
         };
@@ -466,117 +469,32 @@
         window.restoreRevision = (contentEncoded) => {
             const rawContent = decodeURIComponent(contentEncoded);
             document.getElementById('editor').innerHTML = rawContent;
-            checkEditorEmpty();
-            countWords();
-            triggerAutoSave();
+            checkEditorEmpty(); countWords(); triggerAutoSave();
             Swal.fire({ icon: 'success', title: 'Naskah Dipulihkan!', text: 'Versi revisi telah diterapkan ke editor.', timer: 1500, showConfirmButton: false });
         };
 
         window.deleteChapter = async () => {
             document.getElementById('dropdown-menu').classList.remove('active');
             const konfirmasi = await Swal.fire({
-                title: 'Hapus Bab Ini?',
-                text: 'Naskah yang dihapus tidak dapat dikembalikan lagi!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Hapus Permanen'
+                title: 'Hapus Bab Ini?', text: 'Naskah yang dihapus tidak dapat dikembalikan lagi!', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus Permanen'
             });
 
             if (konfirmasi.isConfirmed) {
                 Swal.fire({ title: 'Menghapus Bab...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
-                    
                     const storyRef = doc(db, "stories", storyId);
                     const snap = await getDoc(storyRef);
                     const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 1;
                     await updateDoc(storyRef, { chapterCount: Math.max(0, currentCount - 1) });
 
-                    Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false }).then(() => {
-                        goBack();
-                    });
-                } catch (error) {
-                    Swal.fire('Error', 'Gagal menghapus bab.', 'error');
-                }
+                    Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false }).then(() => goBack());
+                } catch (error) { Swal.fire('Error', 'Gagal menghapus bab.', 'error'); }
             }
         };
 
-        // --- FUNGSI JADWALKAN RILIS ---
-        window.openScheduleModal = () => {
-            document.getElementById('dropdown-menu').classList.remove('active');
-            
-            const title = document.getElementById('chapter-title').value.trim();
-            if (!title) {
-                Swal.fire('Judul Kosong', 'Harap beri judul bab sebelum menjadwalkan rilis.', 'warning');
-                return;
-            }
-
-            // Hitung Waktu Minimal (10 Menit dari Sekarang)
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 10);
-            
-            // Format waktu menjadi YYYY-MM-DDThh:mm untuk input html datetime-local
-            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-            const minDateTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
-
-            Swal.fire({
-                title: 'Atur Jadwal Rilis',
-                html: `
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Bab ini akan terbit secara otomatis sesuai waktu yang Anda atur. Pastikan zona waktu HP/Komputer Anda benar.</p>
-                    <input type="datetime-local" id="swal-schedule-time" class="swal2-input" min="${minDateTime}" style="font-family: 'Poppins';">
-                `,
-                showCancelButton: true,
-                confirmButtonColor: '#8b5cf6',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-solid fa-clock"></i> Pasang Jadwal',
-                cancelButtonText: 'Batal',
-                preConfirm: () => {
-                    const timeValue = document.getElementById('swal-schedule-time').value;
-                    if (!timeValue) {
-                        Swal.showValidationMessage('Anda belum memilih waktu rilis!');
-                        return false;
-                    }
-                    
-                    const selectedDate = new Date(timeValue);
-                    if (selectedDate <= new Date()) {
-                        Swal.showValidationMessage('Waktu tidak boleh mundur ke belakang.');
-                        return false;
-                    }
-                    return selectedDate;
-                }
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({ title: 'Menyimpan Jadwal...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    try {
-                        const targetDate = result.value;
-                        const chapterRef = doc(db, "stories", storyId, "chapters", chapterId);
-                        
-                        await saveChapterData(false); // Simpan tulisan terbaru
-                        
-                        await updateDoc(chapterRef, {
-                            status: 'scheduled',
-                            publishAt: Timestamp.fromDate(targetDate)
-                        });
-
-                        currentStatus = 'scheduled';
-                        const btnPub = document.getElementById('btn-publish');
-                        btnPub.innerHTML = `<i class="fa-regular fa-clock"></i> Terjadwal`;
-                        btnPub.style.background = "#8b5cf6";
-
-                        const formatTanggal = targetDate.toLocaleString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                        Swal.fire('Terjadwal!', `Bab akan otomatis rilis pada:<br><b>${formatTanggal}</b>`, 'success');
-
-                    } catch (err) {
-                        console.error(err);
-                        Swal.fire('Gagal', 'Terjadi kesalahan sistem saat menyimpan jadwal.', 'error');
-                    }
-                }
-            });
-        };
-
-        // --- FUNGSI RILIS SEKARANG (PUBLIKASI) ---
+        // --- FUNGSI PUBLIKASI GANDA (RILIS SEKARANG / JADWALKAN) ---
         window.publishChapter = async () => {
             const title = document.getElementById('chapter-title').value.trim();
             if (!title) {
@@ -586,73 +504,81 @@
 
             const readUrl = `${window.location.origin}/read.html?id=${storyId}`;
 
-            // Jika status saat ini sudah Rilis / Jadwal, beritahu penulis
-            if (currentStatus === 'published' || currentStatus === 'scheduled') {
-                let msg = currentStatus === 'published' ? 'Perubahan naskah terbaru telah otomatis diperbarui ke pembaca.' : 'Bab ini sedang dalam antrean jadwal rilis. Ingin membatalkan jadwal dan merilisnya sekarang?';
-                
+            // Jika status saat ini sudah Rilis
+            if (currentStatus === 'published') {
                 Swal.fire({
-                    title: currentStatus === 'published' ? 'Bab Telah Rilis' : 'Ubah Jadwal Rilis?',
+                    title: 'Bab Telah Rilis',
                     html: `
-                        <p style="font-size:0.9rem; color:#64748b;">${msg}</p>
-                        ${currentStatus === 'published' ? `<div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0;">${readUrl}</div>` : ''}
+                        <p style="font-size:0.9rem; color:#64748b;">Perubahan naskah terbaru telah otomatis diperbarui ke pembaca.</p>
+                        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0;">${readUrl}</div>
                     `,
-                    icon: currentStatus === 'published' ? 'success' : 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#10b981',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: currentStatus === 'published' ? '<i class="fa-solid fa-copy"></i> Salin Link Bab' : 'Ya, Rilis Sekarang',
+                    icon: 'success', showCancelButton: true,
+                    confirmButtonColor: '#003366', cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link Bab',
                     cancelButtonText: 'Tutup'
-                }).then(async (res) => {
-                    if (res.isConfirmed && currentStatus === 'published') {
+                }).then((res) => {
+                    if (res.isConfirmed) {
                         navigator.clipboard.writeText(readUrl);
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link disalin!', showConfirmButton: false, timer: 1500 });
-                    } else if (res.isConfirmed && currentStatus === 'scheduled') {
-                        executePublishNow(readUrl);
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link bab disalin!', showConfirmButton: false, timer: 1500 });
                     }
                 });
                 return;
             }
 
-            const konfirmasi = await Swal.fire({
-                title: 'Publikasikan Bab?',
-                text: 'Bab ini akan langsung rilis dan dapat dibaca oleh seluruh komunitas Cendekia.',
-                icon: 'question',
+            // POPUP KARTU PILIHAN PUBLIKASI
+            Swal.fire({
+                title: 'Opsi Publikasi',
+                html: `
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                        <div onclick="Swal.clickConfirm()" style="padding:15px; border-radius:12px; border:1.5px solid #10b981; background:#ecfdf5; color:#059669; cursor:pointer; text-align:left; display:flex; align-items:center; gap:15px; transition:0.2s;" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#ecfdf5'">
+                            <i class="fa-solid fa-bolt" style="font-size:1.8rem; width:30px; text-align:center;"></i>
+                            <div>
+                                <div style="margin-bottom:2px; font-size:1.05rem; font-weight:700;">Rilis Sekarang</div>
+                                <div style="font-size:0.75rem; color:#166534;">Bab langsung tayang dan dapat dibaca.</div>
+                            </div>
+                        </div>
+                        <div onclick="Swal.clickDeny()" style="padding:15px; border-radius:12px; border:1.5px solid #8b5cf6; background:#f5f3ff; color:#6d28d9; cursor:pointer; text-align:left; display:flex; align-items:center; gap:15px; transition:0.2s;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+                            <i class="fa-solid fa-calendar-check" style="font-size:1.8rem; width:30px; text-align:center;"></i>
+                            <div>
+                                <div style="margin-bottom:2px; font-size:1.05rem; font-weight:700;">Jadwalkan Rilis</div>
+                                <div style="font-size:0.75rem; color:#5b21b6;">Atur tanggal & jam tayang otomatis.</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showDenyButton: false,
                 showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Rilis Sekarang!'
+                cancelButtonText: 'Batal',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executePublishNow(readUrl);
+                } else if (result.isDenied) {
+                    openScheduleModal();
+                }
             });
-
-            if (konfirmasi.isConfirmed) {
-                executePublishNow(readUrl);
-            }
         };
 
+        // EKSEKUSI RILIS SEKARANG (DAN AUTO-REDIRECT)
         async function executePublishNow(readUrl) {
             Swal.fire({ title: 'Memproses Publikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
             try {
                 await saveChapterData(false);
 
-                // A. Update Status Bab
                 await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
                     status: 'published',
-                    publishAt: null, // Hapus jadwal jika ada
+                    publishAt: null, 
                     publishedAt: serverTimestamp()
                 });
 
-                // B. Update Status Cerita Utama di draf
                 const storyRef = doc(db, "stories", storyId);
                 const storySnap = await getDoc(storyRef);
                 let storyMaster = storySnap.exists() ? storySnap.data() : {};
 
-                await updateDoc(storyRef, { 
-                    status: 'published', 
-                    publishedAt: serverTimestamp(),
-                    updatedAt: serverTimestamp() 
-                });
+                await updateDoc(storyRef, { status: 'published', publishedAt: serverTimestamp(), updatedAt: serverTimestamp() });
 
-                // C. SINKRONISASI KE KOLEKSI PUBLIK (published_stories)
                 const pubStoryRef = doc(db, "published_stories", storyId);
                 const pubSnap = await getDoc(pubStoryRef);
                 const existingViews = pubSnap.exists() ? (pubSnap.data().views || 0) : 0;
@@ -673,29 +599,24 @@
                     updatedAt: serverTimestamp()
                 }, { merge: true });
 
-                currentStatus = 'published';
-                const btnPub = document.getElementById('btn-publish');
-                btnPub.innerText = "Telah Rilis";
-                btnPub.style.background = "#10b981";
-
                 Swal.fire({
                     title: 'Berhasil Dirilis! 🎉',
                     html: `
-                        <p style="font-size:0.85rem; color:#64748b;">Bab Anda telah resmi diterbitkan ke publik.</p>
+                        <p style="font-size:0.85rem; color:#64748b;">Bab Anda telah resmi diterbitkan.</p>
                         <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0; font-family:monospace;">${readUrl}</div>
                     `,
                     icon: 'success',
-                    showCancelButton: true,
-                    confirmButtonColor: '#003366',
-                    cancelButtonColor: '#10b981',
-                    confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link',
-                    cancelButtonText: '<i class="fa-solid fa-book-open"></i> Baca Sekarang'
+                    showCancelButton: true, allowOutsideClick: false,
+                    confirmButtonColor: '#003366', cancelButtonColor: '#10b981',
+                    confirmButtonText: '<i class="fa-solid fa-arrow-left"></i> Kembali ke Info Cerita',
+                    cancelButtonText: '<i class="fa-solid fa-copy"></i> Salin Link & Kembali'
                 }).then((result) => {
-                    if (result.isConfirmed) {
+                    if (result.dismiss === Swal.DismissReason.cancel) {
                         navigator.clipboard.writeText(readUrl);
                         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tautan disalin!', showConfirmButton: false, timer: 1500 });
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        window.location.href = readUrl;
+                        setTimeout(() => goBack(), 1500);
+                    } else {
+                        goBack();
                     }
                 });
 
@@ -704,6 +625,58 @@
                 Swal.fire('Error', 'Gagal mempublikasikan bab.', 'error');
             }
         }
+
+        // EKSEKUSI JADWALKAN RILIS (DAN AUTO-REDIRECT)
+        window.openScheduleModal = () => {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 10);
+            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+            const minDateTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+
+            Swal.fire({
+                title: 'Atur Jadwal Rilis',
+                html: `
+                    <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px dashed #cbd5e1; margin-bottom:15px; text-align:left;">
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Bab akan tayang otomatis pada waktu yang dipilih. Pastikan zona waktu perangkat Anda benar.</p>
+                    </div>
+                    <input type="datetime-local" id="swal-schedule-time" class="custom-datetime-input" min="${minDateTime}">
+                `,
+                showCancelButton: true, confirmButtonColor: '#8b5cf6', cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fa-solid fa-check"></i> Pasang Jadwal', cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const timeValue = document.getElementById('swal-schedule-time').value;
+                    if (!timeValue) { Swal.showValidationMessage('Anda belum memilih waktu rilis!'); return false; }
+                    const selectedDate = new Date(timeValue);
+                    if (selectedDate <= new Date()) { Swal.showValidationMessage('Waktu tidak boleh mundur.'); return false; }
+                    return selectedDate;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Menyimpan Jadwal...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const targetDate = result.value;
+                        await saveChapterData(false);
+                        
+                        await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
+                            status: 'scheduled',
+                            publishAt: Timestamp.fromDate(targetDate)
+                        });
+
+                        const formatTanggal = targetDate.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        
+                        Swal.fire({
+                            icon: 'success', title: 'Terjadwal!',
+                            html: `Bab akan otomatis rilis pada:<br><b style="color:#5b21b6; font-size:1.1rem;">${formatTanggal}</b>`,
+                            confirmButtonColor: '#003366', confirmButtonText: 'Kembali ke Info Cerita', allowOutsideClick: false
+                        }).then(() => goBack());
+
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire('Gagal', 'Terjadi kesalahan sistem.', 'error');
+                    }
+                }
+            });
+        };
     </script>
 </body>
 </html>
