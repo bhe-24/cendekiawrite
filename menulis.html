@@ -40,10 +40,7 @@
             .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- FIXED NAVBAR ---
-             PERBAIKAN: tinggi dikunci PERSIS 60px (bukan mengandalkan padding+konten)
-             agar selalu pas dengan padding-top body di semua ukuran layar/font,
-             tidak ada lagi celah putih di bawah navbar. */
+        /* --- FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
@@ -95,7 +92,7 @@
         .story-item {
             display: flex; gap: 15px; background: white; padding: 15px;
             border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s; cursor: pointer; position: relative;
         }
         .story-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
         
@@ -110,8 +107,12 @@
         .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .story-meta span { display: flex; align-items: center; gap: 4px; }
         .story-status-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+        
+        /* Pewarnaan Status */
         .badge-draft { background: #f1f5f9; color: #64748b; }
         .badge-published { background: #dcfce7; color: #166534; }
+        .badge-banned { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .banned-notice { font-size: 0.65rem; color: #dc2626; font-weight: 600; margin-top: 5px; line-height: 1.3;}
         
         .btn-edit {
             background: #f1f5f9; color: var(--text-dark); border: 1px solid #cbd5e1;
@@ -144,29 +145,24 @@
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.9rem; }
 
-        /* --- PROMO SEKOLAH MENULIS (selalu tampil di bawah, lintas tab) --- */
+        /* --- PROMO SEKOLAH MENULIS (Kompak/Kecil) --- */
         .promo-school-card {
-            margin: 6px 20px 25px 20px; padding: 26px 20px; border-radius: 20px;
+            margin: 10px 20px 25px 20px; padding: 20px 15px; border-radius: 16px;
             background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
             color: white; text-align: center; position: relative; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,51,102,0.2);
+            box-shadow: 0 6px 15px rgba(0,51,102,0.15); display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
         .promo-school-card::after {
             content: '\f19d'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: -15px; bottom: -18px; font-size: 7rem;
-            color: rgba(255,255,255,0.06); pointer-events: none; transform: rotate(-10deg);
+            position: absolute; right: -10px; bottom: -10px; font-size: 6rem;
+            color: rgba(255,255,255,0.04); pointer-events: none; transform: rotate(-10deg);
         }
-        .promo-icon {
-            width: 56px; height: 56px; border-radius: 50%; background: rgba(212,175,55,0.15);
-            border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 14px auto; font-size: 1.4rem; color: var(--gold); position: relative; z-index: 2;
-        }
-        .promo-school-card h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin: 0 0 8px 0; color: white; position: relative; z-index: 2; }
-        .promo-school-card p { font-size: 0.82rem; color: #cbd5e1; line-height: 1.55; margin: 0 0 18px 0; position: relative; z-index: 2; }
+        .promo-text-wrap h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin: 0 0 4px 0; color: white; position: relative; z-index: 2; }
+        .promo-text-wrap p { font-size: 0.75rem; color: #cbd5e1; line-height: 1.4; margin: 0; position: relative; z-index: 2; }
         .btn-promo-school {
             display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: white; text-decoration: none;
-            padding: 12px 24px; border-radius: 50px; font-family: 'Poppins'; font-weight: 700; font-size: 0.9rem;
-            box-shadow: 0 4px 15px rgba(212,175,55,0.35); position: relative; z-index: 2; transition: 0.3s;
+            padding: 8px 20px; border-radius: 50px; font-family: 'Poppins'; font-weight: 700; font-size: 0.8rem;
+            box-shadow: 0 4px 10px rgba(212,175,55,0.3); position: relative; z-index: 2; transition: 0.3s; margin-top: 5px;
         }
         .btn-promo-school:hover { background: #b45309; transform: translateY(-2px); }
 
@@ -223,13 +219,15 @@
             </div>
         </div>
 
-        <!-- PROMO SEKOLAH MENULIS (selalu tampil, terlepas dari tab aktif) -->
+        <!-- PROMO SEKOLAH MENULIS (Kompak, Mengarah ke WA) -->
         <div class="promo-school-card">
-            <div class="promo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-            <h3>Ingin Belajar Menulis Lebih Dalam?</h3>
-            <p>Kunjungi Sekolah Menulis Cendekia — kelas terstruktur untuk mengasah kemampuan menulismu bersama mentor berpengalaman.</p>
-            <a href="https://cendekia-aksara.vercel.app/beranda" target="_blank" rel="noopener" class="btn-promo-school">
-                Kunjungi Sekolah Menulis <i class="fa-solid fa-arrow-right"></i>
+            <div class="promo-text-wrap">
+                <h3>Belajar Menulis Lebih Dalam?</h3>
+                <p>Ikuti kelas intensif di Sekolah Menulis Cendekia bersama mentor berpengalaman.</p>
+            </div>
+            <!-- Link menuju WhatsApp dengan template pesan -->
+            <a href="https://wa.me/6285939188592?text=Halo%20Admin%20Sekolah%20Menulis%20Cendekia%20Aksara,%0A%0APerkenalkan,%0ANama:%20...%0AAsal:%20...%0A%0ASaya%20tertarik%20dan%20ingin%20mendaftar%20untuk%20bergabung%20dengan%20kelas%20menulisnya.%20Mohon%20informasi%20selengkapnya.%20Terima%20kasih!" target="_blank" rel="noopener" class="btn-promo-school">
+                <i class="fa-brands fa-whatsapp"></i> Chat Admin Sekarang
             </a>
         </div>
 
@@ -301,10 +299,20 @@
                 updateTime = new Date(data.updatedAt.seconds * 1000).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
             }
 
+            // PERBAIKAN: Penanganan khusus untuk cerita yang dibekukan/dihapus oleh admin
+            const isBanned = data.isBanned === true || data.isDeleted === true;
             const isPublished = data.status === 'published';
-            const statusBadge = isPublished
-                ? `<span class="story-status-badge badge-published">Rilis</span>`
-                : `<span class="story-status-badge badge-draft">Draf</span>`;
+            
+            let statusBadge = '';
+            if (isBanned) {
+                statusBadge = `<span class="story-status-badge badge-banned"><i class="fa-solid fa-ban"></i> Dibekukan</span>`;
+            } else if (isPublished) {
+                statusBadge = `<span class="story-status-badge badge-published">Rilis</span>`;
+            } else {
+                statusBadge = `<span class="story-status-badge badge-draft">Draf</span>`;
+            }
+
+            const bannedNotice = isBanned ? `<p class="banned-notice"><i class="fa-solid fa-triangle-exclamation"></i> Cerita ini dibekukan oleh Admin dan tidak dapat dipublikasikan ulang karena melanggar panduan komunitas.</p>` : '';
 
             return `
                 <div class="story-item" onclick="window.location.href='menulis-info.html?id=${data.id}'">
@@ -312,7 +320,7 @@
                     <div class="story-info">
                         <div class="story-title-row">
                             <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
-                            <button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', event)" title="Kelola Cerita">
+                            <button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', ${isBanned}, event)" title="Kelola Cerita">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                             </button>
                         </div>
@@ -321,7 +329,8 @@
                             <span><i class="fa-regular fa-clock"></i> Diperbarui ${updateTime}</span>
                             <span><i class="fa-solid fa-list-ol"></i> ${data.chapterCount || 0} Bab</span>
                         </div>
-                        <button class="btn-edit">Kelola Cerita</button>
+                        <button class="btn-edit">${isBanned ? 'Lihat Detail' : 'Kelola Cerita'}</button>
+                        ${bannedNotice}
                     </div>
                 </div>
             `;
@@ -349,7 +358,13 @@
 
                 fetchedStories.forEach(data => {
                     const card = buildStoryCard(data);
-                    if (data.status === 'published') { pubHtml += card; } else { draftHtml += card; }
+                    
+                    // PERBAIKAN: Jika cerita dibanned, PAKSA turun ke tab draf, tidak peduli statusnya published.
+                    if (data.status === 'published' && data.isBanned !== true && data.isDeleted !== true) { 
+                        pubHtml += card; 
+                    } else { 
+                        draftHtml += card; 
+                    }
                 });
 
                 document.getElementById('draft-list').innerHTML = draftHtml || `
@@ -404,12 +419,14 @@
         };
 
         // 3. AKSI KELOLA CERITA (Batalkan Publikasi / Hapus)
-        window.openStoryActions = (storyId, status, event) => {
+        window.openStoryActions = (storyId, status, isBanned, event) => {
             event.stopPropagation(); // Mencegah klik nyasar membuka menulis-info.html
             const isPublished = status === 'published';
 
             let sheetHtml = '<div class="action-sheet">';
-            if (isPublished) {
+            
+            // Jika dibanned, matikan opsi batalkan publikasi karena sistem sudah mengunci secara otomatis
+            if (isPublished && !isBanned) {
                 sheetHtml += `<button type="button" class="action-sheet-btn warning" onclick="confirmUnpublishStory('${storyId}')"><i class="fa-solid fa-eye-slash"></i> Batalkan Publikasi</button>`;
             }
             sheetHtml += `<button type="button" class="action-sheet-btn danger" onclick="confirmDeleteStory('${storyId}')"><i class="fa-solid fa-trash-can"></i> Hapus Cerita</button>`;
