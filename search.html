@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pencarian - Aksara Narasi</title>
 
-    <!-- FAVICON (ikonnya sudah ada di /assets, sebelumnya belum diterapkan di halaman ini) -->
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
     <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
@@ -60,6 +60,8 @@
         .empty-state { text-align:center; padding: 50px 20px; color: #94a3b8; }
         .empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;}
         .result-count-label { font-size: 0.78rem; color: var(--text-gray); margin: 0 0 15px 0; font-weight: 600; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto;}
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -91,12 +93,6 @@
         </div>
     </div>
 
-    <!-- ============================================================
-         RENDER INSTAN DARI CACHE LOKAL — data cerita hasil kunjungan
-         terakhir langsung dipakai duluan (rekomendasi & pencarian
-         langsung berfungsi), sambil data segar diambil di belakang
-         layar. Tidak ada lagi spinner berputar untuk kunjungan ulang.
-         ============================================================ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -126,8 +122,6 @@
             } catch (e) { console.warn('Cache pencarian tidak tersimpan:', e); }
         }
 
-        // Hanya cerita yang BENAR-BENAR sudah terbit resmi dan tidak diblokir yang boleh
-        // muncul di pencarian -- sinkron dengan proteksi yang sama dipakai di genre.html.
         function isSearchableStory(data) {
             if (data.status === 'draft' || data.status === 'archived') return false;
             if (data.isDeleted === true || data.isBanned === true) return false;
@@ -149,7 +143,7 @@
 
                 snap.forEach(d => {
                     const sData = d.data();
-                    if (!isSearchableStory(sData)) return; // Lewati draf/arsip/dihapus/dibanned
+                    if (!isSearchableStory(sData)) return; 
                     fresh.push({ id: d.id, ...sData });
                     if (sData.authorId) authorIdsToFetch.add(sData.authorId);
                 });
@@ -197,8 +191,6 @@
             }
         }
 
-        // --- REKOMENDASI POPULER: dihitung dari data asli (genre & tagar yang benar-benar
-        // dipakai di karya yang terbit), BUKAN daftar hardcode seperti sebelumnya. ---
         function renderRecommendations() {
             const container = document.getElementById('recommend-list');
 
@@ -342,7 +334,6 @@
             }
             if (queryFromUrl) queryFromUrl = decodeURIComponent(queryFromUrl);
 
-            // 1. Coba render instan dari cache lokal DULU (tanpa nunggu Firebase)
             const cached = loadCachedStories();
             if (cached && cached.length > 0) {
                 allStories = cached;
@@ -355,16 +346,18 @@
                     saveHistory(queryFromUrl);
                 }
             } else {
-                // Belum ada cache sama sekali (kunjungan pertama) -- skeleton di recommend-list
-                // sudah tampil dari HTML, dan kalau ada query dari URL, tampilkan indikator ringan.
+                // --- INI ADALAH 3 BARIS KODE YANG SAYA TAMBAHKAN AGAR TIDAK BLANK ---
                 if (queryFromUrl) {
                     document.getElementById('search-input').value = queryFromUrl;
                     toggleClearButton();
+                    document.getElementById('default-view').style.display = 'none';
+                    document.getElementById('results-view').style.display = 'block';
+                    document.getElementById('results-view').innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Mencari karya...</p></div>';
                 }
+                // -------------------------------------------------------------------
                 loadHistory();
             }
 
-            // 2. Selalu ambil data terbaru di belakang layar, lalu perbarui tampilan dengan halus
             await loadStories();
             renderRecommendations();
 
