@@ -132,13 +132,18 @@
         .btn-add-chapter { width: 100%; background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 14px; border-radius: 50px; font-family: 'Poppins'; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .empty-chapter { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; border: 1px dashed #cbd5e1; border-radius: 12px; }
 
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+        /* SKELETON SHIMMER (Pengganti Loading Overlay Putar) */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        .sk-cover { width: 100px; height: 145px; border-radius: 12px; }
+        .sk-line { height: 14px; border-radius: 6px; margin-bottom: 12px; }
+        .sk-box { height: 48px; border-radius: 12px; margin-bottom: 20px; }
+        .sk-textarea { height: 120px; border-radius: 12px; margin-bottom: 20px; }
+        .sk-chapter-card { height: 68px; border-radius: 12px; margin-bottom: 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><div id="loading-msg" style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menyiapkan Draf...</div></div>
 
     <div class="app-wrapper">
         <header class="top-navbar">
@@ -153,91 +158,117 @@
         </header>
 
         <div class="content-area">
-            <div class="story-header-row">
-                <div class="cover-uploader" onclick="document.getElementById('cover-file').click()">
-                    <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
-                    <div class="cover-preview" id="cover-preview"></div>
-                    <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
-                </div>
-                <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
-
-                <div class="story-header-fields">
-                    <div class="form-group">
-                        <label>Judul Cerita</label>
-                        <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
+            
+            <!-- KERANGKA SKELETON (INSTANT LOAD) -->
+            <div id="skeleton-container">
+                <div class="story-header-row">
+                    <div class="sk-light sk-cover"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="sk-light sk-line" style="width: 40%;"></div>
+                        <div class="sk-light sk-box"></div>
                     </div>
                 </div>
+                <div class="sk-light sk-line" style="width: 30%;"></div>
+                <div class="sk-light sk-box"></div>
+                <div class="sk-light sk-line" style="width: 35%;"></div>
+                <div class="sk-light sk-box"></div>
+                <div class="sk-light sk-line" style="width: 20%;"></div>
+                <div class="sk-light sk-textarea"></div>
+                <br>
+                <div class="sk-light sk-line" style="width: 40%;"></div>
+                <div class="sk-light sk-chapter-card"></div>
+                <div class="sk-light sk-chapter-card"></div>
             </div>
 
-            <div class="form-group">
-                <label>Genre Utama</label>
-                <button type="button" class="genre-select-btn" onclick="openGenrePicker()">
-                    <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
-                    <i class="fa-solid fa-chevron-down"></i>
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label>Tagar / Event (Opsional)</label>
-                <div class="tags-container" id="tags-container">
-                    <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar lalu Enter...">
-                </div>
-                <p class="field-hint">Maksimal 5 tagar. Ketik lalu Enter, atau langsung tekan Simpan.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Sinopsis</label>
-                <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Pernyataan Hak Cipta</label>
-                <div class="copyright-list" id="copyright-list">
-                    <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
-                        <div class="copyright-radio"></div>
-                        <div class="copyright-text">
-                            <h4>Karya Asli</h4>
-                            <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
-                        </div>
+            <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
+            <div id="real-content" style="display: none;">
+                <div class="story-header-row">
+                    <div class="cover-uploader" onclick="document.getElementById('cover-file').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
+                        <div class="cover-preview" id="cover-preview"></div>
+                        <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
                     </div>
-                    <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
-                        <div class="copyright-radio"></div>
-                        <div class="copyright-text">
-                            <h4>Terinspirasi</h4>
-                            <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
-                        </div>
-                    </div>
-                    <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
-                        <div class="copyright-radio"></div>
-                        <div class="copyright-text">
-                            <h4>Adaptasi / Terjemahan Berizin</h4>
-                            <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
-                        </div>
-                    </div>
-                    <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
-                        <div class="copyright-radio"></div>
-                        <div class="copyright-text">
-                            <h4>Fan-Fiksi</h4>
-                            <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
+                    <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
+
+                    <div class="story-header-fields">
+                        <div class="form-group">
+                            <label>Judul Cerita</label>
+                            <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>Status Progres Cerita</label>
-                <div class="progress-status-group" id="progress-status-group">
-                    <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
-                    <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
-                    <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
+                <div class="form-group">
+                    <label>Genre Utama</label>
+                    <button type="button" class="genre-select-btn" onclick="openGenrePicker()">
+                        <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
                 </div>
-            </div>
 
-            <div class="chapter-section">
-                <div class="chapter-header"><h3>Daftar Bab</h3></div>
-                <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
-                <button class="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
-            </div>
+                <div class="form-group">
+                    <label>Tagar / Event (Opsional)</label>
+                    <div class="tags-container" id="tags-container">
+                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar lalu Enter...">
+                    </div>
+                    <p class="field-hint">Maksimal 5 tagar. Ketik lalu Enter, atau langsung tekan Simpan.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Sinopsis</label>
+                    <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Pernyataan Hak Cipta</label>
+                    <div class="copyright-list" id="copyright-list">
+                        <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Karya Asli</h4>
+                                <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Terinspirasi</h4>
+                                <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Adaptasi / Terjemahan Berizin</h4>
+                                <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Fan-Fiksi</h4>
+                                <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Progres Cerita</label>
+                    <div class="progress-status-group" id="progress-status-group">
+                        <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
+                        <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
+                        <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
+                    </div>
+                </div>
+
+                <div class="chapter-section">
+                    <div class="chapter-header"><h3>Daftar Bab</h3></div>
+                    <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
+                    <button class="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
+                </div>
+            </div> <!-- End Real Content -->
+
         </div>
     </div>
 
@@ -284,7 +315,6 @@
             try {
                 const snap = await getDoc(doc(db, "stories", storyId));
                 if (!snap.exists()) {
-                    document.getElementById('loading-overlay').style.display = 'none';
                     Swal.fire('Tidak Ditemukan', 'Cerita ini tidak ditemukan.', 'error').then(() => window.location.href = 'menulis.html');
                     return;
                 }
@@ -322,11 +352,28 @@
                 progressStatus = data.progressStatus || 'ongoing';
                 document.querySelectorAll('.status-btn').forEach(el => el.classList.toggle('active', el.dataset.value === progressStatus));
 
-                document.getElementById('loading-overlay').style.display = 'none';
+                // Hilangkan skeleton dan tampilkan konten
+                document.getElementById('skeleton-container').style.display = 'none';
+                document.getElementById('real-content').style.display = 'block';
+
             } catch (error) {
                 console.error('Gagal memuat data cerita:', error);
-                document.getElementById('loading-overlay').style.display = 'none';
                 Swal.fire('Error', 'Gagal memuat data. Periksa koneksi Anda lalu muat ulang halaman.', 'error');
+            }
+        }
+
+        // --- FUNGSI UPDATE SINKRONISASI KE TABEL PUBLIK (Mencegah Bug Tagar) ---
+        async function syncToPublishedStories(updatedData) {
+            try {
+                const pubRef = doc(db, "published_stories", storyId);
+                const pubSnap = await getDoc(pubRef);
+                
+                // Jika cerita sudah pernah dirilis publik, maka salinan publiknya wajib diperbarui juga
+                if (pubSnap.exists()) {
+                    await updateDoc(pubRef, updatedData);
+                }
+            } catch (error) {
+                console.error("Gagal sinkronisasi data publik:", error);
             }
         }
 
@@ -336,7 +383,12 @@
             indicator.style.color = '';
             indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             try {
+                // Update tabel Draf
                 await updateDoc(doc(db, "stories", storyId), { ...fields, updatedAt: serverTimestamp() });
+                
+                // Sinkronisasi tabel Publik
+                await syncToPublishedStories(fields);
+
                 indicator.className = 'save-indicator saved';
                 indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
                 setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
@@ -439,7 +491,6 @@
             saveTimeout = setTimeout(saveToFirestore, 1500);
         };
 
-        // --- PERBAIKAN: Fungsi simpan juga memasukkan teks yang belum di-enter di input tagar ---
         async function saveToFirestore() {
             const indicator = document.getElementById('save-indicator');
             
@@ -455,13 +506,20 @@
             }
 
             try {
-                await updateDoc(doc(db, "stories", storyId), {
+                const updatedData = {
                     title: document.getElementById('story-title').value,
                     description: document.getElementById('story-desc').value,
                     authorName: realAuthorName,
-                    tags: storyTags, // Memastikan seluruh tagar ikut ter-update
+                    tags: storyTags,
                     updatedAt: serverTimestamp()
-                });
+                };
+
+                // Update tabel Draf
+                await updateDoc(doc(db, "stories", storyId), updatedData);
+                
+                // Sinkronisasi ke tabel Publik
+                await syncToPublishedStories(updatedData);
+
                 indicator.className = 'save-indicator saved'; indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
                 setTimeout(() => { indicator.style.opacity = '0'; }, 3000);
             } catch (error) { 
@@ -515,7 +573,9 @@
                         document.getElementById('cover-preview').style.backgroundImage = `url('${compressedB64}')`;
                         document.getElementById('cover-preview').style.display = 'block';
 
-                        await updateDoc(doc(db, "stories", storyId), { coverBase64: compressedB64, updatedAt: serverTimestamp() });
+                        const coverUpdate = { coverBase64: compressedB64 };
+                        await saveFieldImmediate(coverUpdate);
+
                     } catch (error) {
                         Swal.fire('Gagal Mengunggah', 'Sampul gagal disimpan. Coba lagi atau gunakan gambar lain.', 'error');
                     }
@@ -565,7 +625,11 @@
 
         window.createNewChapter = async () => {
             if (!document.getElementById('story-title').value.trim()) { Swal.fire('Judul Kosong', 'Isi Judul Cerita dahulu sebelum menulis naskah.', 'warning'); return; }
-            document.getElementById('loading-overlay').style.display = 'flex';
+            
+            // Tampilkan kembali skeleton loader manual saat proses buat bab
+            document.getElementById('real-content').style.display = 'none';
+            document.getElementById('skeleton-container').style.display = 'block';
+
             try {
                 const chapterRef = await addDoc(collection(db, "stories", storyId, "chapters"), { title: '', content: '', status: 'draft', wordCount: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
                 const docRef = doc(db, "stories", storyId);
@@ -573,7 +637,11 @@
                 const currentCount = snap.exists() && snap.data().chapterCount ? snap.data().chapterCount : 0;
                 await updateDoc(docRef, { chapterCount: currentCount + 1, updatedAt: serverTimestamp() });
                 window.location.href = `menulis-editor.html?storyId=${storyId}&chapterId=${chapterRef.id}`;
-            } catch (error) { document.getElementById('loading-overlay').style.display = 'none'; Swal.fire('Error', 'Gagal membuat bab.', 'error'); }
+            } catch (error) { 
+                document.getElementById('real-content').style.display = 'block';
+                document.getElementById('skeleton-container').style.display = 'none';
+                Swal.fire('Error', 'Gagal membuat bab.', 'error'); 
+            }
         };
 
         window.deleteChapter = async (chapId, event) => {
