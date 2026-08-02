@@ -53,7 +53,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; /* PERBAIKAN: DISINKRONKAN DENGAN TINGGI NAVBAR */
+            padding-top: 60px; /* SINKRONISASI TINGGI NAVBAR */
             min-height: 100vh;
             display: flex; flex-direction: column;
             overflow-x: hidden;
@@ -85,7 +85,7 @@
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
             padding: 15px 0 20px 0;
-            contain: paint; /* PERBAIKAN: Hardware acceleration untuk mencegah scroll patah-patah */
+            /* PERBAIKAN: Menghapus contain: paint agar tidak berat/ngadat saat scroll vertikal */
         }
         .banner-container {
             --banner-w: clamp(240px, 80vw, 420px);
@@ -97,7 +97,7 @@
         .banner-container::-webkit-scrollbar { display: none; }
         .banner-card {
             width: var(--banner-w); min-width: var(--banner-w);
-            height: clamp(125px, 40vw, 190px); /* PERBAIKAN: Diperkecil */
+            height: clamp(125px, 40vw, 190px); 
             border-radius: 18px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center; position: relative; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: #1e293b;
@@ -126,7 +126,6 @@
         .story-scroll { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(14px, 2.5vw, 20px); padding: 0 clamp(16px,4vw,20px) 20px clamp(16px,4vw,20px); scrollbar-width: none; min-height: 150px; }
         .story-scroll::-webkit-scrollbar { display: none; }
 
-        /* PERBAIKAN: Sampul cerita diperkecil */
         .story-card { width: clamp(100px, 28vw, 140px); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; position: relative; }
         .story-card:hover { transform: translateY(-5px); }
         .story-cover { width: 100%; height: clamp(145px, 40vw, 195px); border-radius: 12px; background-size: cover; background-position: center; box-shadow: 0 6px 15px rgba(0,0,0,0.1); margin-bottom: 10px; border: 1px solid #e2e8f0; background-color: #cbd5e1; }
@@ -139,7 +138,7 @@
         .editor-section-wrap {
             background: linear-gradient(160deg, var(--nav-bg) 0%, #1e293b 100%);
             padding: 25px 0 30px 0; margin-bottom: clamp(28px,5vw,40px); position: relative; 
-            contain: paint; /* PERBAIKAN: Meringankan scroll */
+            contain: paint;
         }
         .editor-section-wrap::before {
             content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -152,7 +151,7 @@
         .editor-section-wrap .story-scroll { position: relative; z-index: 2; }
 
         .editor-card {
-            width: clamp(260px, 80vw, 360px); display: flex; gap: 16px; /* PERBAIKAN: Diperkecil */
+            width: clamp(260px, 80vw, 360px); display: flex; gap: 16px; 
             background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
             padding: 15px; border-radius: 18px; border: 1.5px solid rgba(212,175,55,0.5);
             box-shadow: 0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -179,7 +178,7 @@
 
         /* --- SKELETON SHIMMER --- */
         @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-        .skeleton-card { width: clamp(100px, 28vw, 140px); flex-shrink: 0; } /* PERBAIKAN: Samakan dengan story-card */
+        .skeleton-card { width: clamp(100px, 28vw, 140px); flex-shrink: 0; }
         .skeleton-cover, .skeleton-line, .skeleton-banner {
             background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%);
             background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite;
@@ -193,7 +192,7 @@
             background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%); background-size: 400% 100%;
         }
 
-        /* --- 7. CTA BOTTOM (diperkecil) --- */
+        /* --- 7. CTA BOTTOM --- */
         .cta-write { margin: clamp(14px,2.5vw,18px); padding: clamp(20px, 4vw, 28px) clamp(18px, 4vw, 24px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 22px rgba(0, 51, 102, 0.18); position: relative; overflow: hidden; }
         .cta-write::after { content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; right: -15px; bottom: -15px; font-size: 8rem; color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg); }
         .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.6vw, 1.35rem); margin: 0 0 6px 0; color: var(--gold); position: relative; z-index: 2;}
@@ -382,9 +381,7 @@
             }
         })();
 
-        // --- PERBAIKAN: CAROUSEL BANNER ANTI-LAG ---
-        // Dengan membaca layout hanya 1 kali dan menyimpannya di dataset, 
-        // CPU browser tidak akan kelelahan saat pengguna melakukan scroll.
+        // --- CAROUSEL BANNER ANTI-LAG ---
         let bannerInterval = null;
         let bannerFocusRaf = null;
 
@@ -424,7 +421,7 @@
             const banners = container.querySelectorAll('.banner-card');
             if (!banners || banners.length <= 1) return;
 
-            // Simpan ukuran elemen di memory agar tidak memberatkan browser saat scroll
+            // Simpan ukuran elemen di memory
             container.dataset.cWidth = container.clientWidth;
             banners.forEach(card => {
                 card.dataset.cLeft = card.offsetLeft;
@@ -455,7 +452,6 @@
             }, 5000);
         }
         
-        // Panggil inisiasi slider segera setelah struktur DOM dimuat
         document.addEventListener("DOMContentLoaded", initBannerSlider);
     </script>
 
@@ -621,7 +617,7 @@
                 const snapBanner = await getDocs(qBanner);
                 const bannersHtml = buildBannerHtml(snapBanner);
                 document.getElementById('banner-container').innerHTML = bannersHtml;
-                initBannerSlider(); // Reset slider dengan data baru
+                initBannerSlider();
 
                 const qStories = query(collection(db, "published_stories"));
                 const snapStories = await getDocs(qStories);
