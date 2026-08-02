@@ -299,7 +299,6 @@
                 updateTime = new Date(data.updatedAt.seconds * 1000).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
             }
 
-            // PERBAIKAN: Penanganan khusus untuk cerita yang dibekukan/dihapus oleh admin
             const isBanned = data.isBanned === true || data.isDeleted === true;
             const isPublished = data.status === 'published';
             
@@ -314,15 +313,20 @@
 
             const bannedNotice = isBanned ? `<p class="banned-notice"><i class="fa-solid fa-triangle-exclamation"></i> Cerita ini dibekukan oleh Admin dan tidak dapat dipublikasikan ulang karena melanggar panduan komunitas.</p>` : '';
 
+            // PERBAIKAN: Jika cerita dibanned, jangan munculkan tombol aksi kelola (titik tiga)
+            const actionButton = !isBanned 
+                ? `<button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', event)" title="Kelola Cerita">
+                       <i class="fa-solid fa-ellipsis-vertical"></i>
+                   </button>`
+                : '';
+
             return `
                 <div class="story-item" onclick="window.location.href='menulis-info.html?id=${data.id}'">
                     ${cover}
                     <div class="story-info">
                         <div class="story-title-row">
                             <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
-                            <button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', ${isBanned}, event)" title="Kelola Cerita">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
+                            ${actionButton}
                         </div>
                         <div class="story-meta">
                             ${statusBadge}
@@ -419,14 +423,13 @@
         };
 
         // 3. AKSI KELOLA CERITA (Batalkan Publikasi / Hapus)
-        window.openStoryActions = (storyId, status, isBanned, event) => {
+        window.openStoryActions = (storyId, status, event) => {
             event.stopPropagation(); // Mencegah klik nyasar membuka menulis-info.html
             const isPublished = status === 'published';
 
             let sheetHtml = '<div class="action-sheet">';
             
-            // Jika dibanned, matikan opsi batalkan publikasi karena sistem sudah mengunci secara otomatis
-            if (isPublished && !isBanned) {
+            if (isPublished) {
                 sheetHtml += `<button type="button" class="action-sheet-btn warning" onclick="confirmUnpublishStory('${storyId}')"><i class="fa-solid fa-eye-slash"></i> Batalkan Publikasi</button>`;
             }
             sheetHtml += `<button type="button" class="action-sheet-btn danger" onclick="confirmDeleteStory('${storyId}')"><i class="fa-solid fa-trash-can"></i> Hapus Cerita</button>`;
