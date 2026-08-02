@@ -76,7 +76,7 @@
         .btn-login { background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
-        /* --- 4. BANNERS: carousel "peek" dengan panel batik kotak-kotak di belakangnya --- */
+        /* --- 4. BANNERS --- */
         .hero-banner-wrap {
             background-color: var(--nav-bg);
             background-image:
@@ -85,10 +85,9 @@
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
             padding: 15px 0 20px 0;
-            /* PERBAIKAN: Menghapus contain: paint agar tidak berat/ngadat saat scroll vertikal */
         }
         .banner-container {
-            --banner-w: clamp(240px, 80vw, 420px);
+            --banner-w: clamp(260px, 85vw, 480px);
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
             gap: clamp(12px, 3vw, 20px);
             padding: 4px calc((100% - var(--banner-w)) / 2);
@@ -97,13 +96,12 @@
         .banner-container::-webkit-scrollbar { display: none; }
         .banner-card {
             width: var(--banner-w); min-width: var(--banner-w);
-            height: clamp(125px, 40vw, 190px); 
+            height: clamp(135px, 42vw, 200px); 
             border-radius: 18px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center; position: relative; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: #1e293b;
-            transition: opacity 0.25s ease, transform 0.25s ease; opacity: 0.4; transform: scale(0.94);
+            /* PERBAIKAN: Semua transparansi dan animasi dinamis dihapus agar scroll ringan */
         }
-        .banner-card.is-focused { opacity: 1; transform: scale(1); }
         .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
         .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; margin:0;}
@@ -134,7 +132,7 @@
         .story-badge { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; z-index: 5; }
         .badge-new { background: #ecfdf5; color: #059669; }
 
-        /* --- PILIHAN EDITOR: panel eksklusif tersendiri --- */
+        /* --- PILIHAN EDITOR --- */
         .editor-section-wrap {
             background: linear-gradient(160deg, var(--nav-bg) 0%, #1e293b 100%);
             padding: 25px 0 30px 0; margin-bottom: clamp(28px,5vw,40px); position: relative; 
@@ -187,8 +185,8 @@
         .skeleton-line { height: 11px; border-radius: 6px; margin-bottom: 6px; }
         .skeleton-line.short { width: 55%; }
         .skeleton-banner {
-            width: var(--banner-w, clamp(240px, 80vw, 420px)); min-width: var(--banner-w, clamp(240px, 80vw, 420px));
-            height: clamp(125px, 40vw, 190px); border-radius: 18px; flex-shrink: 0;
+            width: var(--banner-w, clamp(260px, 85vw, 480px)); min-width: var(--banner-w, clamp(260px, 85vw, 480px));
+            height: clamp(135px, 42vw, 200px); border-radius: 18px; flex-shrink: 0;
             background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%); background-size: 400% 100%;
         }
 
@@ -239,7 +237,7 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS -->
+        <!-- BANNERS (Mulus Tanpa JS Scroll Tracking) -->
         <div class="hero-banner-wrap">
             <div class="banner-container" id="banner-container">
                 <div class="skeleton-banner"></div>
@@ -382,37 +380,8 @@
         })();
 
         // --- CAROUSEL BANNER ANTI-LAG ---
+        // Skrip pergerakan scroll telah dibersihkan secara total dari event listener "scroll"
         let bannerInterval = null;
-        let bannerFocusRaf = null;
-
-        function updateBannerFocus() {
-            const container = document.getElementById('banner-container');
-            if (!container) return;
-            const cards = container.querySelectorAll('.banner-card');
-            if (!cards.length) return;
-            
-            const cWidth = parseFloat(container.dataset.cWidth || container.clientWidth);
-            const containerCenter = container.scrollLeft + (cWidth / 2);
-            
-            cards.forEach(card => {
-                const cLeft = parseFloat(card.dataset.cLeft || card.offsetLeft);
-                const cOWidth = parseFloat(card.dataset.cOWidth || card.offsetWidth);
-                const cardCenter = cLeft + (cOWidth / 2);
-                
-                const distance = Math.abs(containerCenter - cardCenter);
-                const maxDistance = (cWidth / 2) + (cOWidth / 2);
-                const ratio = Math.min(distance / maxDistance, 1);
-                
-                card.classList.toggle('is-focused', ratio < 0.15);
-                card.style.opacity = (1 - ratio * 0.7).toFixed(2);
-                card.style.transform = `scale(${(1 - ratio * 0.08).toFixed(3)})`;
-            });
-        }
-
-        function scheduleBannerFocusUpdate() {
-            if (bannerFocusRaf) cancelAnimationFrame(bannerFocusRaf);
-            bannerFocusRaf = requestAnimationFrame(updateBannerFocus);
-        }
 
         function initBannerSlider() {
             const container = document.getElementById('banner-container');
@@ -421,16 +390,12 @@
             const banners = container.querySelectorAll('.banner-card');
             if (!banners || banners.length <= 1) return;
 
-            // Simpan ukuran elemen di memory
+            // Simpan ukuran elemen di memory agar tidak memberatkan browser
             container.dataset.cWidth = container.clientWidth;
             banners.forEach(card => {
                 card.dataset.cLeft = card.offsetLeft;
                 card.dataset.cOWidth = card.offsetWidth;
             });
-
-            container.removeEventListener('scroll', scheduleBannerFocusUpdate);
-            container.addEventListener('scroll', scheduleBannerFocusUpdate, { passive: true });
-            scheduleBannerFocusUpdate();
 
             if (bannerInterval) clearInterval(bannerInterval);
 
