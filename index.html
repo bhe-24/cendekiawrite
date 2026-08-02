@@ -29,6 +29,8 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "APP_ID_ONESIGNAL_ANDA_DISINI", // Ganti dengan App ID OneSignal Anda
+          serviceWorkerPath: "/sw.js",
+          serviceWorkerParam: { scope: "/" },
         });
       });
     </script>
@@ -74,10 +76,32 @@
         .btn-login { background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
-        /* --- 4. BANNERS --- */
-        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: clamp(12px, 2vw, 20px); padding: clamp(14px, 3vw, 20px); scrollbar-width: none; scroll-behavior: smooth;}
+        /* --- 4. BANNERS: carousel "peek" dengan panel batik kotak-kotak di belakangnya --- */
+        .hero-banner-wrap {
+            background-color: var(--nav-bg);
+            background-image:
+                linear-gradient(45deg, rgba(212,175,55,0.07) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.07) 75%, rgba(212,175,55,0.07)),
+                linear-gradient(45deg, rgba(212,175,55,0.07) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.07) 75%, rgba(212,175,55,0.07));
+            background-size: 26px 26px;
+            background-position: 0 0, 13px 13px;
+            padding: 18px 0 26px 0;
+        }
+        .banner-container {
+            --banner-w: clamp(230px, 76vw, 440px);
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            gap: clamp(12px, 3vw, 20px);
+            padding: 4px calc((100% - var(--banner-w)) / 2);
+            scrollbar-width: none; scroll-behavior: smooth;
+        }
         .banner-container::-webkit-scrollbar { display: none; }
-        .banner-card { min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px); border-radius: 16px; scroll-snap-align: center; flex-shrink: 0; background-size: cover; background-position: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #0f172a; }
+        .banner-card {
+            width: var(--banner-w); min-width: var(--banner-w);
+            height: clamp(140px, 20vw, 210px); border-radius: 18px; scroll-snap-align: center; flex-shrink: 0;
+            background-size: cover; background-position: center; position: relative; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: #1e293b;
+            transition: opacity 0.25s ease, transform 0.25s ease; opacity: 0.4; transform: scale(0.94);
+        }
+        .banner-card.is-focused { opacity: 1; transform: scale(1); }
         .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
         .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; }
@@ -108,14 +132,37 @@
         .story-badge { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; z-index: 5; }
         .badge-new { background: #ecfdf5; color: #059669; }
 
-        /* --- PILIHAN EDITOR EKSKLUSIF --- */
-        .editor-card { width: clamp(280px, 80vw, 360px); display: flex; gap: 15px; background: linear-gradient(135deg, #fff 0%, #f8fafc 100%); padding: 15px; border-radius: 16px; border: 1px solid var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s; }
-        .editor-card:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.25); }
-        .editor-cover { width: 85px; height: 120px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background-color: #cbd5e1; border: 1px solid #e2e8f0;}
+        /* --- PILIHAN EDITOR: panel eksklusif tersendiri --- */
+        .editor-section-wrap {
+            background: linear-gradient(160deg, var(--nav-bg) 0%, #1e293b 55%, var(--nav-bg) 100%);
+            padding: 32px 0 36px 0; margin-bottom: clamp(28px,5vw,40px); position: relative; overflow: hidden;
+        }
+        .editor-section-wrap::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(212,175,55,0.14), transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(212,175,55,0.10), transparent 45%);
+        }
+        .editor-section-wrap .section-header { position: relative; z-index: 2; }
+        .editor-section-wrap .section-header h2 { color: var(--gold); }
+        .editor-section-wrap .section-header .editor-subtitle { display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+        .editor-section-wrap .section-header a { color: #fcd34d; }
+        .editor-section-wrap .story-scroll { position: relative; z-index: 2; }
+
+        .editor-card {
+            width: clamp(280px, 82vw, 380px); display: flex; gap: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+            padding: 18px; border-radius: 18px; border: 1.5px solid rgba(212,175,55,0.5);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+            flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;
+        }
+        .editor-card:hover { transform: translateY(-6px); border-color: var(--gold); box-shadow: 0 16px 36px rgba(212,175,55,0.25); }
+        .editor-cover { width: 90px; height: 128px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 6px 15px rgba(0,0,0,0.3); background-color: #334155; border: 1px solid rgba(212,175,55,0.3);}
         .editor-info { display: flex; flex-direction: column; justify-content: center; flex: 1; overflow: hidden; }
-        .editor-badge { font-size: 0.65rem; color: var(--gold); font-weight: 700; margin-bottom: 5px; display:flex; align-items:center; gap:4px; letter-spacing:0.5px;}
-        .editor-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--primary); margin: 0 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;}
-        .editor-desc { font-size: 0.75rem; color: var(--text-gray); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        .editor-badge { font-size: 0.65rem; color: #1e293b; font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 4px; letter-spacing: 0.5px; background: linear-gradient(90deg, var(--gold), #fcd34d); padding: 3px 9px; border-radius: 6px; width: fit-content;}
+        .editor-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: white; margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25;}
+        .editor-author { font-size: 0.75rem; font-weight: 600; color: var(--gold); margin-bottom: 5px; }
+        .editor-desc { font-size: 0.75rem; color: #cbd5e1; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 
         .continue-card { width: clamp(240px, 30vw, 300px); display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
         .continue-card:hover { border-color: var(--primary); transform: translateY(-3px); }
@@ -139,17 +186,18 @@
         .skeleton-line { height: 11px; border-radius: 6px; margin-bottom: 6px; }
         .skeleton-line.short { width: 55%; }
         .skeleton-banner {
-            min-width: clamp(260px, 80vw, 480px); height: clamp(140px, 20vw, 210px); border-radius: 16px; flex-shrink: 0;
+            width: var(--banner-w, clamp(230px, 76vw, 440px)); min-width: var(--banner-w, clamp(230px, 76vw, 440px));
+            height: clamp(140px, 20vw, 210px); border-radius: 18px; flex-shrink: 0;
             background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%); background-size: 400% 100%;
         }
 
-        /* --- 7. CTA BOTTOM & FOOTER --- */
-        .cta-write { margin: clamp(16px,3vw,20px); padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 24px; text-align: center; color: white; box-shadow: 0 15px 30px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden; }
-        .cta-write::after { content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; right: -20px; bottom: -20px; font-size: 12rem; color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg); }
-        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 4vw, 1.8rem); margin: 0 0 10px 0; color: var(--gold); position: relative; z-index: 2;}
-        .cta-write p { font-size: clamp(0.85rem, 2vw, 0.95rem); color: #cbd5e1; margin: 0 auto 25px auto; max-width: 600px; line-height: 1.6; position: relative; z-index: 2;}
-        .btn-cta { background: var(--gold); color: white; border: none; padding: 12px clamp(22px, 4vw, 30px); border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2; transition: 0.3s; }
-        .btn-cta:hover { background: #b45309; transform: translateY(-3px); }
+        /* --- 7. CTA BOTTOM (diperkecil) --- */
+        .cta-write { margin: clamp(14px,2.5vw,18px); padding: clamp(20px, 4vw, 28px) clamp(18px, 4vw, 24px); background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%); border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 22px rgba(0, 51, 102, 0.18); position: relative; overflow: hidden; }
+        .cta-write::after { content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; right: -15px; bottom: -15px; font-size: 8rem; color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg); }
+        .cta-write h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.6vw, 1.35rem); margin: 0 0 6px 0; color: var(--gold); position: relative; z-index: 2;}
+        .cta-write p { font-size: clamp(0.78rem, 1.6vw, 0.85rem); color: #cbd5e1; margin: 0 auto 16px auto; max-width: 520px; line-height: 1.5; position: relative; z-index: 2;}
+        .btn-cta { background: var(--gold); color: white; border: none; padding: 9px clamp(18px, 3vw, 24px); border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.82rem, 1.6vw, 0.92rem); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; transition: 0.3s; }
+        .btn-cta:hover { background: #b45309; transform: translateY(-2px); }
 
         .app-footer { width: 100%; padding: clamp(24px,4vw,30px) clamp(16px,4vw,20px); text-align: center; background: var(--nav-bg); color: white; margin-top: auto; }
         .app-footer p { margin: 0 0 10px 0; font-size: 0.85rem; color: #cbd5e1; }
@@ -167,7 +215,7 @@
         @media (min-width: 1024px) {
             .story-scroll { flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; justify-content: flex-start; }
             .continue-container.story-scroll { flex-wrap: nowrap; overflow-x: auto; }
-            .banner-container { justify-content: center; }
+            .editor-section-wrap .story-scroll { flex-wrap: wrap; justify-content: center; }
         }
         @media (max-width: 359px) { .nav-brand h1 { display: none; } }
     </style>
@@ -179,7 +227,6 @@
         <div class="navbar-content">
             <div class="nav-brand">
                 <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo">
-                <!-- PERBAIKAN: Ganti Nama Menjadi Aksara Narasi -->
                 <h1>Aksara Narasi</h1>
             </div>
             <div class="nav-actions">
@@ -191,10 +238,12 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS -->
-        <div class="banner-container" id="banner-container">
-            <div class="skeleton-banner"></div>
-            <div class="skeleton-banner"></div>
+        <!-- BANNERS (carousel peek dengan latar batik kotak-kotak) -->
+        <div class="hero-banner-wrap">
+            <div class="banner-container" id="banner-container">
+                <div class="skeleton-banner"></div>
+                <div class="skeleton-banner"></div>
+            </div>
         </div>
 
         <!-- QUICK ACTIONS ICONS -->
@@ -260,14 +309,13 @@
         </div>
 
         <!-- PILIHAN EDITOR EKSKLUSIF -->
-        <div class="section-container">
+        <div class="editor-section-wrap">
             <div class="section-header">
-                <h2>Pilihan Editor</h2>
+                <h2>Pilihan Editor<span class="editor-subtitle">Sorotan Kurasi Khusus</span></h2>
             </div>
             <div class="story-scroll" id="editor-container">
-                <!-- Skeleton Khusus Editor Card -->
                 <div class="editor-card">
-                    <div class="skeleton-cover" style="width:85px; height:120px; margin:0;"></div>
+                    <div class="skeleton-cover" style="width:90px; height:128px; margin:0;"></div>
                     <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                         <div class="skeleton-line"></div>
                         <div class="skeleton-line short"></div>
@@ -275,7 +323,7 @@
                     </div>
                 </div>
                 <div class="editor-card">
-                    <div class="skeleton-cover" style="width:85px; height:120px; margin:0;"></div>
+                    <div class="skeleton-cover" style="width:90px; height:128px; margin:0;"></div>
                     <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                         <div class="skeleton-line"></div>
                         <div class="skeleton-line short"></div>
@@ -284,6 +332,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- SECTION GENRE DINAMIS (muncul otomatis kalau suatu genre sudah cukup banyak karyanya) -->
+        <div id="dynamic-genre-sections"></div>
 
         <!-- TOMBOL PWA INSTALL -->
         <button id="install-btn"><i class="fa-solid fa-download"></i> Instal Aplikasi Cendekia Aksara</button>
@@ -291,12 +342,12 @@
         <!-- CTA MULAI MENULIS -->
         <div class="cta-write">
             <h2>Punya Cerita Menarik?</h2>
-            <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu, dapatkan pembaca setia, dan jadilah inspirasi!</p>
+            <p>Bergabunglah dengan ribuan penulis Cendekia lainnya. Terbitkan karyamu dan jadilah inspirasi!</p>
             <button class="btn-cta" onclick="requireLogin('menulis', 'menulis.html')"><i class="fa-solid fa-pen-nib"></i> Mulai Menulis Karya</button>
         </div>
     </div>
 
-    <!-- PERBAIKAN: FOOTER FULL WIDTH DILUAR APP-WRAPPER -->
+    <!-- FOOTER FULL WIDTH DILUAR APP-WRAPPER -->
     <footer class="app-footer">
         <p>&copy; <span id="current-year"></span> Aksara Narasi. Seluruh Hak Cipta Dilindungi.</p>
         <p>
@@ -309,7 +360,6 @@
     <!-- RENDER INSTAN DARI CACHE LOKAL -->
     <script>
         (function () {
-            // Skrip Footer Dinamis
             document.getElementById('current-year').innerText = new Date().getFullYear();
             var d = new Date();
             var verStr = "Versi Web Publik v1." + (d.getMonth() + 1) + "." + d.getDate() + "." + d.getHours();
@@ -323,23 +373,50 @@
                 if (cache.recHtml) document.getElementById('rekomendasi-container').innerHTML = cache.recHtml;
                 if (cache.terbaruHtml) document.getElementById('terbaru-container').innerHTML = cache.terbaruHtml;
                 if (cache.edHtml) document.getElementById('editor-container').innerHTML = cache.edHtml;
+                if (cache.genreSectionsHtml) document.getElementById('dynamic-genre-sections').innerHTML = cache.genreSectionsHtml;
 
-                // Coba jalankan auto-slide jika ambil dari cache
                 initBannerSlider();
             } catch (e) {
                 // Abaikan jika error
             }
         })();
 
-        // PERBAIKAN: Logika Slide Banner Otomatis
+        // --- CAROUSEL BANNER: fokus di tengah, sisi kanan-kiri "mengintip" lebih redup ---
         let bannerInterval = null;
-        function initBannerSlider() {
-            if (bannerInterval) clearInterval(bannerInterval);
+        let bannerFocusRaf = null;
+
+        function updateBannerFocus() {
             const container = document.getElementById('banner-container');
             if (!container) return;
+            const cards = container.querySelectorAll('.banner-card');
+            if (!cards.length) return;
+            const containerCenter = container.scrollLeft + container.clientWidth / 2;
+            cards.forEach(card => {
+                const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+                const distance = Math.abs(containerCenter - cardCenter);
+                const maxDistance = (container.clientWidth / 2) + (card.offsetWidth / 2);
+                const ratio = Math.min(distance / maxDistance, 1);
+                card.classList.toggle('is-focused', ratio < 0.15);
+                card.style.opacity = (1 - ratio * 0.7).toFixed(2);
+                card.style.transform = `scale(${(1 - ratio * 0.08).toFixed(3)})`;
+            });
+        }
+
+        function scheduleBannerFocusUpdate() {
+            if (bannerFocusRaf) cancelAnimationFrame(bannerFocusRaf);
+            bannerFocusRaf = requestAnimationFrame(updateBannerFocus);
+        }
+
+        function initBannerSlider() {
+            const container = document.getElementById('banner-container');
+            if (!container) return;
+
+            container.removeEventListener('scroll', scheduleBannerFocusUpdate);
+            container.addEventListener('scroll', scheduleBannerFocusUpdate, { passive: true });
+            scheduleBannerFocusUpdate();
+
+            if (bannerInterval) clearInterval(bannerInterval);
             const banners = container.querySelectorAll('.banner-card');
-            
-            // Jika banner 1 atau kurang (termasuk jika masih format skeleton), diam saja
             if (!banners || banners.length <= 1) return;
 
             let currentIndex = 0;
@@ -349,10 +426,11 @@
                     currentIndex = 0;
                     container.scrollTo({ left: 0, behavior: 'smooth' });
                 } else {
-                    const scrollTarget = banners[currentIndex].offsetLeft - container.offsetLeft;
+                    const card = banners[currentIndex];
+                    const scrollTarget = card.offsetLeft - (container.clientWidth - card.offsetWidth) / 2;
                     container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
                 }
-            }, 5000); // Ganti setiap 5 detik
+            }, 5000);
         }
     </script>
 
@@ -382,7 +460,8 @@
 
         const HOME_CACHE_KEY = 'cendekia_home_cache_v1';
         const AUTHOR_CACHE_KEY = 'cendekia_author_cache_v1';
-        const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000; 
+        const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000;
+        const GENRE_SECTION_THRESHOLD = 30; // Genre baru dapat section sendiri kalau sudah >= 30 karya terbit
 
         onAuthStateChanged(auth, (user) => {
             const btnLogin = document.getElementById('btn-login-header');
@@ -407,6 +486,24 @@
             return 0;
         }
 
+        function slugify(str) {
+            return String(str).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'genre';
+        }
+
+        // Ambil label penulis dari cache lokal DULU (kalau ada) sebelum jatuh ke nama asli.
+        // Ini yang memperbaiki keluhan "kok yang tampil nama asli padahal sudah ada username" --
+        // begitu username seorang penulis pernah berhasil diambil sekali, kunjungan berikutnya
+        // langsung pakai itu, tidak perlu menunggu proses enrichAuthorNames() selesai lagi.
+        function getCachedAuthorLabel(authorId, fallbackName) {
+            if (authorId) {
+                try {
+                    const cache = JSON.parse(localStorage.getItem(AUTHOR_CACHE_KEY) || '{}');
+                    if (cache[authorId] && cache[authorId].label) return cache[authorId].label;
+                } catch (e) {}
+            }
+            return fallbackName || 'Anonim';
+        }
+
         function buildStoryCard(data, opts = {}) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const badgeHtml = opts.badge ? `<span class="story-badge ${opts.badgeClass || ''}">${opts.badge}</span>` : '';
@@ -416,8 +513,8 @@
                 metaHtml = `<i class="fa-solid fa-eye"></i> ${data.views || 0} &middot; <i class="fa-solid fa-star" style="color:var(--gold)"></i> ${data.votes || 0}`;
             }
             if (opts.authorSlot) {
-                const fallbackName = data.authorName || 'Anonim';
-                metaHtml = `<i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${fallbackName}</span>`;
+                const label = getCachedAuthorLabel(data.authorId, data.authorName);
+                metaHtml = `<i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${label}</span>`;
             }
             
             const coverBorder = opts.goldBorder ? 'border-color: var(--gold);' : '';
@@ -431,11 +528,10 @@
             `;
         }
 
-        // PERBAIKAN: Builder khusus Pilihan Editor (Layout Eksklusif)
         function buildEditorChoiceCard(data) {
             const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
             const synopsis = data.synopsis || "Baca kisah selengkapnya secara eksklusif...";
-            const fallbackName = data.authorName || 'Anonim';
+            const label = getCachedAuthorLabel(data.authorId, data.authorName);
             
             return `
                 <div class="editor-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
@@ -443,7 +539,7 @@
                     <div class="editor-info">
                         <span class="editor-badge"><i class="fa-solid fa-award"></i> PILIHAN EDITOR</span>
                         <h3 class="editor-title">${data.title}</h3>
-                        <div style="font-size:0.75rem; font-weight:600; color:var(--text-dark); margin-bottom:4px;"><i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${fallbackName}</span></div>
+                        <div class="editor-author"><i class="fa-solid fa-at"></i> <span class="author-slot" data-uid="${data.authorId || ''}">${label}</span></div>
                         <p class="editor-desc">${synopsis}</p>
                     </div>
                 </div>
@@ -452,7 +548,7 @@
 
         function buildBannerHtml(snapBanner) {
             if (snapBanner.empty) {
-                return `<div class="empty-state" style="margin-top:15px; width:100%; border:none;">Belum ada event atau rilis terbaru saat ini.</div>`;
+                return `<div class="empty-state" style="margin-top:0; width:100%; border:none; color:#94a3b8;">Belum ada event atau rilis terbaru saat ini.</div>`;
             }
             let htmlBanner = '';
             snapBanner.forEach(docSnap => {
@@ -470,6 +566,36 @@
             return htmlBanner;
         }
 
+        // Bangun section genre dinamis: genre yang jumlah karyanya sudah mencapai ambang batas
+        // otomatis dapat section sendiri (judul + id unik), tanpa perlu di-hardcode manual.
+        function buildGenreSectionsHtml(stories) {
+            const genreMap = {};
+            stories.forEach(s => {
+                const g = (s.genre || 'Umum').trim();
+                if (!genreMap[g]) genreMap[g] = [];
+                genreMap[g].push(s);
+            });
+
+            let html = '';
+            Object.keys(genreMap).forEach(genre => {
+                const list = genreMap[genre];
+                if (list.length < GENRE_SECTION_THRESHOLD) return;
+
+                const sorted = [...list].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+                const sectionId = 'genre-section-' + slugify(genre);
+                html += `
+                    <div class="section-container" id="${sectionId}">
+                        <div class="section-header">
+                            <h2>${genre}</h2>
+                            <a href="search.html?genre=${encodeURIComponent(genre)}">Lihat Semua</a>
+                        </div>
+                        <div class="story-scroll">${sorted.map(data => buildStoryCard(data)).join('')}</div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+
         async function fetchAllData() {
             try {
                 // A. Load Banners
@@ -477,7 +603,7 @@
                 const snapBanner = await getDocs(qBanner);
                 const bannersHtml = buildBannerHtml(snapBanner);
                 document.getElementById('banner-container').innerHTML = bannersHtml;
-                initBannerSlider(); // Mulai jalankan auto-slide setelah data ditarik
+                initBannerSlider();
 
                 // B. Load Stories
                 const qStories = query(collection(db, "published_stories"));
@@ -490,13 +616,15 @@
                 const recContainer = document.getElementById('rekomendasi-container');
                 const terbaruContainer = document.getElementById('terbaru-container');
                 const edContainer = document.getElementById('editor-container');
+                const genreContainer = document.getElementById('dynamic-genre-sections');
 
                 if (allPublishedStories.length === 0) {
                     const emptyMsg = `<div class="empty-state" style="border:none;">Belum ada karya di database.</div>`;
                     recContainer.innerHTML = emptyMsg;
                     terbaruContainer.innerHTML = emptyMsg;
                     edContainer.innerHTML = emptyMsg;
-                    saveHomeCache(bannersHtml, emptyMsg, emptyMsg, emptyMsg);
+                    genreContainer.innerHTML = '';
+                    saveHomeCache(bannersHtml, emptyMsg, emptyMsg, emptyMsg, '');
                     return;
                 }
 
@@ -520,14 +648,18 @@
                     : `<div class="empty-state" style="border:none;">Belum ada cerita baru yang terbit.</div>`;
                 terbaruContainer.innerHTML = terbaruHtml;
 
-                // E. PILIHAN EDITOR (Format Kartu Eksklusif)
+                // E. PILIHAN EDITOR
                 const editorList = allPublishedStories.filter(s => s.isEditorChoice).slice(0, 6);
                 const edHtml = editorList.length > 0
                     ? editorList.map(data => buildEditorChoiceCard(data)).join('')
-                    : `<div class="empty-state" style="border:none;">Editor belum memilih cerita sorotan.</div>`;
+                    : `<div class="empty-state" style="border:none; background:rgba(255,255,255,0.03); color:#94a3b8;">Editor belum memilih cerita sorotan.</div>`;
                 edContainer.innerHTML = edHtml;
 
-                saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml);
+                // F. SECTION GENRE DINAMIS
+                const genreSectionsHtml = buildGenreSectionsHtml(allPublishedStories);
+                genreContainer.innerHTML = genreSectionsHtml;
+
+                saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml, genreSectionsHtml);
 
                 enrichAuthorNames(latestList);
                 enrichAuthorNames(editorList);
@@ -541,10 +673,10 @@
             }
         }
 
-        function saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml) {
+        function saveHomeCache(bannersHtml, recHtml, terbaruHtml, edHtml, genreSectionsHtml) {
             try {
                 localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({
-                    bannersHtml, recHtml, terbaruHtml, edHtml, cachedAt: Date.now()
+                    bannersHtml, recHtml, terbaruHtml, edHtml, genreSectionsHtml, cachedAt: Date.now()
                 }));
             } catch (e) {
                 console.warn('Cache beranda tidak tersimpan (kemungkinan penyimpanan penuh):', e);
