@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pencarian - Aksara Narasi</title>
+
+    <!-- FAVICON (ikonnya sudah ada di /assets, sebelumnya belum diterapkan di halaman ini) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -19,7 +25,10 @@
         .btn-back:hover { color: var(--primary); }
         .search-input-box { flex: 1; display: flex; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 50px; padding: 10px 15px; transition: 0.3s;}
         .search-input-box:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(0,51,102,0.1);}
-        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.95rem; margin-left: 10px; background: transparent; }
+        .search-input-box input { border: none; outline: none; width: 100%; font-family: 'Poppins'; font-size: 0.95rem; margin: 0 10px; background: transparent; min-width: 0; }
+        .btn-clear-search { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1rem; padding: 2px; display: none; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
+        .btn-clear-search.show { display: flex; }
+        .btn-clear-search:hover { color: #dc2626; }
         
         .search-body { padding: 20px; flex: 1; overflow-y: auto; }
         .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; display: flex; justify-content: space-between; align-items: center;}
@@ -31,9 +40,13 @@
         .history-chip:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc;}
 
         .recommend-list { display: flex; flex-direction: column; gap: 12px; }
-        .rec-item { font-size: 0.9rem; color: var(--primary); padding: 12px 15px; border-radius: 12px; background: #f8fafc; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid transparent;}
+        .rec-item { font-size: 0.9rem; color: var(--primary); padding: 12px 15px; border-radius: 12px; background: #f8fafc; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between; }
         .rec-item:hover { border-color: var(--gold); transform: translateX(5px);}
+        .rec-item .rec-label { display: flex; align-items: center; }
         .rec-item i { color: var(--gold); margin-right: 10px; font-size: 1.1rem;}
+        .rec-item .rec-count { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
+        .rec-skeleton { height: 44px; border-radius: 12px; margin-bottom: 12px; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
         /* Hasil Pencarian */
         .story-card { display:flex; gap:15px; cursor:pointer; padding: 15px; border-radius: 16px; background: white; border:1px solid #e2e8f0; margin-bottom: 15px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
@@ -46,8 +59,7 @@
 
         .empty-state { text-align:center; padding: 50px 20px; color: #94a3b8; }
         .empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;}
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto;}
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .result-count-label { font-size: 0.78rem; color: var(--text-gray); margin: 0 0 15px 0; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -57,6 +69,7 @@
             <div class="search-input-box">
                 <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
                 <input type="text" id="search-input" placeholder="Gunakan #tagar, @penulis..." autofocus>
+                <button type="button" class="btn-clear-search" id="btn-clear-search" onclick="clearSearchInput()"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
         </div>
 
@@ -66,10 +79,10 @@
                 <div class="history-list" id="history-list"></div>
 
                 <h3 class="section-title">Rekomendasi Populer</h3>
-                <div class="recommend-list">
-                    <div class="rec-item" onclick="triggerSearch('#cerpen')"><i class="fa-solid fa-fire"></i> #cerpen</div>
-                    <div class="rec-item" onclick="triggerSearch('Romansa')"><i class="fa-solid fa-heart"></i> Romansa (Genre)</div>
-                    <div class="rec-item" onclick="triggerSearch('#fiksi')"><i class="fa-solid fa-wand-magic-sparkles"></i> #fiksi</div>
+                <div class="recommend-list" id="recommend-list">
+                    <div class="rec-skeleton"></div>
+                    <div class="rec-skeleton"></div>
+                    <div class="rec-skeleton"></div>
                 </div>
             </div>
 
@@ -78,6 +91,12 @@
         </div>
     </div>
 
+    <!-- ============================================================
+         RENDER INSTAN DARI CACHE LOKAL — data cerita hasil kunjungan
+         terakhir langsung dipakai duluan (rekomendasi & pencarian
+         langsung berfungsi), sambil data segar diambil di belakang
+         layar. Tidak ada lagi spinner berputar untuk kunjungan ulang.
+         ============================================================ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -86,39 +105,74 @@
         const app = initializeApp(firebaseConfig); 
         const db = getFirestore(app);
 
+        const SEARCH_CACHE_KEY = 'cendekia_search_cache_v1';
+
         let allStories = [];
         let authorCache = {}; 
         let searchTimer;
 
+        function loadCachedStories() {
+            try {
+                const raw = localStorage.getItem(SEARCH_CACHE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed.stories) ? parsed.stories : null;
+            } catch (e) { return null; }
+        }
+
+        function saveSearchCache() {
+            try {
+                localStorage.setItem(SEARCH_CACHE_KEY, JSON.stringify({ stories: allStories, cachedAt: Date.now() }));
+            } catch (e) { console.warn('Cache pencarian tidak tersimpan:', e); }
+        }
+
+        // Hanya cerita yang BENAR-BENAR sudah terbit resmi dan tidak diblokir yang boleh
+        // muncul di pencarian -- sinkron dengan proteksi yang sama dipakai di genre.html.
+        function isSearchableStory(data) {
+            if (data.status === 'draft' || data.status === 'archived') return false;
+            if (data.isDeleted === true || data.isBanned === true) return false;
+            return true;
+        }
+
+        function extractTags(story) {
+            if (!story.tags) return [];
+            if (Array.isArray(story.tags)) return story.tags.filter(Boolean);
+            if (typeof story.tags === 'string') return story.tags.split(',').map(t => t.trim()).filter(Boolean);
+            return [];
+        }
+
         async function loadStories() {
             try {
                 const snap = await getDocs(collection(db, "published_stories"));
+                let fresh = [];
                 let authorIdsToFetch = new Set();
-                
-                snap.forEach(d => { 
+
+                snap.forEach(d => {
                     const sData = d.data();
-                    allStories.push({ id: d.id, ...sData }); 
-                    if(sData.authorId) authorIdsToFetch.add(sData.authorId);
+                    if (!isSearchableStory(sData)) return; // Lewati draf/arsip/dihapus/dibanned
+                    fresh.push({ id: d.id, ...sData });
+                    if (sData.authorId) authorIdsToFetch.add(sData.authorId);
                 });
 
                 for (let uid of authorIdsToFetch) {
                     try {
                         const uSnap = await getDoc(doc(db, "users", uid));
-                        if(uSnap.exists()) {
+                        if (uSnap.exists()) {
                             const uData = uSnap.data();
                             authorCache[uid] = uData.username ? `@${uData.username}` : (uData.name || 'Anonim');
                         }
-                    } catch(e) {}
+                    } catch (e) {}
                 }
 
-                allStories.forEach(story => {
-                    if(authorCache[story.authorId]) {
-                        story.realAuthorName = authorCache[story.authorId];
-                    } else {
-                        story.realAuthorName = story.authorName || 'Anonim';
-                    }
+                fresh.forEach(story => {
+                    story.realAuthorName = authorCache[story.authorId] || story.authorName || 'Anonim';
                 });
-            } catch(e) { console.error("Gagal memuat database pencarian:", e); }
+
+                allStories = fresh;
+                saveSearchCache();
+            } catch(e) {
+                console.error("Gagal memuat database pencarian:", e);
+            }
         }
 
         function loadHistory() {
@@ -130,7 +184,7 @@
         }
         
         window.clearHistory = () => { localStorage.removeItem('searchHistory'); loadHistory(); };
-        window.triggerSearch = (val) => { document.getElementById('search-input').value = val; executeSearch(val); saveHistory(val); };
+        window.triggerSearch = (val) => { document.getElementById('search-input').value = val; toggleClearButton(); executeSearch(val); saveHistory(val); };
 
         function saveHistory(term) {
             if(!term) return;
@@ -143,125 +197,181 @@
             }
         }
 
-        document.getElementById('search-input').addEventListener('keyup', (e) => {
-            const val = e.target.value.trim(); // Jangan langsung toLowerCase() agar karakter spesial tidak hilang
+        // --- REKOMENDASI POPULER: dihitung dari data asli (genre & tagar yang benar-benar
+        // dipakai di karya yang terbit), BUKAN daftar hardcode seperti sebelumnya. ---
+        function renderRecommendations() {
+            const container = document.getElementById('recommend-list');
+
+            if (allStories.length === 0) {
+                container.innerHTML = '<div style="font-size:0.85rem; color:#94a3b8; font-style:italic;">Belum ada cukup karya untuk menyusun rekomendasi.</div>';
+                return;
+            }
+
+            const genreCount = {};
+            const tagCount = {};
+            allStories.forEach(s => {
+                const g = (s.genre || '').trim();
+                if (g) genreCount[g] = (genreCount[g] || 0) + 1;
+                extractTags(s).forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; });
+            });
+
+            const topTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 3)
+                .map(([value, count]) => ({ type: 'tag', value, count }));
+            const topGenres = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 3)
+                .map(([value, count]) => ({ type: 'genre', value, count }));
+
+            const items = [...topTags, ...topGenres];
+            if (items.length === 0) {
+                container.innerHTML = '<div style="font-size:0.85rem; color:#94a3b8; font-style:italic;">Belum ada cukup karya untuk menyusun rekomendasi.</div>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const isTag = item.type === 'tag';
+                const searchValue = isTag ? `#${item.value}` : item.value;
+                const icon = isTag ? 'fa-hashtag' : 'fa-layer-group';
+                const label = isTag ? `#${item.value}` : `${item.value} (Genre)`;
+                return `
+                    <div class="rec-item" onclick="triggerSearch('${searchValue.replace(/'/g, "\\'")}')">
+                        <span class="rec-label"><i class="fa-solid ${icon}"></i> ${label}</span>
+                        <span class="rec-count">${item.count} karya</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.clearSearchInput = () => {
+            const input = document.getElementById('search-input');
+            input.value = '';
+            toggleClearButton();
+            document.getElementById('default-view').style.display = 'block';
+            document.getElementById('results-view').style.display = 'none';
+            input.focus();
+        };
+
+        function toggleClearButton() {
+            const val = document.getElementById('search-input').value.trim();
+            document.getElementById('btn-clear-search').classList.toggle('show', val.length > 0);
+        }
+
+        document.getElementById('search-input').addEventListener('input', () => {
+            toggleClearButton();
+            const val = document.getElementById('search-input').value.trim();
             clearTimeout(searchTimer);
-            
-            if(val === '') {
+
+            if (val === '') {
                 document.getElementById('default-view').style.display = 'block';
                 document.getElementById('results-view').style.display = 'none';
                 return;
             }
 
-            if(e.key === 'Enter') saveHistory(val);
-            
-            searchTimer = setTimeout(() => { executeSearch(val.toLowerCase()); }, 400); 
+            searchTimer = setTimeout(() => { executeSearch(val.toLowerCase()); }, 400);
+        });
+
+        document.getElementById('search-input').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                const val = e.target.value.trim();
+                if (val) saveHistory(val);
+            }
         });
 
         function executeSearch(queryText) {
             document.getElementById('default-view').style.display = 'none';
             const resView = document.getElementById('results-view');
             resView.style.display = 'block';
-            resView.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Mencari karya...</p></div>';
 
-            setTimeout(() => {
-                const results = allStories.filter(story => {
-                    const safeTitle = (story.title || '').toLowerCase();
-                    const safeGenre = (story.genre || '').toLowerCase();
-                    const safeAuthor = (story.realAuthorName || '').toLowerCase(); 
-                    
-                    // PERBAIKAN: Menangani tagar yang tersimpan dalam bentuk String ATAU Array
-                    let tagsArray = [];
-                    if (story.tags) {
-                        if (Array.isArray(story.tags)) tagsArray = story.tags;
-                        else if (typeof story.tags === 'string') tagsArray = story.tags.split(',').map(t => t.trim());
-                    }
-                    const safeTags = tagsArray.join(' ').toLowerCase();
+            const results = allStories.filter(story => {
+                const safeTitle = (story.title || '').toLowerCase();
+                const safeGenre = (story.genre || '').toLowerCase();
+                const safeAuthor = (story.realAuthorName || '').toLowerCase(); 
+                const tagsArray = extractTags(story);
+                const safeTags = tagsArray.join(' ').toLowerCase();
 
-                    // Logika Filter
-                    if (queryText.startsWith('#')) {
-                        const tQuery = queryText.substring(1).trim();
-                        if(!tQuery) return false;
-                        // Cocokkan jika tag mengandung tulisan yang dicari
-                        return tagsArray.some(t => t.toLowerCase().includes(tQuery));
-                    } else if (queryText.startsWith('@')) {
-                        const aQuery = queryText.substring(1).trim();
-                        if(!aQuery) return false;
-                        const cleanAuthorName = safeAuthor.replace('@', '');
-                        return cleanAuthorName.includes(aQuery);
-                    } else {
-                        return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText) || safeTags.includes(queryText);
-                    }
-                });
-
-                if (results.length === 0) { 
-                    resView.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass-minus"></i><p>Maaf, tidak ada hasil untuk "<b>${queryText}</b>".<br>Coba gunakan kata kunci lain.</p></div>`; 
-                    return; 
+                if (queryText.startsWith('#')) {
+                    const tQuery = queryText.substring(1).trim();
+                    if(!tQuery) return false;
+                    return tagsArray.some(t => t.toLowerCase().includes(tQuery));
+                } else if (queryText.startsWith('@')) {
+                    const aQuery = queryText.substring(1).trim();
+                    if(!aQuery) return false;
+                    const cleanAuthorName = safeAuthor.replace('@', '');
+                    return cleanAuthorName.includes(aQuery);
+                } else {
+                    return safeTitle.includes(queryText) || safeGenre.includes(queryText) || safeAuthor.includes(queryText) || safeTags.includes(queryText);
                 }
+            });
 
-                let html = '<div style="display:flex; flex-direction:column;">';
-                results.forEach(data => {
-                    const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
-                    
-                    // PERBAIKAN: Memastikan tag dirender dengan benar
-                    let tagsArray = [];
-                    if (data.tags) {
-                        if (Array.isArray(data.tags)) tagsArray = data.tags;
-                        else if (typeof data.tags === 'string') tagsArray = data.tags.split(',').map(t => t.trim());
-                    }
-                    let tagsHtml = tagsArray.length > 0 
-                        ? tagsArray.slice(0,3).map(t => `<span style="font-size:0.65rem; color:var(--primary); background:#f1f5f9; padding:2px 8px; border-radius:4px; border: 1px solid #cbd5e1; font-weight:600;">#${t}</span>`).join('') 
-                        : '';
-                    
-                    html += `
-                        <div class="story-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
-                            <div class="story-cover" style="background-image: ${coverBg};"></div>
-                            <div class="story-info">
-                                <h4>${data.title || 'Tanpa Judul'}</h4>
-                                <p><i class="fa-solid fa-at"></i> ${data.realAuthorName}</p>
-                                <div class="story-tags-wrap">
-                                    <span style="font-size:0.7rem; background:var(--gold); padding:2px 8px; border-radius:4px; font-weight:700; color:white;">${data.genre || 'Umum'}</span>
-                                    ${tagsHtml}
-                                </div>
+            if (results.length === 0) { 
+                resView.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass-minus"></i><p>Maaf, tidak ada hasil untuk "<b>${queryText}</b>".<br>Coba gunakan kata kunci lain.</p></div>`; 
+                return; 
+            }
+
+            let html = `<p class="result-count-label">${results.length} hasil ditemukan</p><div style="display:flex; flex-direction:column;">`;
+            results.forEach(data => {
+                const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
+                const tagsArray = extractTags(data);
+                let tagsHtml = tagsArray.length > 0 
+                    ? tagsArray.slice(0,3).map(t => `<span style="font-size:0.65rem; color:var(--primary); background:#f1f5f9; padding:2px 8px; border-radius:4px; border: 1px solid #cbd5e1; font-weight:600;">#${t}</span>`).join('') 
+                    : '';
+                
+                html += `
+                    <div class="story-card" onclick="window.location.href='pratinjau.html?id=${data.id}'">
+                        <div class="story-cover" style="background-image: ${coverBg};"></div>
+                        <div class="story-info">
+                            <h4>${data.title || 'Tanpa Judul'}</h4>
+                            <p><i class="fa-solid fa-at"></i> ${data.realAuthorName}</p>
+                            <div class="story-tags-wrap">
+                                <span style="font-size:0.7rem; background:var(--gold); padding:2px 8px; border-radius:4px; font-weight:700; color:white;">${data.genre || 'Umum'}</span>
+                                ${tagsHtml}
                             </div>
-                        </div>`;
-                });
-                html += '</div>';
-                resView.innerHTML = html;
-            }, 300); 
+                        </div>
+                    </div>`;
+            });
+            html += '</div>';
+            resView.innerHTML = html;
         }
 
-        // INIT APP: Menunggu loadStories selesai, baru mengecek parameter URL
         async function initApp() {
             const urlParams = new URLSearchParams(window.location.search);
             let queryFromUrl = urlParams.get('q');
             
-            // PERBAIKAN SAKTI: Jika URL-nya kepotong jadi search.html?q=#tagar 
-            // Maka q-nya akan kosong, dan hash-nya akan berisi #tagar. Kita gabungkan!
             if (!queryFromUrl && window.location.hash) {
-                queryFromUrl = window.location.hash; // Menangkap #tagar
+                queryFromUrl = window.location.hash;
             } else if (queryFromUrl && window.location.hash) {
                 queryFromUrl = queryFromUrl + window.location.hash; 
             }
-            
-            // Tampilkan loading jika ada pencarian otomatis
-            if(queryFromUrl) {
-                // Decode URI component agar spasi atau karakter aneh (seperti %20) kembali normal
-                queryFromUrl = decodeURIComponent(queryFromUrl);
-                document.getElementById('search-input').value = queryFromUrl;
-                document.getElementById('default-view').style.display = 'none';
-                document.getElementById('results-view').style.display = 'block';
-                document.getElementById('results-view').innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Menyiapkan data...</p></div>';
+            if (queryFromUrl) queryFromUrl = decodeURIComponent(queryFromUrl);
+
+            // 1. Coba render instan dari cache lokal DULU (tanpa nunggu Firebase)
+            const cached = loadCachedStories();
+            if (cached && cached.length > 0) {
+                allStories = cached;
+                renderRecommendations();
+                loadHistory();
+                if (queryFromUrl) {
+                    document.getElementById('search-input').value = queryFromUrl;
+                    toggleClearButton();
+                    executeSearch(queryFromUrl.toLowerCase());
+                    saveHistory(queryFromUrl);
+                }
+            } else {
+                // Belum ada cache sama sekali (kunjungan pertama) -- skeleton di recommend-list
+                // sudah tampil dari HTML, dan kalau ada query dari URL, tampilkan indikator ringan.
+                if (queryFromUrl) {
+                    document.getElementById('search-input').value = queryFromUrl;
+                    toggleClearButton();
+                }
+                loadHistory();
             }
 
-            // Tunggu data ditarik dari Firebase
+            // 2. Selalu ambil data terbaru di belakang layar, lalu perbarui tampilan dengan halus
             await loadStories();
-            loadHistory();
+            renderRecommendations();
 
-            // Jika ada query, jalankan pencarian!
-            if (queryFromUrl) {
-                executeSearch(queryFromUrl.toLowerCase());
-                saveHistory(queryFromUrl);
+            const currentVal = document.getElementById('search-input').value.trim();
+            if (currentVal) {
+                executeSearch(currentVal.toLowerCase());
+                if (!cached) saveHistory(currentVal);
             }
         }
 
