@@ -46,9 +46,9 @@
         /* --- FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-            background: #001f3f;
+            background: #001f3f; height: 60px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             border-bottom: 2px solid var(--danger); /* Aksen merah untuk Laporan */
         }
         .btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
@@ -106,6 +106,11 @@
         }
         .btn-view { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
         .btn-view:hover { background: #3b82f6; color: white; }
+        
+        /* PERBAIKAN: Tombol Bekukan Cerita */
+        .btn-takedown { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-takedown:hover { background: #dc2626; color: white; }
+
         .btn-resolve { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .btn-resolve:hover { background: #16a34a; color: white; }
         .btn-delete { background: white; color: var(--text-gray); border: 1px solid #e2e8f0; flex: 0 0 45px; }
@@ -160,10 +165,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, writeBatch, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
             authDomain: "mading-cf676.firebaseapp.com",
@@ -206,7 +210,6 @@
         // 2. Tarik Data Laporan
         async function loadReports() {
             try {
-                // Asumsi ada koleksi 'reports' tempat user melaporkan cerita/komentar
                 const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
                 const querySnapshot = await getDocs(q);
                 
@@ -220,7 +223,6 @@
 
             } catch (error) {
                 console.error("Gagal memuat laporan:", error);
-                // Matikan loading, tampilkan state kosong jika koleksi belum ada (mencegah error merah)
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderReports(); 
             }
@@ -237,8 +239,6 @@
 
         function renderReports() {
             const container = document.getElementById('report-list');
-            
-            // Filter berdasarkan status
             const filteredReports = allReports.filter(r => (r.status || 'open') === currentTab);
 
             if (filteredReports.length === 0) {
@@ -250,7 +250,6 @@
 
             let html = '';
             filteredReports.forEach(r => {
-                // Tentukan Styling Tipe Laporan
                 let typeClass = 'type-spam'; let typeIcon = 'fa-flag'; let typeLabel = r.type || 'Lainnya';
                 if (r.type === 'plagiasi') { typeClass = 'type-plagiasi'; typeIcon = 'fa-copy'; typeLabel = 'Plagiasi'; }
                 else if (r.type === 'toksik') { typeClass = 'type-toksik'; typeIcon = 'fa-skull-crossbones'; typeLabel = 'Toksik / Kekerasan'; }
@@ -258,15 +257,16 @@
 
                 const dateObj = r.createdAt ? r.createdAt.toDate() : new Date();
                 const dateStr = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
-
-                // Tentukan Target Buka
-                // Jika melaporkan cerita, link ke pratinjau cerita tersebut
                 const targetUrl = r.storyId ? `../pratinjau.html?id=${r.storyId}` : '#';
 
-                // Tombol Aksi (Tandai Selesai muncul jika open, Kembalikan jika resolved)
                 let actionBtnHtml = '';
                 if (currentTab === 'open') {
-                    actionBtnHtml = `<button class="btn-act btn-resolve" onclick="markAsResolved('${r.id}')"><i class="fa-solid fa-check"></i> Tandai Selesai</button>`;
+                    // Jika target adalah cerita, munculkan tombol Bekukan Cerita
+                    const takeDownBtn = r.storyId ? `<button class="btn-act btn-takedown" onclick="takeDownStory('${r.storyId}', '${r.id}')" title="Bekukan Cerita"><i class="fa-solid fa-gavel"></i> Bekukan</button>` : '';
+                    actionBtnHtml = `
+                        ${takeDownBtn}
+                        <button class="btn-act btn-resolve" onclick="markAsResolved('${r.id}')" title="Abaikan / Tandai Selesai"><i class="fa-solid fa-check"></i> Selesai</button>
+                    `;
                 } else {
                     actionBtnHtml = `<button class="btn-act btn-resolve" style="background:#f1f5f9; color:#64748b; border-color:#cbd5e1;" onclick="markAsOpen('${r.id}')"><i class="fa-solid fa-arrow-rotate-left"></i> Batal Selesai</button>`;
                 }
@@ -295,16 +295,62 @@
             container.innerHTML = html;
         }
 
-        // 4. Tindakan: Tandai Selesai / Buka Kembali
+        // 4. TINDAKAN ADMIN: BEKUKAN CERITA (TAKE DOWN)
+        window.takeDownStory = async (storyId, reportId) => {
+            const confirm = await Swal.fire({
+                title: 'Bekukan Cerita Ini?', 
+                html: 'Tindakan ini akan:<br>1. Menarik cerita dari pencarian & beranda.<br>2. Mengubah semua bab menjadi draf.<br>3. <b>Mengunci akses penulis</b> untuk mengedit atau mempublikasikan ulang karya ini.', 
+                icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Bekukan (Take Down)'
+            });
+
+            if (confirm.isConfirmed) {
+                Swal.fire({title: 'Mengeksekusi Hukuman...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    const batch = writeBatch(db);
+                    
+                    // 1. Kunci Cerita di tabel utama
+                    batch.update(doc(db, "stories", storyId), { 
+                        isBanned: true, 
+                        status: 'draft',
+                        updatedAt: serverTimestamp() 
+                    });
+
+                    // 2. Hapus salinan publik agar tidak terindeks lagi
+                    batch.delete(doc(db, "published_stories", storyId));
+
+                    // 3. Tarik semua bab yang sudah rilis ke status draf
+                    const qChaps = query(collection(db, "stories", storyId, "chapters"), where("status", "==", "published"));
+                    const snapChaps = await getDocs(qChaps);
+                    snapChaps.forEach(c => {
+                        batch.update(doc(db, "stories", storyId, "chapters", c.id), { status: 'draft', updatedAt: serverTimestamp() });
+                    });
+
+                    // 4. Tandai laporan ini sebagai Selesai
+                    batch.update(doc(db, "reports", reportId), { status: 'resolved', resolvedAt: serverTimestamp() });
+
+                    await batch.commit();
+
+                    // Update UI Lokal
+                    const report = allReports.find(r => r.id === reportId);
+                    if (report) report.status = 'resolved';
+                    
+                    Swal.fire({toast:true, position:'top', icon:'success', title:'Cerita Berhasil Dibekukan', showConfirmButton:false, timer:2000});
+                    renderReports();
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Error', 'Sistem gagal mengeksekusi hukuman.', 'error');
+                }
+            }
+        };
+
+        // 5. Tindakan: Tandai Laporan Selesai / Buka Kembali
         window.markAsResolved = async (id) => {
             Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
             try {
                 await updateDoc(doc(db, "reports", id), { status: 'resolved', resolvedAt: serverTimestamp() });
-                
-                // Update local array agar tidak perlu fetch ulang seluruh data
                 const report = allReports.find(r => r.id === id);
                 if (report) report.status = 'resolved';
-                
                 Swal.close();
                 renderReports();
             } catch (e) {
@@ -316,10 +362,8 @@
             Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
             try {
                 await updateDoc(doc(db, "reports", id), { status: 'open' });
-                
                 const report = allReports.find(r => r.id === id);
                 if (report) report.status = 'open';
-                
                 Swal.close();
                 renderReports();
             } catch (e) {
@@ -327,12 +371,10 @@
             }
         };
 
-        // 5. Tindakan: Hapus Laporan Permanen
+        // 6. Tindakan: Hapus Laporan Permanen
         window.deleteReport = async (id) => {
             const confirm = await Swal.fire({
-                title: 'Hapus Laporan?', 
-                text: 'Laporan ini akan dihapus permanen dari sistem.', 
-                icon: 'warning',
+                title: 'Hapus Laporan?', text: 'Laporan ini akan dihapus permanen dari sistem.', icon: 'warning',
                 showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus'
             });
 
@@ -340,10 +382,7 @@
                 Swal.fire({title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
                 try {
                     await deleteDoc(doc(db, "reports", id));
-                    
-                    // Hapus dari array lokal
                     allReports = allReports.filter(r => r.id !== id);
-                    
                     Swal.fire({toast:true, position:'top', icon:'success', title:'Laporan Dihapus', showConfirmButton:false, timer:1500});
                     renderReports();
                 } catch (e) {
