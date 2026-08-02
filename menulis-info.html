@@ -35,9 +35,20 @@
         .save-indicator.saving { color: #f59e0b; background: rgba(245, 158, 11, 0.15); opacity: 1; }
         .save-indicator.saved { color: #10b981; background: rgba(16, 185, 129, 0.15); opacity: 1; }
         .btn-save-manual { background: var(--gold); color: white; border: none; padding: 6px 15px; border-radius: 50px; font-family: 'Poppins'; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(212,175,55,0.3); flex-shrink: 0; }
-        .btn-save-manual:hover { background: #b45309; transform: translateY(-1px); }
+        .btn-save-manual:hover:not(:disabled) { background: #b45309; transform: translateY(-1px); }
+        .btn-save-manual:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
         .content-area { padding: 20px; flex: 1; }
+
+        /* --- BANNED NOTICE BOX --- */
+        .banned-alert-box {
+            background: #fef2f2; border: 1.5px solid #fecaca; padding: 15px; border-radius: 12px; margin-bottom: 25px;
+            display: none; align-items: flex-start; gap: 10px; animation: fadeIn 0.3s ease;
+        }
+        .banned-alert-box i { color: #dc2626; font-size: 1.5rem; margin-top: 2px; }
+        .banned-alert-box div { flex: 1; }
+        .banned-alert-box h4 { margin: 0 0 5px 0; color: #991b1b; font-size: 0.95rem; }
+        .banned-alert-box p { margin: 0; font-size: 0.8rem; color: #b91c1c; line-height: 1.4; }
 
         /* --- HEADER: SAMPUL DI KIRI, JUDUL DI SAMPINGNYA --- */
         .story-header-row { display: flex; gap: 14px; align-items: stretch; margin-bottom: 25px; }
@@ -45,8 +56,9 @@
             width: 100px; height: 145px; flex-shrink: 0;
             background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; position: relative; overflow: hidden;
+            cursor: pointer; position: relative; overflow: hidden; transition: 0.2s;
         }
+        .cover-uploader.disabled { cursor: not-allowed; opacity: 0.7; }
         .cover-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: 2; display: none; }
         .cover-uploader i { font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px; z-index: 1;}
         .cover-uploader span { font-size: 0.68rem; color: #64748b; font-weight: 600; text-align: center; z-index: 1; padding: 0 6px;}
@@ -59,18 +71,20 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
         .form-input, .form-select, textarea { width: 100%; padding: 14px 15px; border: 1px solid #cbd5e1; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 0.95rem; background: #f8fafc; color: var(--text-dark); transition: 0.3s; outline: none; }
-        .form-input:focus, .form-select:focus, textarea:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
+        .form-input:focus:not(:disabled), textarea:focus:not(:disabled) { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
+        .form-input:disabled, textarea:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; border-color: #cbd5e1; }
         textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
 
-        /* --- TOMBOL PEMILIH GENRE (buka popup SweetAlert2) --- */
+        /* --- TOMBOL PEMILIH GENRE --- */
         .genre-select-btn {
             width: 100%; padding: 14px 15px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8fafc;
             font-family: 'Poppins'; font-size: 0.95rem; color: var(--text-dark); display: flex;
             justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s;
         }
-        .genre-select-btn:hover { border-color: var(--primary); background: white; }
+        .genre-select-btn:hover:not(:disabled) { border-color: var(--primary); background: white; }
+        .genre-select-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; border-color: #cbd5e1; }
         .genre-select-label.placeholder { color: #94a3b8; }
-        /* Grid genre di dalam popup SweetAlert2 */
+        
         .genre-picker-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; padding: 4px; }
         .genre-pick-btn { padding: 11px 8px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: white; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; color: var(--text-dark); cursor: pointer; transition: 0.2s; text-align: center; }
         .genre-pick-btn:hover { border-color: var(--primary); }
@@ -81,17 +95,22 @@
 
         /* TAGS INPUT UI */
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8fafc; min-height: 52px; align-items: center; transition: 0.3s;}
-        .tags-container:focus-within { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
+        .tags-container:focus-within:not(.disabled) { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
+        .tags-container.disabled { background: #e2e8f0; cursor: not-allowed; }
         .tag-chip { background: var(--primary); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
+        .tag-chip.disabled { background: #94a3b8; }
         .tag-chip i { cursor: pointer; font-size: 0.9rem; }
+        .tag-chip.disabled i { cursor: not-allowed; }
         .tag-input { border: none; outline: none; background: transparent; flex: 1; min-width: 120px; font-family: 'Poppins'; font-size: 0.9rem; color: var(--text-dark); }
+        .tag-input:disabled { background: transparent; }
         .field-hint { font-size: 0.72rem; color: #94a3b8; margin: 6px 2px 0 2px; }
 
         /* --- HAK CIPTA (pilihan kartu radio) --- */
         .copyright-list { display: flex; flex-direction: column; gap: 10px; }
         .copyright-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; transition: 0.2s; background: #f8fafc; }
-        .copyright-card:hover { border-color: var(--primary); }
+        .copyright-card:hover:not(.disabled) { border-color: var(--primary); }
         .copyright-card.selected { border-color: var(--primary); background: #eff6ff; }
+        .copyright-card.disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; }
         .copyright-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #cbd5e1; flex-shrink: 0; margin-top: 2px; position: relative; background: white; }
         .copyright-card.selected .copyright-radio { border-color: var(--primary); }
         .copyright-card.selected .copyright-radio::after { content: ''; position: absolute; inset: 3px; background: var(--primary); border-radius: 50%; }
@@ -102,7 +121,8 @@
         .progress-status-group { display: flex; gap: 8px; }
         .status-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1.5px solid #cbd5e1; background: #f8fafc; font-family: 'Poppins'; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-gray); transition: 0.2s; }
         .status-btn i { font-size: 1rem; }
-        .status-btn:hover { border-color: var(--primary); }
+        .status-btn:hover:not(:disabled) { border-color: var(--primary); }
+        .status-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; }
         .status-btn.active[data-value="ongoing"] { border-color: #0ea5e9; background: #eff6ff; color: #0ea5e9; }
         .status-btn.active[data-value="completed"] { border-color: #10b981; background: #ecfdf5; color: #059669; }
         .status-btn.active[data-value="hiatus"] { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
@@ -153,7 +173,7 @@
             </div>
             <div class="nav-right-actions">
                 <div class="save-indicator" id="save-indicator"><i class="fa-solid fa-check"></i></div>
-                <button class="btn-save-manual" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+                <button class="btn-save-manual" id="btn-save-top" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
             </div>
         </header>
 
@@ -182,8 +202,18 @@
 
             <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
             <div id="real-content" style="display: none;">
+                
+                <!-- BANNED NOTICE (Tampil hanya jika cerita dibekukan) -->
+                <div class="banned-alert-box" id="banned-alert-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div>
+                        <h4>Cerita Dibekukan</h4>
+                        <p>Karya ini telah diblokir oleh Admin karena melanggar pedoman komunitas. Anda tidak dapat lagi mengedit atau menerbitkan tulisan ini.</p>
+                    </div>
+                </div>
+
                 <div class="story-header-row">
-                    <div class="cover-uploader" onclick="document.getElementById('cover-file').click()">
+                    <div class="cover-uploader" id="cover-uploader" onclick="document.getElementById('cover-file').click()">
                         <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
                         <div class="cover-preview" id="cover-preview"></div>
                         <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
@@ -200,7 +230,7 @@
 
                 <div class="form-group">
                     <label>Genre Utama</label>
-                    <button type="button" class="genre-select-btn" onclick="openGenrePicker()">
+                    <button type="button" class="genre-select-btn" id="btn-genre" onclick="openGenrePicker()">
                         <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
@@ -265,7 +295,7 @@
                 <div class="chapter-section">
                     <div class="chapter-header"><h3>Daftar Bab</h3></div>
                     <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
-                    <button class="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
+                    <button class="btn-add-chapter" id="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
                 </div>
             </div> <!-- End Real Content -->
 
@@ -292,6 +322,7 @@
         let selectedGenre = '';
         let selectedCopyright = '';
         let progressStatus = 'ongoing';
+        let isStoryBanned = false; // Flag status banned
 
         if (!storyId) window.location.href = 'menulis.html';
 
@@ -311,6 +342,42 @@
             }
         });
 
+        // FUNGSI LOCK UI JIKA BANNED
+        function lockInterfaceIfBanned() {
+            if (!isStoryBanned) return;
+            
+            // Tampilkan Alert Banned
+            document.getElementById('banned-alert-box').style.display = 'flex';
+            
+            // Matikan Tombol Simpan
+            const btnSave = document.getElementById('btn-save-top');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fa-solid fa-lock"></i> Terkunci';
+
+            // Matikan Input Teks
+            document.getElementById('story-title').disabled = true;
+            document.getElementById('story-desc').disabled = true;
+            document.getElementById('tag-input').disabled = true;
+
+            // Matikan Tombol Pilihan
+            document.getElementById('btn-genre').disabled = true;
+            document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = true);
+            
+            // Matikan Area Copyright
+            document.querySelectorAll('.copyright-card').forEach(card => card.classList.add('disabled'));
+
+            // Matikan Upload Sampul
+            const coverArea = document.getElementById('cover-uploader');
+            coverArea.classList.add('disabled');
+            coverArea.onclick = null; // Copot fungsi klik
+
+            // Sembunyikan Tombol Tambah Bab
+            document.getElementById('btn-add-chapter').style.display = 'none';
+
+            // Ubah tampilan div tagar
+            document.getElementById('tags-container').classList.add('disabled');
+        }
+
         async function loadStoryData() {
             try {
                 const snap = await getDoc(doc(db, "stories", storyId));
@@ -322,6 +389,11 @@
                 const data = snap.data();
                 if (data.authorId !== currentUser.uid) {
                     Swal.fire('Akses Ditolak', 'Bukan cerita Anda.', 'error').then(()=>window.location.href = 'menulis.html'); return;
+                }
+
+                // Cek status banned
+                if (data.isBanned === true || data.isDeleted === true) {
+                    isStoryBanned = true;
                 }
 
                 document.getElementById('story-title').value = data.title || '';
@@ -352,6 +424,9 @@
                 progressStatus = data.progressStatus || 'ongoing';
                 document.querySelectorAll('.status-btn').forEach(el => el.classList.toggle('active', el.dataset.value === progressStatus));
 
+                // Eksekusi penguncian UI jika dibanned
+                lockInterfaceIfBanned();
+
                 // Hilangkan skeleton dan tampilkan konten
                 document.getElementById('skeleton-container').style.display = 'none';
                 document.getElementById('real-content').style.display = 'block';
@@ -364,6 +439,7 @@
 
         // --- FUNGSI UPDATE SINKRONISASI KE TABEL PUBLIK (Mencegah Bug Tagar) ---
         async function syncToPublishedStories(updatedData) {
+            if (isStoryBanned) return; // Jangan biarkan cerita yg dibanned menyelinap ke publik
             try {
                 const pubRef = doc(db, "published_stories", storyId);
                 const pubSnap = await getDoc(pubRef);
@@ -378,6 +454,8 @@
         }
 
         async function saveFieldImmediate(fields) {
+            if (isStoryBanned) return; // Tolak simpan jika dibanned
+            
             const indicator = document.getElementById('save-indicator');
             indicator.className = 'save-indicator saving';
             indicator.style.color = '';
@@ -401,6 +479,7 @@
         }
 
         window.openGenrePicker = () => {
+            if (isStoryBanned) return;
             const genres = [
                 'Romansa', 'Fantasi', 'Fiksi Ilmiah', 'Misteri', 'Thriller', 'Horor', 'Aksi', 'Petualangan',
                 'Drama', 'Komedi', 'Slice of Life', 'Sejarah', 'Religi & Spiritual', 'Fiksi Remaja',
@@ -422,6 +501,7 @@
         };
 
         window.selectGenreOption = (genre) => {
+            if (isStoryBanned) return;
             selectedGenre = genre;
             const label = document.getElementById('genre-select-label');
             label.innerText = genre;
@@ -441,12 +521,14 @@
         };
 
         window.selectCopyright = (key) => {
+            if (isStoryBanned) return;
             selectedCopyright = key;
             document.querySelectorAll('.copyright-card').forEach(el => el.classList.toggle('selected', el.dataset.value === key));
             saveFieldImmediate({ copyrightStatement: key });
         };
 
         window.selectProgressStatus = (val) => {
+            if (isStoryBanned) return;
             progressStatus = val;
             document.querySelectorAll('.status-btn').forEach(el => el.classList.toggle('active', el.dataset.value === val));
             saveFieldImmediate({ progressStatus: val });
@@ -454,6 +536,7 @@
 
         const tagInput = document.getElementById('tag-input');
         tagInput.addEventListener('keyup', (e) => {
+            if (isStoryBanned) return;
             if (e.key === 'Enter' || e.key === ',') {
                 let tag = e.target.value.replace(',', '').replace('#', '').trim().toLowerCase();
                 if (tag && !storyTags.includes(tag) && storyTags.length < 5) {
@@ -473,18 +556,21 @@
             
             storyTags.forEach((tag, index) => {
                 const chip = document.createElement('div');
-                chip.className = 'tag-chip';
-                chip.innerHTML = `#${tag} <i class="fa-solid fa-xmark" onclick="removeTag(${index})"></i>`;
+                chip.className = `tag-chip ${isStoryBanned ? 'disabled' : ''}`;
+                const xIcon = isStoryBanned ? `<i class="fa-solid fa-lock"></i>` : `<i class="fa-solid fa-xmark" onclick="removeTag(${index})"></i>`;
+                chip.innerHTML = `#${tag} ${xIcon}`;
                 container.insertBefore(chip, tagInput);
             });
         }
         window.removeTag = (index) => {
+            if (isStoryBanned) return;
             storyTags.splice(index, 1);
             renderTags();
             saveFieldImmediate({ tags: storyTags });
         };
 
         window.triggerAutoSave = () => {
+            if (isStoryBanned) return;
             const indicator = document.getElementById('save-indicator');
             indicator.className = 'save-indicator saving'; indicator.style.color = ''; indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             clearTimeout(saveTimeout);
@@ -492,6 +578,7 @@
         };
 
         async function saveToFirestore() {
+            if (isStoryBanned) return;
             const indicator = document.getElementById('save-indicator');
             
             // Cek jika pengguna mengetik tagar tapi lupa menekan Enter sebelum klik Simpan
@@ -532,6 +619,7 @@
         }
 
         window.manualSave = async () => {
+            if (isStoryBanned) return;
             clearTimeout(saveTimeout);
             Swal.fire({ title: 'Menyimpan Info Cerita...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
@@ -543,6 +631,7 @@
         };
 
         window.handleCoverUpload = (event) => {
+            if (isStoryBanned) return;
             const file = event.target.files[0];
             if (!file) return;
             if (!file.type.startsWith('image/')) {
@@ -597,12 +686,23 @@
                 let html = ''; let babCount = 1;
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
-                    const unpublishBtn = data.status === 'published' 
-                        ? `<button class="action-btn warning" onclick="unpublishChapter('${docSnap.id}', event)" title="Tarik ke Draf"><i class="fa-solid fa-eye-slash"></i></button>`
-                        : '';
+                    
+                    // Jika dibanned, hilangkan semua opsi publish/unpublish/hapus
+                    const actionButtons = isStoryBanned 
+                        ? `<button class="action-btn warning" disabled style="opacity:0.5; cursor:not-allowed;" title="Akses Dikunci"><i class="fa-solid fa-lock"></i></button>`
+                        : `
+                          ${data.status === 'published' ? `<button class="action-btn warning" onclick="unpublishChapter('${docSnap.id}', event)" title="Tarik ke Draf"><i class="fa-solid fa-eye-slash"></i></button>` : ''}
+                          <button class="action-btn danger" onclick="deleteChapter('${docSnap.id}', event)" title="Hapus Bab"><i class="fa-solid fa-trash-can"></i></button>
+                        `;
+
+                    // Jika dibanned, klik bab hanya bisa melihat saja (read-only), tidak bisa mengedit
+                    const clickAction = isStoryBanned 
+                        ? `onclick="Swal.fire('Akses Terkunci', 'Anda hanya bisa membaca karya yang dibekukan, tidak dapat mengubah isinya.', 'info').then(() => window.location.href='pratinjau.html?id=${storyId}')"`
+                        : `onclick="window.location.href='menulis-editor.html?storyId=${storyId}&chapterId=${docSnap.id}'"`;
+
                     html += `
                         <div class="chapter-card">
-                            <div class="chapter-info" onclick="window.location.href='menulis-editor.html?storyId=${storyId}&chapterId=${docSnap.id}'">
+                            <div class="chapter-info" ${clickAction}>
                                 <h4>Bab ${babCount}: ${data.title || 'Tanpa Judul'}</h4>
                                 <p>
                                     <span class="chapter-status ${data.status === 'published' ? 'status-published' : 'status-draft'}">${data.status === 'published' ? 'Rilis' : 'Draf'}</span>
@@ -610,8 +710,7 @@
                                 </p>
                             </div>
                             <div class="chapter-actions">
-                                ${unpublishBtn}
-                                <button class="action-btn danger" onclick="deleteChapter('${docSnap.id}', event)" title="Hapus Bab"><i class="fa-solid fa-trash-can"></i></button>
+                                ${actionButtons}
                             </div>
                         </div>
                     `;
@@ -624,9 +723,9 @@
         }
 
         window.createNewChapter = async () => {
+            if (isStoryBanned) return;
             if (!document.getElementById('story-title').value.trim()) { Swal.fire('Judul Kosong', 'Isi Judul Cerita dahulu sebelum menulis naskah.', 'warning'); return; }
             
-            // Tampilkan kembali skeleton loader manual saat proses buat bab
             document.getElementById('real-content').style.display = 'none';
             document.getElementById('skeleton-container').style.display = 'block';
 
@@ -645,6 +744,7 @@
         };
 
         window.deleteChapter = async (chapId, event) => {
+            if (isStoryBanned) return;
             event.stopPropagation();
             const konfirmasi = await Swal.fire({
                 title: 'Hapus Bab Ini?', text: 'Bab yang sudah dihapus tidak dapat dikembalikan lagi!',
@@ -664,6 +764,7 @@
         };
 
         window.unpublishChapter = async (chapId, event) => {
+            if (isStoryBanned) return;
             event.stopPropagation();
             const konfirmasi = await Swal.fire({
                 title: 'Batalkan Publikasi?', text: 'Bab ini akan diubah statusnya menjadi draf dan tidak akan bisa dibaca lagi oleh publik.',
