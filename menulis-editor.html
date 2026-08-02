@@ -166,6 +166,8 @@
 
             <!-- MENU DROPDOWN -->
             <div class="dropdown-menu" id="dropdown-menu">
+                <!-- PERBAIKAN: Tambah Tombol Jadwalkan Rilis -->
+                <button class="dropdown-item" onclick="openScheduleModal()"><i class="fa-solid fa-calendar-check" style="color: #8b5cf6;"></i> Jadwalkan Rilis</button>
                 <button class="dropdown-item" onclick="forceSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan Pratinjau</button>
                 <button class="dropdown-item" onclick="viewRevisions()"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Revisi</button>
                 <button class="dropdown-item danger" onclick="deleteChapter()"><i class="fa-solid fa-trash-can"></i> Hapus Bab Ini</button>
@@ -187,7 +189,8 @@
             </div>
 
             <!-- AREA MENGETIK NASKAH -->
-            <div id="editor" class="rich-editor" contenteditable="true" placeholder="Tuliskan naskahmu di sini..." oninput="handleEditorInput()"></div>
+            <!-- PERBAIKAN: Menambahkan listener `onpaste` untuk membersihkan format teks yang disalin dari luar -->
+            <div id="editor" class="rich-editor" contenteditable="true" placeholder="Tuliskan naskahmu di sini..." oninput="handleEditorInput()" onpaste="handlePaste(event)"></div>
 
         </div>
 
@@ -207,7 +210,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -230,7 +233,7 @@
 
         let currentUser = null;
         let saveTimeout;
-        let isPublished = false;
+        let currentStatus = 'draft';
 
         if (!storyId || !chapterId) {
             window.location.href = 'menulis.html';
@@ -259,11 +262,16 @@
                     const editor = document.getElementById('editor');
                     editor.innerHTML = data.content || '';
                     
-                    isPublished = (data.status === 'published');
-                    if (isPublished) {
-                        const btnPub = document.getElementById('btn-publish');
+                    currentStatus = data.status || 'draft';
+                    const btnPub = document.getElementById('btn-publish');
+
+                    // Set Indikator Tombol berdasarkan status
+                    if (currentStatus === 'published') {
                         btnPub.innerText = "Telah Rilis";
-                        btnPub.style.background = "#10b981"; // Warna hijau
+                        btnPub.style.background = "#10b981"; // Hijau
+                    } else if (currentStatus === 'scheduled') {
+                        btnPub.innerHTML = `<i class="fa-regular fa-clock"></i> Terjadwal`;
+                        btnPub.style.background = "#8b5cf6"; // Ungu
                     }
 
                     checkEditorEmpty();
@@ -278,6 +286,18 @@
                 Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
             }
         }
+
+        // --- FUNGSI MENCEGAH PASTE FORMAT BERANTAKAN ---
+        window.handlePaste = (e) => {
+            e.preventDefault();
+            // Ambil teks murni
+            let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            
+            // Masukkan ke dalam editor dan ubah \n (enter) menjadi paragraf/br html yang standar
+            // agar sesuai dengan Lora font dan spacing di editor ini
+            document.execCommand('insertText', false, text);
+            triggerAutoSave();
+        };
 
         // 2. Editor Formatting & Utils
         window.formatText = (command) => {
@@ -483,7 +503,80 @@
             }
         };
 
-        // 5. Publikasi Bab & Sync ke Koleksi Publik
+        // --- FUNGSI JADWALKAN RILIS ---
+        window.openScheduleModal = () => {
+            document.getElementById('dropdown-menu').classList.remove('active');
+            
+            const title = document.getElementById('chapter-title').value.trim();
+            if (!title) {
+                Swal.fire('Judul Kosong', 'Harap beri judul bab sebelum menjadwalkan rilis.', 'warning');
+                return;
+            }
+
+            // Hitung Waktu Minimal (10 Menit dari Sekarang)
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 10);
+            
+            // Format waktu menjadi YYYY-MM-DDThh:mm untuk input html datetime-local
+            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+            const minDateTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+
+            Swal.fire({
+                title: 'Atur Jadwal Rilis',
+                html: `
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Bab ini akan terbit secara otomatis sesuai waktu yang Anda atur. Pastikan zona waktu HP/Komputer Anda benar.</p>
+                    <input type="datetime-local" id="swal-schedule-time" class="swal2-input" min="${minDateTime}" style="font-family: 'Poppins';">
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#8b5cf6',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-solid fa-clock"></i> Pasang Jadwal',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const timeValue = document.getElementById('swal-schedule-time').value;
+                    if (!timeValue) {
+                        Swal.showValidationMessage('Anda belum memilih waktu rilis!');
+                        return false;
+                    }
+                    
+                    const selectedDate = new Date(timeValue);
+                    if (selectedDate <= new Date()) {
+                        Swal.showValidationMessage('Waktu tidak boleh mundur ke belakang.');
+                        return false;
+                    }
+                    return selectedDate;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Menyimpan Jadwal...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const targetDate = result.value;
+                        const chapterRef = doc(db, "stories", storyId, "chapters", chapterId);
+                        
+                        await saveChapterData(false); // Simpan tulisan terbaru
+                        
+                        await updateDoc(chapterRef, {
+                            status: 'scheduled',
+                            publishAt: Timestamp.fromDate(targetDate)
+                        });
+
+                        currentStatus = 'scheduled';
+                        const btnPub = document.getElementById('btn-publish');
+                        btnPub.innerHTML = `<i class="fa-regular fa-clock"></i> Terjadwal`;
+                        btnPub.style.background = "#8b5cf6";
+
+                        const formatTanggal = targetDate.toLocaleString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        Swal.fire('Terjadwal!', `Bab akan otomatis rilis pada:<br><b>${formatTanggal}</b>`, 'success');
+
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire('Gagal', 'Terjadi kesalahan sistem saat menyimpan jadwal.', 'error');
+                    }
+                }
+            });
+        };
+
+        // --- FUNGSI RILIS SEKARANG (PUBLIKASI) ---
         window.publishChapter = async () => {
             const title = document.getElementById('chapter-title').value.trim();
             if (!title) {
@@ -493,23 +586,28 @@
 
             const readUrl = `${window.location.origin}/read.html?id=${storyId}`;
 
-            if (isPublished) {
+            // Jika status saat ini sudah Rilis / Jadwal, beritahu penulis
+            if (currentStatus === 'published' || currentStatus === 'scheduled') {
+                let msg = currentStatus === 'published' ? 'Perubahan naskah terbaru telah otomatis diperbarui ke pembaca.' : 'Bab ini sedang dalam antrean jadwal rilis. Ingin membatalkan jadwal dan merilisnya sekarang?';
+                
                 Swal.fire({
-                    title: 'Bab Sudah Rilis',
+                    title: currentStatus === 'published' ? 'Bab Telah Rilis' : 'Ubah Jadwal Rilis?',
                     html: `
-                        <p style="font-size:0.9rem; color:#64748b;">Perubahan naskah terbaru telah otomatis diperbarui ke pembaca.</p>
-                        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0;">${readUrl}</div>
+                        <p style="font-size:0.9rem; color:#64748b;">${msg}</p>
+                        ${currentStatus === 'published' ? `<div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0;">${readUrl}</div>` : ''}
                     `,
-                    icon: 'success',
+                    icon: currentStatus === 'published' ? 'success' : 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#003366',
+                    confirmButtonColor: '#10b981',
                     cancelButtonColor: '#64748b',
-                    confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link Bab',
+                    confirmButtonText: currentStatus === 'published' ? '<i class="fa-solid fa-copy"></i> Salin Link Bab' : 'Ya, Rilis Sekarang',
                     cancelButtonText: 'Tutup'
-                }).then((res) => {
-                    if (res.isConfirmed) {
+                }).then(async (res) => {
+                    if (res.isConfirmed && currentStatus === 'published') {
                         navigator.clipboard.writeText(readUrl);
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link bab berhasil disalin!', showConfirmButton: false, timer: 1500 });
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link disalin!', showConfirmButton: false, timer: 1500 });
+                    } else if (res.isConfirmed && currentStatus === 'scheduled') {
+                        executePublishNow(readUrl);
                     }
                 });
                 return;
@@ -526,86 +624,86 @@
             });
 
             if (konfirmasi.isConfirmed) {
-                Swal.fire({ title: 'Memproses Publikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                
-                try {
-                    await saveChapterData(false);
-
-                    // A. Update Status Bab
-                    await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
-                        status: 'published',
-                        publishedAt: serverTimestamp()
-                    });
-
-                    // B. Update Status Cerita Utama di draf
-                    const storyRef = doc(db, "stories", storyId);
-                    const storySnap = await getDoc(storyRef);
-                    let storyMaster = storySnap.exists() ? storySnap.data() : {};
-
-                    await updateDoc(storyRef, { 
-                        status: 'published', 
-                        publishedAt: serverTimestamp(),
-                        updatedAt: serverTimestamp() 
-                    });
-
-                    // C. SINKRONISASI KE KOLEKSI PUBLIK (published_stories)
-                    // Ini agar cerita muncul di Beranda (index.html) & Genre
-                    const pubStoryRef = doc(db, "published_stories", storyId);
-                    const pubSnap = await getDoc(pubStoryRef);
-                    const existingViews = pubSnap.exists() ? (pubSnap.data().views || 0) : 0;
-                    const existingRating = pubSnap.exists() ? (pubSnap.data().rating || '5.0') : '5.0';
-
-                    await setDoc(pubStoryRef, {
-                        storyId: storyId,
-                        title: storyMaster.title || title,
-                        genre: storyMaster.genre || 'Umum',
-                        synopsis: storyMaster.description || '',
-                        coverBase64: storyMaster.coverBase64 || null,
-                        authorId: currentUser.uid,
-                        authorName: currentUser.displayName || storyMaster.authorName || 'Penulis Cendekia',
-                        views: existingViews,
-                        rating: existingRating,
-                        status: 'published',
-                        publishedAt: serverTimestamp(),
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-
-                    isPublished = true;
-                    const btnPub = document.getElementById('btn-publish');
-                    btnPub.innerText = "Telah Rilis";
-                    btnPub.style.background = "#10b981";
-
-                    // POP-UP SUKSES LENGKAP DENGAN LINK BAB
-                    Swal.fire({
-                        title: 'Berhasil Dirilis! 🎉',
-                        html: `
-                            <p style="font-size:0.85rem; color:#64748b;">Bab Anda telah resmi diterbitkan ke publik. Pembaca kini dapat menikmati karya Anda.</p>
-                            <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0; font-family:monospace;">${readUrl}</div>
-                        `,
-                        icon: 'success',
-                        showCancelButton: true,
-                        confirmButtonColor: '#003366',
-                        cancelButtonColor: '#10b981',
-                        confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link',
-                        cancelButtonText: '<i class="fa-solid fa-book-open"></i> Baca Sekarang'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            navigator.clipboard.writeText(readUrl);
-                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tautan bab disalin!', showConfirmButton: false, timer: 1500 });
-                        } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            window.location.href = readUrl;
-                        }
-                    });
-
-                } catch (error) {
-                    console.error("Gagal rilis:", error);
-                    Swal.fire('Error', 'Gagal mempublikasikan bab.', 'error');
-                }
+                executePublishNow(readUrl);
             }
         };
 
-        // Ekspor fungsi ke scope window
-        window.restoreRevision = restoreRevision;
+        async function executePublishNow(readUrl) {
+            Swal.fire({ title: 'Memproses Publikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                await saveChapterData(false);
+
+                // A. Update Status Bab
+                await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
+                    status: 'published',
+                    publishAt: null, // Hapus jadwal jika ada
+                    publishedAt: serverTimestamp()
+                });
+
+                // B. Update Status Cerita Utama di draf
+                const storyRef = doc(db, "stories", storyId);
+                const storySnap = await getDoc(storyRef);
+                let storyMaster = storySnap.exists() ? storySnap.data() : {};
+
+                await updateDoc(storyRef, { 
+                    status: 'published', 
+                    publishedAt: serverTimestamp(),
+                    updatedAt: serverTimestamp() 
+                });
+
+                // C. SINKRONISASI KE KOLEKSI PUBLIK (published_stories)
+                const pubStoryRef = doc(db, "published_stories", storyId);
+                const pubSnap = await getDoc(pubStoryRef);
+                const existingViews = pubSnap.exists() ? (pubSnap.data().views || 0) : 0;
+                const existingRating = pubSnap.exists() ? (pubSnap.data().rating || '5.0') : '5.0';
+
+                await setDoc(pubStoryRef, {
+                    storyId: storyId,
+                    title: storyMaster.title || document.getElementById('chapter-title').value,
+                    genre: storyMaster.genre || 'Umum',
+                    synopsis: storyMaster.description || '',
+                    coverBase64: storyMaster.coverBase64 || null,
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || storyMaster.authorName || 'Penulis Cendekia',
+                    views: existingViews,
+                    rating: existingRating,
+                    status: 'published',
+                    publishedAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                currentStatus = 'published';
+                const btnPub = document.getElementById('btn-publish');
+                btnPub.innerText = "Telah Rilis";
+                btnPub.style.background = "#10b981";
+
+                Swal.fire({
+                    title: 'Berhasil Dirilis! 🎉',
+                    html: `
+                        <p style="font-size:0.85rem; color:#64748b;">Bab Anda telah resmi diterbitkan ke publik.</p>
+                        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; word-break:break-all; margin:15px 0; font-family:monospace;">${readUrl}</div>
+                    `,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#003366',
+                    cancelButtonColor: '#10b981',
+                    confirmButtonText: '<i class="fa-solid fa-copy"></i> Salin Link',
+                    cancelButtonText: '<i class="fa-solid fa-book-open"></i> Baca Sekarang'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        navigator.clipboard.writeText(readUrl);
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tautan disalin!', showConfirmButton: false, timer: 1500 });
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href = readUrl;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Gagal rilis:", error);
+                Swal.fire('Error', 'Gagal mempublikasikan bab.', 'error');
+            }
+        }
     </script>
 </body>
 </html>
