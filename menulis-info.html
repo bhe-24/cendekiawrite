@@ -138,9 +138,12 @@
         .chapter-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chapter-info p { margin: 0; font-size: 0.75rem; color: var(--text-gray); display: flex; gap: 10px; align-items: center;}
         
+        /* PEWARNAAN STATUS BAB */
         .chapter-status { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
         .status-draft { background: #f1f5f9; color: #64748b; }
         .status-published { background: #dcfce7; color: #166534; }
+        /* CSS KHUSUS TERJADWAL */
+        .status-scheduled { background: #f3e8ff; color: #6d28d9; }
         
         .chapter-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
         .action-btn { width: 32px; height: 32px; border: none; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
@@ -437,14 +440,13 @@
             }
         }
 
-        // --- FUNGSI UPDATE SINKRONISASI KE TABEL PUBLIK (Mencegah Bug Tagar) ---
+        // --- FUNGSI UPDATE SINKRONISASI KE TABEL PUBLIK ---
         async function syncToPublishedStories(updatedData) {
-            if (isStoryBanned) return; // Jangan biarkan cerita yg dibanned menyelinap ke publik
+            if (isStoryBanned) return; 
             try {
                 const pubRef = doc(db, "published_stories", storyId);
                 const pubSnap = await getDoc(pubRef);
                 
-                // Jika cerita sudah pernah dirilis publik, maka salinan publiknya wajib diperbarui juga
                 if (pubSnap.exists()) {
                     await updateDoc(pubRef, updatedData);
                 }
@@ -461,10 +463,7 @@
             indicator.style.color = '';
             indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             try {
-                // Update tabel Draf
                 await updateDoc(doc(db, "stories", storyId), { ...fields, updatedAt: serverTimestamp() });
-                
-                // Sinkronisasi tabel Publik
                 await syncToPublishedStories(fields);
 
                 indicator.className = 'save-indicator saved';
@@ -581,7 +580,6 @@
             if (isStoryBanned) return;
             const indicator = document.getElementById('save-indicator');
             
-            // Cek jika pengguna mengetik tagar tapi lupa menekan Enter sebelum klik Simpan
             const tInput = document.getElementById('tag-input');
             if (tInput && tInput.value) {
                 let leftoverTag = tInput.value.replace(',', '').replace('#', '').trim().toLowerCase();
@@ -601,10 +599,7 @@
                     updatedAt: serverTimestamp()
                 };
 
-                // Update tabel Draf
                 await updateDoc(doc(db, "stories", storyId), updatedData);
-                
-                // Sinkronisasi ke tabel Publik
                 await syncToPublishedStories(updatedData);
 
                 indicator.className = 'save-indicator saved'; indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
@@ -687,15 +682,41 @@
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
                     
-                    // Jika dibanned, hilangkan semua opsi publish/unpublish/hapus
-                    const actionButtons = isStoryBanned 
-                        ? `<button class="action-btn warning" disabled style="opacity:0.5; cursor:not-allowed;" title="Akses Dikunci"><i class="fa-solid fa-lock"></i></button>`
-                        : `
-                          ${data.status === 'published' ? `<button class="action-btn warning" onclick="unpublishChapter('${docSnap.id}', event)" title="Tarik ke Draf"><i class="fa-solid fa-eye-slash"></i></button>` : ''}
-                          <button class="action-btn danger" onclick="deleteChapter('${docSnap.id}', event)" title="Hapus Bab"><i class="fa-solid fa-trash-can"></i></button>
-                        `;
+                    // PERBAIKAN: Penentuan Status & Warna Badge Terjadwal
+                    let statusClass = 'status-draft';
+                    let statusText = 'Draf';
+                    let scheduleInfo = '';
 
-                    // Jika dibanned, klik bab hanya bisa melihat saja (read-only), tidak bisa mengedit
+                    if (data.status === 'published') {
+                        statusClass = 'status-published';
+                        statusText = 'Rilis';
+                    } else if (data.status === 'scheduled') {
+                        statusClass = 'status-scheduled';
+                        statusText = '<i class="fa-solid fa-clock"></i> Terjadwal';
+                        // Ambil tanggal jadwal jika ada
+                        if (data.publishAt) {
+                            const pubDate = data.publishAt.toDate();
+                            const dateStr = pubDate.toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+                            scheduleInfo = `<div style="font-size: 0.65rem; color: #8b5cf6; margin-top: 4px;">Rilis otomatis: ${dateStr}</div>`;
+                        }
+                    }
+
+                    // Logika Action Buttons
+                    let actionButtons = '';
+                    if (isStoryBanned) {
+                        actionButtons = `<button class="action-btn warning" disabled style="opacity:0.5; cursor:not-allowed;" title="Akses Dikunci"><i class="fa-solid fa-lock"></i></button>`;
+                    } else {
+                        const canUnpublish = (data.status === 'published' || data.status === 'scheduled');
+                        const unpublishBtn = canUnpublish 
+                            ? `<button class="action-btn warning" onclick="unpublishChapter('${docSnap.id}', '${data.status}', event)" title="${data.status === 'scheduled' ? 'Batalkan Jadwal' : 'Tarik ke Draf'}"><i class="fa-solid fa-eye-slash"></i></button>`
+                            : '';
+                        
+                        actionButtons = `
+                            ${unpublishBtn}
+                            <button class="action-btn danger" onclick="deleteChapter('${docSnap.id}', event)" title="Hapus Bab"><i class="fa-solid fa-trash-can"></i></button>
+                        `;
+                    }
+
                     const clickAction = isStoryBanned 
                         ? `onclick="Swal.fire('Akses Terkunci', 'Anda hanya bisa membaca karya yang dibekukan, tidak dapat mengubah isinya.', 'info').then(() => window.location.href='pratinjau.html?id=${storyId}')"`
                         : `onclick="window.location.href='menulis-editor.html?storyId=${storyId}&chapterId=${docSnap.id}'"`;
@@ -704,10 +725,11 @@
                         <div class="chapter-card">
                             <div class="chapter-info" ${clickAction}>
                                 <h4>Bab ${babCount}: ${data.title || 'Tanpa Judul'}</h4>
-                                <p>
-                                    <span class="chapter-status ${data.status === 'published' ? 'status-published' : 'status-draft'}">${data.status === 'published' ? 'Rilis' : 'Draf'}</span>
+                                <p style="margin-bottom: 2px;">
+                                    <span class="chapter-status ${statusClass}">${statusText}</span>
                                     <span><i class="fa-solid fa-file-word"></i> ${data.wordCount || 0} Kata</span>
                                 </p>
+                                ${scheduleInfo}
                             </div>
                             <div class="chapter-actions">
                                 ${actionButtons}
@@ -747,7 +769,7 @@
             if (isStoryBanned) return;
             event.stopPropagation();
             const konfirmasi = await Swal.fire({
-                title: 'Hapus Bab Ini?', text: 'Bab yang sudah dihapus tidak dapat dikembalikan lagi!',
+                title: 'Hapus Bab Ini?', text: 'Naskah yang dihapus tidak dapat dikembalikan lagi!',
                 icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Hapus Permanen'
             });
             if (konfirmasi.isConfirmed) {
@@ -763,19 +785,33 @@
             }
         };
 
-        window.unpublishChapter = async (chapId, event) => {
+        // --- PERBAIKAN: Fungsi Unpublish Diperluas Untuk Membatalkan Jadwal ---
+        window.unpublishChapter = async (chapId, currentStatus, event) => {
             if (isStoryBanned) return;
             event.stopPropagation();
+
+            const isScheduled = currentStatus === 'scheduled';
+            const titleText = isScheduled ? 'Batalkan Jadwal Rilis?' : 'Batalkan Publikasi?';
+            const msgText = isScheduled 
+                ? 'Bab ini akan batal dirilis otomatis dan dikembalikan ke status draf.' 
+                : 'Bab ini akan diubah statusnya menjadi draf dan tidak akan bisa dibaca lagi oleh publik.';
+
             const konfirmasi = await Swal.fire({
-                title: 'Batalkan Publikasi?', text: 'Bab ini akan diubah statusnya menjadi draf dan tidak akan bisa dibaca lagi oleh publik.',
+                title: titleText, 
+                text: msgText,
                 icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Tarik ke Draf'
             });
+
             if (konfirmasi.isConfirmed) {
                 Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    await updateDoc(doc(db, "stories", storyId, "chapters", chapId), { status: 'draft', updatedAt: serverTimestamp() });
+                    await updateDoc(doc(db, "stories", storyId, "chapters", chapId), { 
+                        status: 'draft', 
+                        publishAt: null, // Hapus jadwal jika ada
+                        updatedAt: serverTimestamp() 
+                    });
                     Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Bab dikembalikan ke Draf', showConfirmButton: false, timer: 1500 });
-                } catch(e) { Swal.fire('Error', 'Gagal membatalkan publikasi bab.', 'error'); }
+                } catch(e) { Swal.fire('Error', 'Gagal mengubah status bab.', 'error'); }
             }
         };
     </script>
