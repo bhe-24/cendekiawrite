@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; 
+            padding-top: 60px; /* SINKRONISASI TINGGI NAVBAR */
             min-height: 100vh;
             display: flex; flex-direction: column;
         }
@@ -53,12 +53,12 @@
 
         /* --- 3. FIXED NAVBAR --- */
         .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--gold);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         .btn-back {
@@ -73,8 +73,8 @@
 
         /* --- 4. TABS NAVIGATION --- */
         .tab-container {
-            display: flex; background: white; padding: 15px 20px 0 20px;
-            border-bottom: 1px solid #e2e8f0; position: sticky; top: 52px; z-index: 99;
+            display: flex; background: white; padding: 10px 20px 0 20px;
+            border-bottom: 1px solid #e2e8f0; position: sticky; top: 60px; z-index: 99;
         }
         .tab-btn {
             flex: 1; text-align: center; padding: 12px 0;
@@ -98,7 +98,7 @@
         .library-card {
             display: flex; gap: 12px; background: white; padding: 15px;
             border-radius: 16px; border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; position: relative;
         }
         .library-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
 
@@ -113,7 +113,7 @@
         }
         .story-info h3 {
             font-size: 1.05rem; font-weight: 700; color: var(--primary);
-            margin: 0 0 5px 0; line-height: 1.2;
+            margin: 0 0 5px 0; line-height: 1.2; padding-right: 25px; /* Spasi untuk tombol lapor */
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         .story-info .author {
@@ -140,6 +140,14 @@
         .btn-restore:hover { background: #059669; }
         .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
         .btn-delete:hover { background: #fecaca; }
+
+        /* Tombol Lapor di pojok kanan atas kartu */
+        .btn-report-card {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; color: #cbd5e1; font-size: 1rem;
+            cursor: pointer; transition: 0.2s; padding: 0;
+        }
+        .btn-report-card:hover { color: #dc2626; }
 
         /* Info Box Arsip */
         .info-box {
@@ -235,7 +243,7 @@
 
         let currentUserUid = null;
         let libraryItems = [];
-        let authorCache = {}; // Untuk mempercepat sistem jika ada penulis yang sama
+        let authorCache = {}; 
         let storyCache = {}; 
 
         // 1. Cek Status Login
@@ -270,10 +278,9 @@
             }
         };
 
-        // 3. Ambil Data Pustaka User (TERMASUK MELACAK NAMA ASLI PENULIS)
+        // 3. Ambil Data Pustaka User & PENGECEKAN KEBERSIHAN KONTEN (SILENT DELETION)
         async function fetchLibrary() {
             try {
-                // Kita ambil tanpa orderBy untuk mencegah error "Missing Index" di database lawas
                 const q = query(collection(db, "users", currentUserUid, "library"));
                 const snap = await getDocs(q);
                 
@@ -282,7 +289,6 @@
                     rawItems.push({ docId: docSnap.id, ...docSnap.data() });
                 });
 
-                // Mengurutkan buku berdasarkan yang terbaru ditambahkan (secara lokal/aman)
                 rawItems.sort((a, b) => {
                     let timeA = a.addedAt ? a.addedAt.toMillis() : 0;
                     let timeB = b.addedAt ? b.addedAt.toMillis() : 0;
@@ -290,24 +296,43 @@
                 });
 
                 libraryItems = [];
+                const nowMs = Date.now();
+                const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
-                // Pengecekan silang ke data cerita untuk mendapatkan nama asli penulis
+                // Loop cek silang ke database utama
                 for (let i = 0; i < rawItems.length; i++) {
                     let item = rawItems[i];
                     let realAuthorName = 'Anonim';
+                    let shouldBeSilentlyDeleted = false;
 
-                    if (item.storyId) {
-                        // Cari detail ceritanya
+                    // A. Cek Umur Tidak Dibaca (> 60 Hari)
+                    if (item.lastReadAt) {
+                        const lastReadMs = item.lastReadAt.toMillis();
+                        if (nowMs - lastReadMs > SIXTY_DAYS_MS) {
+                            shouldBeSilentlyDeleted = true;
+                        }
+                    } else if (item.addedAt) {
+                        const addedMs = item.addedAt.toMillis();
+                        if (nowMs - addedMs > SIXTY_DAYS_MS) {
+                            shouldBeSilentlyDeleted = true;
+                        }
+                    }
+
+                    // B. Cek Ketersediaan & Status Cerita di Database Utama
+                    if (!shouldBeSilentlyDeleted && item.storyId) {
                         if (!storyCache[item.storyId]) {
                             try {
                                 const storySnap = await getDoc(doc(db, "published_stories", item.storyId));
                                 if (storySnap.exists()) {
                                     storyCache[item.storyId] = storySnap.data();
                                 } else {
-                                    // Fallback ke draf jika cerita belum rilis
+                                    // Coba cari di folder draf
                                     const draftSnap = await getDoc(doc(db, "stories", item.storyId));
                                     if (draftSnap.exists()) {
                                         storyCache[item.storyId] = draftSnap.data();
+                                    } else {
+                                        // Cerita benar-benar hilang dari database
+                                        shouldBeSilentlyDeleted = true;
                                     }
                                 }
                             } catch(e) { console.error(e); }
@@ -315,31 +340,46 @@
 
                         const storyData = storyCache[item.storyId];
                         
-                        // Jika cerita ditemukan, ambil ID penulisnya untuk mencari usernamenya
                         if (storyData) {
-                            realAuthorName = storyData.authorName || 'Anonim';
-                            const authorId = storyData.authorId;
+                            // Proteksi Konten (Banned / Dihapus / Draft ditarik)
+                            if (storyData.isBanned === true || 
+                                storyData.isDeleted === true || 
+                                storyData.status === 'draft' || 
+                                storyData.status === 'archived') {
+                                shouldBeSilentlyDeleted = true;
+                            } else {
+                                // Ambil nama asli jika cerita aman
+                                realAuthorName = storyData.authorName || 'Anonim';
+                                const authorId = storyData.authorId;
 
-                            if (authorId) {
-                                if (!authorCache[authorId]) {
-                                    try {
-                                        const authorSnap = await getDoc(doc(db, "users", authorId));
-                                        if (authorSnap.exists()) {
-                                            const uData = authorSnap.data();
-                                            authorCache[authorId] = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
-                                        }
-                                    } catch(e) { console.error(e); }
-                                }
-                                if (authorCache[authorId]) {
-                                    realAuthorName = authorCache[authorId];
+                                if (authorId) {
+                                    if (!authorCache[authorId]) {
+                                        try {
+                                            const authorSnap = await getDoc(doc(db, "users", authorId));
+                                            if (authorSnap.exists()) {
+                                                const uData = authorSnap.data();
+                                                authorCache[authorId] = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
+                                            }
+                                        } catch(e) { console.error(e); }
+                                    }
+                                    if (authorCache[authorId]) {
+                                        realAuthorName = authorCache[authorId];
+                                    }
                                 }
                             }
                         }
                     }
 
-                    // Terapkan nama asli yang sudah ditemukan
-                    item.realAuthorName = realAuthorName;
-                    libraryItems.push(item);
+                    // EKSEKUSI PEMINDAHAN ATAU PENGHAPUSAN DIAM-DIAM
+                    if (shouldBeSilentlyDeleted) {
+                        try {
+                            await deleteDoc(doc(db, "users", currentUserUid, "library", item.docId));
+                        } catch(e) { console.error("Gagal silent delete:", e); }
+                    } else {
+                        // Cerita lolos inspeksi, masukkan ke UI
+                        item.realAuthorName = realAuthorName;
+                        libraryItems.push(item);
+                    }
                 }
 
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -368,13 +408,14 @@
                     // KARTU ARSIP BUKU
                     arsipHtml += `
                         <div class="library-card">
+                            <button class="btn-report-card" onclick="window.location.href='lapor.html?type=story&id=${item.storyId}'" title="Laporkan Cerita"><i class="fa-solid fa-flag"></i></button>
                             <div class="story-cover" style="background-image: ${coverBg}; filter: grayscale(100%);"></div>
                             <div class="story-info">
                                 <h3 style="color:var(--text-gray);">${item.title}</h3>
                                 <p class="author"><i class="fa-solid fa-pen-nib"></i> ${item.realAuthorName}</p>
                                 <div class="card-actions">
                                     <button class="btn-action btn-restore" onclick="unarchiveStory('${item.docId}')"><i class="fa-solid fa-rotate-left"></i> Pulihkan</button>
-                                    <button class="btn-action btn-delete" onclick="removeStory('${item.docId}')"><i class="fa-solid fa-trash"></i> Hapus Permanen</button>
+                                    <button class="btn-action btn-delete" onclick="removeStory('${item.docId}')"><i class="fa-solid fa-trash"></i> Hapus</button>
                                 </div>
                             </div>
                         </div>
@@ -383,6 +424,7 @@
                     // KARTU DAFTAR BACAAN
                     bacaanHtml += `
                         <div class="library-card">
+                            <button class="btn-report-card" onclick="window.location.href='lapor.html?type=story&id=${item.storyId}'" title="Laporkan Cerita"><i class="fa-solid fa-flag"></i></button>
                             <div class="story-cover" style="background-image: ${coverBg};"></div>
                             <div class="story-info">
                                 <h3>${item.title}</h3>
