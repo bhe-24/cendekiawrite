@@ -242,9 +242,9 @@
                 <div class="form-group">
                     <label>Tagar / Event (Opsional)</label>
                     <div class="tags-container" id="tags-container">
-                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar lalu Enter...">
+                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik lalu Spasi...">
                     </div>
-                    <p class="field-hint">Maksimal 5 tagar. Ketik lalu Enter, atau langsung tekan Simpan.</p>
+                    <p class="field-hint">Maksimal 5 tagar. Ketik kata lalu tekan <b>Spasi</b>.</p>
                 </div>
 
                 <div class="form-group">
@@ -415,7 +415,8 @@
                 }
 
                 if (data.tags && Array.isArray(data.tags)) {
-                    storyTags = data.tags;
+                    // Bersihkan tagar saat dimuat agar konsisten (kecil semua, tanpa simbol)
+                    storyTags = data.tags.map(t => t.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase()).filter(Boolean);
                     renderTags();
                 }
 
@@ -440,13 +441,15 @@
             }
         }
 
-        // --- FUNGSI UPDATE SINKRONISASI KE TABEL PUBLIK ---
+        // --- PERBAIKAN SINKRONISASI KE TABEL PUBLIK (ANTI ERROR JIKA BELUM DIRILIS) ---
         async function syncToPublishedStories(updatedData) {
             if (isStoryBanned) return; 
             try {
                 const pubRef = doc(db, "published_stories", storyId);
                 const pubSnap = await getDoc(pubRef);
                 
+                // HANYA update jika cerita sudah pernah masuk etalase (sudah ada bab dirilis).
+                // Jika belum ada, biarkan saja tagarnya menunggu di tabel 'stories' (Dapur)
                 if (pubSnap.exists()) {
                     await updateDoc(pubRef, updatedData);
                 }
@@ -533,20 +536,32 @@
             saveFieldImmediate({ progressStatus: val });
         };
 
+        // --- PERBAIKAN LOGIKA PEMASUKAN TAGAR (SPACE/SPASI LANGSUNG JADI TAGAR) ---
         const tagInput = document.getElementById('tag-input');
         tagInput.addEventListener('keyup', (e) => {
             if (isStoryBanned) return;
-            if (e.key === 'Enter' || e.key === ',') {
-                let tag = e.target.value.replace(',', '').replace('#', '').trim().toLowerCase();
-                if (tag && !storyTags.includes(tag) && storyTags.length < 5) {
-                    storyTags.push(tag);
-                    renderTags();
-                    saveFieldImmediate({ tags: storyTags });
-                } else if (storyTags.length >= 5) {
-                    Swal.fire({toast:true, position:'top', icon:'warning', title:'Maksimal 5 tagar.', showConfirmButton:false, timer:1500});
+            
+            // Menangkap Spasi (' '), Enter ('Enter'), atau Koma (',')
+            if (e.key === ' ' || e.key === 'Enter' || e.key === ',') {
+                // Pembersihan tagar ekstrem: buang semua kecuali huruf dan angka
+                let tag = e.target.value.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
+                
+                if (tag && !storyTags.includes(tag)) {
+                    if (storyTags.length < 5) {
+                        storyTags.push(tag);
+                        renderTags();
+                        saveFieldImmediate({ tags: storyTags });
+                    } else {
+                        Swal.fire({toast:true, position:'top', icon:'warning', title:'Maksimal 5 tagar.', showConfirmButton:false, timer:1500});
+                    }
                 }
-                e.target.value = '';
+                e.target.value = ''; // Selalu kosongkan input setelah spasi/enter
             }
+        });
+        
+        // Mencegah spasi masuk ke dalam textbox (opsional agar UX lebih mulus)
+        tagInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ') e.preventDefault(); 
         });
 
         function renderTags() {
@@ -561,6 +576,7 @@
                 container.insertBefore(chip, tagInput);
             });
         }
+        
         window.removeTag = (index) => {
             if (isStoryBanned) return;
             storyTags.splice(index, 1);
@@ -580,9 +596,10 @@
             if (isStoryBanned) return;
             const indicator = document.getElementById('save-indicator');
             
+            // Cek apakah ada teks sisa yang lupa dispasi di kolom tagar sebelum disimpan
             const tInput = document.getElementById('tag-input');
-            if (tInput && tInput.value) {
-                let leftoverTag = tInput.value.replace(',', '').replace('#', '').trim().toLowerCase();
+            if (tInput && tInput.value.trim()) {
+                let leftoverTag = tInput.value.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
                 if (leftoverTag && !storyTags.includes(leftoverTag) && storyTags.length < 5) {
                     storyTags.push(leftoverTag);
                     renderTags();
@@ -682,7 +699,6 @@
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
                     
-                    // PERBAIKAN: Penentuan Status & Warna Badge Terjadwal
                     let statusClass = 'status-draft';
                     let statusText = 'Draf';
                     let scheduleInfo = '';
@@ -693,7 +709,6 @@
                     } else if (data.status === 'scheduled') {
                         statusClass = 'status-scheduled';
                         statusText = '<i class="fa-solid fa-clock"></i> Terjadwal';
-                        // Ambil tanggal jadwal jika ada
                         if (data.publishAt) {
                             const pubDate = data.publishAt.toDate();
                             const dateStr = pubDate.toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'});
@@ -701,7 +716,6 @@
                         }
                     }
 
-                    // Logika Action Buttons
                     let actionButtons = '';
                     if (isStoryBanned) {
                         actionButtons = `<button class="action-btn warning" disabled style="opacity:0.5; cursor:not-allowed;" title="Akses Dikunci"><i class="fa-solid fa-lock"></i></button>`;
@@ -785,7 +799,6 @@
             }
         };
 
-        // --- PERBAIKAN: Fungsi Unpublish Diperluas Untuk Membatalkan Jadwal ---
         window.unpublishChapter = async (chapId, currentStatus, event) => {
             if (isStoryBanned) return;
             event.stopPropagation();
@@ -807,7 +820,7 @@
                 try {
                     await updateDoc(doc(db, "stories", storyId, "chapters", chapId), { 
                         status: 'draft', 
-                        publishAt: null, // Hapus jadwal jika ada
+                        publishAt: null,
                         updatedAt: serverTimestamp() 
                     });
                     Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Bab dikembalikan ke Draf', showConfirmButton: false, timer: 1500 });
