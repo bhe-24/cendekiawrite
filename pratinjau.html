@@ -197,11 +197,10 @@
             <div class="tags-container" id="p-tags" style="display:none;"></div>
         </div>
 
-        <!-- PERINGKAT TAGAR (ACHIEVEMENT SECTION) -->
+        <!-- PERINGKAT TAGAR (ACHIEVEMENT SECTION - HANYA TAMPIL JIKA CERITA PUNYA PRESTASI) -->
         <div class="info-section" id="tag-achievements-section" style="display:none;">
-            <h3 class="section-title"><i class="fa-solid fa-trophy" style="color:var(--gold);"></i> Peringkat Tagar</h3>
+            <h3 class="section-title"><i class="fa-solid fa-trophy" style="color:var(--gold);"></i> Prestasi Cerita</h3>
             <div id="p-achievements-skeleton">
-                <div class="sk-light sk-chapter-row"></div>
                 <div class="sk-light sk-chapter-row"></div>
             </div>
             <div class="achievement-list" id="p-achievements-list" style="display:none;"></div>
@@ -240,7 +239,7 @@
                 Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Sedang menyiapkan daftar bab, coba lagi sesaat.', showConfirmButton: false, timer: 1800 });
             };
             window.showAllTagsRank = function() {
-                Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Mempersiapkan peringkat tagar...', showConfirmButton: false, timer: 1800 });
+                Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Mempersiapkan prestasi...', showConfirmButton: false, timer: 1800 });
             };
 
             try {
@@ -382,7 +381,7 @@
         window.promptLogin = () => {
             Swal.fire({
                 title: 'Akses Eksklusif',
-                text: 'Hanya pembaca yang sudah mendaftar yang dapat mengakses isi bab ini. Gabung sekarang secara gratis!',
+                text: 'Hanya pembaca yang sudah mendaftar yang dapat membaca isi bab ini. Gabung sekarang secara gratis!',
                 icon: 'lock',
                 showCancelButton: true,
                 confirmButtonText: 'Masuk / Daftar',
@@ -416,58 +415,50 @@
             `;
         }
 
-        // --- SISTEM PERINGKAT TAGAR (ACHIEVEMENTS) ---
-        async function loadTagAchievements(tagsArray) {
+        // --- SISTEM PRESTASI CERITA (DIAMBIL DARI DOKUMEN CERITA) ---
+        async function loadStoryAchievements(storyData) {
             const section = document.getElementById('tag-achievements-section');
             const listContainer = document.getElementById('p-achievements-list');
             const skeleton = document.getElementById('p-achievements-skeleton');
-            
-            if (!tagsArray || tagsArray.length === 0) {
-                section.style.display = 'none';
-                return '';
-            }
-
-            section.style.display = 'block';
 
             try {
-                let tagStats = tagsArray.map(t => ({ tag: t, score: 0 }));
-                // Query ke koleksi peringkat harian/mingguan yang sudah kita buat sebelumnya
-                const qTags = query(collection(db, "tag_rankings"), where("tag", "in", tagsArray));
-                const snapTags = await getDocs(qTags);
-                
-                snapTags.forEach(doc => {
-                    const d = doc.data();
-                    const idx = tagStats.findIndex(ts => ts.tag === d.tag);
-                    if (idx > -1) {
-                        tagStats[idx].score = d.dailyScore || 0; // Menggunakan skor harian/api
-                    }
-                });
+                // Mengecek array 'achievements' yang sudah distempel ke dalam dokumen cerita oleh Robot Senin
+                const achievements = storyData.achievements || [];
 
-                // Urutkan dari yang skornya paling besar
-                tagStats.sort((a, b) => b.score - a.score);
-                window.__fullTagStats = tagStats;
+                if (achievements.length === 0) {
+                    section.style.display = 'none';
+                    return '';
+                }
+
+                section.style.display = 'block';
+
+                // Simpan untuk modal pop-up
+                window.__fullTagStats = achievements;
 
                 let html = '';
-                const limitDisplay = 3; // Batas tampil sebelum masuk pop-up modal
+                const limitDisplay = 3; 
                 
-                tagStats.slice(0, limitDisplay).forEach((ts) => {
-                    const rankStr = ts.score > 0 ? `${ts.score} Interaksi 🔥` : 'Baru Bergabung';
-                    const scoreColor = ts.score > 0 ? '#ef4444' : '#cbd5e1';
-                    
+                achievements.slice(0, limitDisplay).forEach((ach) => {
+                    let rankIcon = 'fa-medal';
+                    let rankColor = '#cbd5e1'; // Default
+                    if (ach.rank === 1) { rankIcon = 'fa-crown'; rankColor = 'var(--gold)'; }
+                    else if (ach.rank === 2) { rankColor = '#94a3b8'; }
+                    else if (ach.rank === 3) { rankColor = 'var(--bronze)'; }
+
                     html += `
-                        <div class="achieve-item" onclick="window.location.href='search.html?q=%23${encodeURIComponent(ts.tag)}'">
-                            <div class="achieve-icon"><i class="fa-solid fa-hashtag"></i></div>
+                        <div class="achieve-item" onclick="window.location.href='taggar.html'">
+                            <div class="achieve-icon" style="background: ${ach.rank === 1 ? 'linear-gradient(135deg, var(--gold), #b45309)' : rankColor};"><i class="fa-solid ${rankIcon}"></i></div>
                             <div class="achieve-info">
-                                <h4 class="achieve-tag">${ts.tag}</h4>
-                                <p class="achieve-stat" style="color:${scoreColor}; font-weight:600;">${rankStr}</p>
+                                <h4 class="achieve-tag">Juara ${ach.rank} #${ach.tag}</h4>
+                                <p class="achieve-stat" style="color:${ach.rank === 1 ? 'var(--gold)' : 'var(--text-gray)'}; font-weight:600;">${ach.period || 'Prestasi Mingguan'}</p>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
                         </div>
                     `;
                 });
 
-                if (tagStats.length > limitDisplay) {
-                    html += `<button type="button" class="btn-action-more" onclick="showAllTagsRank()"><i class="fa-solid fa-list-ul"></i> Lihat Seluruh ${tagStats.length} Tagar</button>`;
+                if (achievements.length > limitDisplay) {
+                    html += `<button type="button" class="btn-action-more" onclick="showAllTagsRank()"><i class="fa-solid fa-trophy"></i> Lihat Seluruh ${achievements.length} Prestasi</button>`;
                 }
 
                 skeleton.style.display = 'none';
@@ -476,10 +467,8 @@
                 
                 return html;
             } catch(e) {
-                console.error("Gagal meload prestasi tagar:", e);
-                skeleton.style.display = 'none';
-                listContainer.innerHTML = '<div class="empty-state">Data tagar tidak tersedia.</div>';
-                listContainer.style.display = 'block';
+                console.error("Gagal meload prestasi cerita:", e);
+                section.style.display = 'none';
                 return '';
             }
         }
@@ -487,22 +476,25 @@
         window.showAllTagsRank = () => {
             if(!window.__fullTagStats) return;
             let mHtml = '<div class="achievement-list in-modal">';
-            window.__fullTagStats.forEach(ts => {
-                const rankStr = ts.score > 0 ? `${ts.score} Interaksi 🔥` : 'Baru Bergabung';
-                const scoreColor = ts.score > 0 ? '#ef4444' : '#cbd5e1';
-                
+            window.__fullTagStats.forEach(ach => {
+                let rankIcon = 'fa-medal';
+                let rankColor = '#cbd5e1'; 
+                if (ach.rank === 1) { rankIcon = 'fa-crown'; rankColor = 'var(--gold)'; }
+                else if (ach.rank === 2) { rankColor = '#94a3b8'; }
+                else if (ach.rank === 3) { rankColor = 'var(--bronze)'; }
+
                 mHtml += `
-                    <div class="achieve-item" onclick="window.location.href='search.html?q=%23${encodeURIComponent(ts.tag)}'">
-                        <div class="achieve-icon"><i class="fa-solid fa-hashtag"></i></div>
+                    <div class="achieve-item" onclick="window.location.href='taggar.html'">
+                        <div class="achieve-icon" style="background: ${ach.rank === 1 ? 'linear-gradient(135deg, var(--gold), #b45309)' : rankColor};"><i class="fa-solid ${rankIcon}"></i></div>
                         <div class="achieve-info" style="text-align:left;">
-                            <h4 class="achieve-tag">${ts.tag}</h4>
-                            <p class="achieve-stat" style="color:${scoreColor}; font-weight:600;">${rankStr}</p>
+                            <h4 class="achieve-tag">Juara ${ach.rank} #${ach.tag}</h4>
+                            <p class="achieve-stat" style="color:${ach.rank === 1 ? 'var(--gold)' : 'var(--text-gray)'}; font-weight:600;">${ach.period || 'Prestasi Mingguan'}</p>
                         </div>
                     </div>
                 `;
             });
             mHtml += '</div>';
-            Swal.fire({ title: 'Semua Peringkat Tagar', html: mHtml, showConfirmButton: false, showCloseButton: true, width: 440 });
+            Swal.fire({ title: 'Semua Prestasi Cerita', html: mHtml, showConfirmButton: false, showCloseButton: true, width: 440 });
         };
 
         async function loadPreview() {
@@ -515,14 +507,19 @@
                     return;
                 }
 
-                const data = snap.data();
+                let data = snap.data();
 
                 try {
+                    // AMBIL DATA DARI ETALASE JUGA UNTUK MEMASTIKAN PRESTASI TERBACA
                     const pubSnap = await getDoc(doc(db, "published_stories", storyId));
                     if (pubSnap.exists()) {
                         const pubData = pubSnap.data();
                         data.views = pubData.views || data.views || 0;
                         data.votes = pubData.votes || data.votes || 0;
+                        // Data achievements diutamakan dari versi publik (etalase)
+                        if (pubData.achievements) {
+                            data.achievements = pubData.achievements;
+                        }
                     }
                 } catch(e) { console.warn("Karya belum dirilis publik."); }
 
@@ -570,7 +567,7 @@
                 document.getElementById('p-cover').classList.remove('sk-dark');
                 document.getElementById('blur-bg').classList.remove('sk-dark');
 
-                // --- RENDERING TAGAR & PRESTASI TAGAR ---
+                // --- RENDERING TAGAR PENCARIAN (BUKAN PRESTASI) ---
                 let tagsHtml = `<span class="badge-genre" onclick="window.location.href='search.html?q=${encodeURIComponent(currentGenre)}'">${currentGenre}</span>`;
                 if (data.copyrightStatement && copyrightLabels[data.copyrightStatement]) {
                     const cr = copyrightLabels[data.copyrightStatement];
@@ -588,8 +585,8 @@
                 document.getElementById('p-tags').innerHTML = tagsHtml;
                 showReal('p-tags');
 
-                // Panggil loader prestasi tagar setelah mendapatkan tagArray
-                const achievementsHtml = await loadTagAchievements(tagsArray);
+                // --- PANGGIL FUNGSI CEK PRESTASI DARI DATA CERITA ---
+                const achievementsHtml = await loadStoryAchievements(data);
 
                 const chapCount = await loadChapters();
                 const similarHtml = await loadSimilarStories();
