@@ -92,7 +92,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0", authDomain: "mading-cf676.firebaseapp.com", projectId: "mading-cf676", storageBucket: "mading-cf676.firebasestorage.app", messagingSenderId: "72175203671", appId: "1:72175203671:web:7a0676a55beb64bc96ba12" };
         const app = initializeApp(firebaseConfig); 
@@ -104,12 +104,9 @@
         let authorCache = {}; 
         let searchTimer;
 
-        // --- PENJAGA RACE CONDITION ---
-        // dataReady: true kalau ada data (dari cache ATAU hasil fetch asli) yang aman dipakai mencari.
-        // pendingQuery: kalau user mencari SEBELUM data siap, permintaan itu ditunda (bukan langsung
-        // dijawab "tidak ditemukan"), lalu otomatis dijalankan begitu data benar-benar siap.
         let dataReady = false;
         let pendingQuery = null;
+        let trackedTags = new Set(); // Mencegah spam tracking di 1 sesi
 
         function getSkeletonHTML() {
             return `
@@ -179,9 +176,6 @@
                     if (sData.authorId) authorIdsToFetch.add(sData.authorId);
                 });
 
-                // PERBAIKAN: ambil semua profil penulis SEKALIGUS (Promise.all), bukan satu-satu
-                // berurutan seperti sebelumnya -- itu yang membuat proses ini lambat dan memperlebar
-                // celah waktu terjadinya race condition saat pengguna mengetik lebih cepat dari data siap.
                 await Promise.all([...authorIdsToFetch].map(async (uid) => {
                     try {
                         const uSnap = await getDoc(doc(db, "users", uid));
@@ -213,10 +207,6 @@
         
         window.clearHistory = () => { localStorage.removeItem('searchHistory'); loadHistory(); };
 
-        // PERBAIKAN UTAMA #1: value dari chip (genre/riwayat) SEKARANG di-lowercase sebelum
-        // dicocokkan -- sebelumnya tidak, sehingga genre seperti "Romansa" (huruf besar di data)
-        // tidak pernah cocok dengan hasil .toLowerCase() saat dibandingkan, dan pencarian lewat
-        // klik chip genre/rekomendasi SELALU gagal walau datanya ada.
         window.triggerSearch = (val) => {
             document.getElementById('search-input').value = val;
             toggleClearButton();
@@ -283,7 +273,7 @@
             pendingQuery = null;
             document.getElementById('default-view').style.display = 'block';
             document.getElementById('results-view').style.display = 'none';
-            window.history.replaceState(null, '', window.location.pathname);
+            try { window.history.replaceState(null, '', window.location.pathname); } catch(e) {}
             input.focus();
         };
 
@@ -292,9 +282,6 @@
             document.getElementById('btn-clear-search').classList.toggle('show', val.length > 0);
         }
 
-        // PERBAIKAN UTAMA #2: jangan pernah menjalankan pencarian terhadap data yang belum siap.
-        // Kalau data belum siap, permintaan ditunda (bukan langsung dijawab "tidak ditemukan"),
-        // dan tampilan menunjukkan kerangka "sedang mencari" alih-alih hasil kosong yang salah.
         function runSearchOrQueue(queryLower) {
             if (!dataReady) {
                 pendingQuery = queryLower;
@@ -308,12 +295,12 @@
             toggleClearButton();
             const val = document.getElementById('search-input').value.trim();
             clearTimeout(searchTimer);
-            pendingQuery = null; // Batalkan permintaan tertunda sebelumnya kalau user mengetik lagi
+            pendingQuery = null;
 
             if (val === '') {
                 document.getElementById('default-view').style.display = 'block';
                 document.getElementById('results-view').style.display = 'none';
-                window.history.replaceState(null, '', window.location.pathname);
+                try { window.history.replaceState(null, '', window.location.pathname); } catch(e) {}
                 return;
             }
 
@@ -327,15 +314,71 @@
             }
         });
 
-        // executeSearch SELALU menerima queryText yang sudah lowercase (dijamin oleh triggerSearch,
-        // event 'input', dan initApp -- bukan lagi diasumsikan begitu saja tanpa jaminan).
+        // --- SISTEM PELACAK POIN TAGAR (+1 POIN SETIAP PENCARIAN) ---
+        async function trackTagSearch(rawQuery, bestMatchingStory) {
+            if (!rawQuery.startsWith('#')) return; // Hanya lacak yang pakai hashtag
+            
+            // Bersihkan tagar
+            const cleanTag = rawQuery.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
+            if (!cleanTag || trackedTags.has(cleanTag)) return; // Jangan hitung dobel di 1 sesi
+            
+            trackedTags.add(cleanTag); // Tandai sudah dihitung
+
+            try {
+                const tagRef = doc(db, "tag_rankings", cleanTag);
+                
+                await runTransaction(db, async (transaction) => {
+                    const tagDoc = await transaction.get(tagRef);
+                    
+                    if (!tagDoc.exists()) {
+                        // Jika ini tagar baru, masukkan beserta profil cerita pertamanya
+                        transaction.set(tagRef, {
+                            tag: cleanTag,
+                            dailyScore: 1,
+                            weeklyScore: 1,
+                            bestStoryId: bestMatchingStory ? bestMatchingStory.id : null,
+                            bestStoryTitle: bestMatchingStory ? bestMatchingStory.title : null,
+                            bestStoryAuthor: bestMatchingStory ? bestMatchingStory.realAuthorName : null,
+                            bestStoryCover: bestMatchingStory ? bestMatchingStory.coverBase64 : null
+                        });
+                    } else {
+                        // Jika sudah ada, tambahkan poinnya
+                        const currentDaily = tagDoc.data().dailyScore || 0;
+                        const currentWeekly = tagDoc.data().weeklyScore || 0;
+                        
+                        let updateData = {
+                            dailyScore: currentDaily + 1,
+                            weeklyScore: currentWeekly + 1
+                        };
+
+                        // Jika tagar ini belum punya "wajah cerita", tambahkan sekarang
+                        if (!tagDoc.data().bestStoryId && bestMatchingStory) {
+                            updateData.bestStoryId = bestMatchingStory.id;
+                            updateData.bestStoryTitle = bestMatchingStory.title;
+                            updateData.bestStoryAuthor = bestMatchingStory.realAuthorName;
+                            updateData.bestStoryCover = bestMatchingStory.coverBase64;
+                        }
+
+                        transaction.update(tagRef, updateData);
+                    }
+                });
+                console.log(`+1 Poin Peringkat untuk tagar #${cleanTag} tercatat!`);
+            } catch (error) {
+                console.error("Gagal mencatat poin tagar:", error);
+            }
+        }
+
         function executeSearch(queryText) {
             document.getElementById('default-view').style.display = 'none';
             const resView = document.getElementById('results-view');
             resView.style.display = 'block';
 
             if (queryText) {
-                window.history.replaceState(null, '', '?q=' + encodeURIComponent(queryText));
+                try {
+                    window.history.replaceState(null, '', '?q=' + encodeURIComponent(queryText));
+                } catch (e) {
+                    console.warn("URL tidak dapat diubah di versi lokal (file:///). Proses tetap dilanjutkan.");
+                }
             }
 
             const results = allStories.filter(story => {
@@ -362,6 +405,13 @@
             if (results.length === 0) { 
                 resView.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass-minus"></i><p>Maaf, tidak ada hasil untuk "<b>${queryText}</b>".<br>Coba gunakan kata kunci lain.</p></div>`; 
                 return; 
+            }
+
+            // TRIGGER TRACKER: Jika pencarian berupa tagar dan ada hasilnya, tambahkan poin!
+            if (queryText.startsWith('#')) {
+                // Ambil cerita pertama di hasil pencarian untuk dijadikan 'wajah' dari tagar ini di klasemen
+                const bestStory = results[0]; 
+                trackTagSearch(queryText, bestStory);
             }
 
             let html = `<p class="result-count-label">${results.length} hasil ditemukan</p><div style="display:flex; flex-direction:column;">`;
@@ -400,8 +450,6 @@
             }
             if (queryFromUrl) queryFromUrl = decodeURIComponent(queryFromUrl).toLowerCase();
 
-            // 1. Coba render instan dari cache lokal DULU (tanpa nunggu Firebase).
-            // Data cache dianggap sah untuk langsung dipakai mencari (dataReady = true).
             const cached = loadCachedStories();
             if (cached && cached.length > 0) {
                 allStories = cached;
@@ -415,8 +463,6 @@
                     executeSearch(queryFromUrl);
                 }
             } else {
-                // Belum ada cache sama sekali (kunjungan pertama). Kalau ada query dari URL,
-                // JANGAN langsung dijawab "tidak ditemukan" -- tunda sampai data asli siap.
                 loadHistory();
                 if (queryFromUrl) {
                     document.getElementById('search-input').value = queryFromUrl;
@@ -426,19 +472,15 @@
                 }
             }
 
-            // 2. Selalu ambil data terbaru di belakang layar
             await loadStories();
             dataReady = true;
             renderRecommendations();
 
-            // 3. Kalau ada pencarian yang tertunda menunggu data, jalankan sekarang.
             if (pendingQuery !== null) {
                 const q = pendingQuery;
                 pendingQuery = null;
                 executeSearch(q);
             } else {
-                // Kalau user sudah punya pencarian aktif (dari cache), sinkronkan ulang
-                // dengan data segar secara halus -- tanpa mengosongkan tampilan di antaranya.
                 const currentVal = document.getElementById('search-input').value.trim();
                 if (currentVal) executeSearch(currentVal.toLowerCase());
             }
