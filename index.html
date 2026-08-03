@@ -19,7 +19,7 @@
     <meta property="og:url" content="https://aksana.my.id">
     <meta property="og:type" content="website">
 
-<!-- Khusus untuk preview Twitter/X -->
+    <!-- Khusus untuk preview Twitter/X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Aksara Narasi - Ruang Berkarya & Membaca">
     <meta name="twitter:description" content="Temukan ribuan cerpen, puisi, dan novel digital dari penulis-penulis berbakat Indonesia.">
@@ -80,10 +80,7 @@
         }
 
         /* --- 2. WRAPPER & RESPONSIVE GRID --- */
-        /* Dihilangkan max-width agar background banner & editor bisa full layar */
         .app-wrapper { width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; overflow-x: hidden; }
-
-        /* Container khusus untuk menengahkan konten (cerita, dll) maksimal 1280px */
         .section-container, .quick-actions, #dynamic-genre-sections, #install-btn {
             width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto;
         }
@@ -94,7 +91,9 @@
 
         .nav-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .nav-brand img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: white; padding: 2px; flex-shrink: 0; }
-        .nav-brand h1 { font-family: 'Aleo', serif; font-size: clamp(1.05rem, 3vw, 1.4rem); color: white; margin: 0; letter-spacing: 0.5px; white-space: nowrap; }
+        .nav-brand-text { display: flex; flex-direction: column; justify-content: center; }
+        .nav-brand-text h1 { font-family: 'Aleo', serif; font-size: clamp(0.9rem, 2.5vw, 1.2rem); color: white; margin: 0; letter-spacing: 0.5px; white-space: nowrap; line-height: 1.2;}
+        .nav-brand-text span { font-size: 0.65rem; color: #cbd5e1; font-weight: 500; margin-top: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;}
 
         .nav-actions { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); flex-shrink: 0; }
         .btn-search { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;}
@@ -102,24 +101,32 @@
         .btn-login { background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 8px clamp(14px, 3vw, 22px); border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: clamp(0.8rem, 2vw, 0.9rem); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); transition: 0.2s; white-space: nowrap; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5); }
 
-        /* --- 4. BANNERS (FULL WIDTH BACKGROUND) --- */
+        /* --- 4. BANNERS (FULL WIDTH BACKGROUND) PASTEL CERIA --- */
         .hero-banner-wrap {
-            width: 100%; /* Membentang penuh di laptop */
-            background-color: var(--nav-bg);
+            width: 100%; 
+            background: linear-gradient(135deg, #fef9c3 0%, #e0f2fe 100%); /* Pastel Yellow to Blue */
+            position: relative;
+            padding: 25px 0 30px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        /* Corak kotak-kotak transparansi sangat tipis agar elegan */
+        .hero-banner-wrap::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image:
-                linear-gradient(45deg, rgba(212,175,55,0.05) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.05) 75%, rgba(212,175,55,0.05)),
-                linear-gradient(45deg, rgba(212,175,55,0.05) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.05) 75%, rgba(212,175,55,0.05));
+                linear-gradient(45deg, rgba(0,51,102,0.02) 25%, transparent 25%, transparent 75%, rgba(0,51,102,0.02) 75%, rgba(0,51,102,0.02)),
+                linear-gradient(45deg, rgba(0,51,102,0.02) 25%, transparent 25%, transparent 75%, rgba(0,51,102,0.02) 75%, rgba(0,51,102,0.02));
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
-            padding: 25px 0 30px 0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            pointer-events: none;
         }
         .banner-container {
             --banner-w: clamp(260px, 85vw, 480px);
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
             gap: clamp(12px, 3vw, 20px);
-            padding: 4px calc((100% - var(--banner-w)) / 2); /* Centering otomatis cerdas */
+            padding: 4px calc((100% - var(--banner-w)) / 2); 
             scrollbar-width: none; scroll-behavior: smooth;
+            position: relative; z-index: 2;
         }
         .banner-container::-webkit-scrollbar { display: none; }
         .banner-card {
@@ -127,11 +134,13 @@
             height: clamp(135px, 42vw, 200px); 
             border-radius: 18px; scroll-snap-align: center; flex-shrink: 0;
             background-size: cover; background-position: center; position: relative; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: #1e293b;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); background-color: #f1f5f9;
+            cursor: pointer; transition: transform 0.3s;
         }
-        .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
+        .banner-card:hover { transform: scale(1.02); }
+        .banner-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
-        .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; margin:0;}
+        .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; margin:0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
 
         /* --- 5. QUICK ACTION ICONS --- */
         .quick-actions { display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 15px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px); scrollbar-width: none; justify-content: flex-start; }
@@ -170,7 +179,6 @@
             content: ''; position: absolute; inset: 0; pointer-events: none;
             background-image: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08), transparent 70%);
         }
-        /* Menengahkan konten di dalam Editor Section */
         .editor-section-wrap .section-header, 
         .editor-section-wrap .story-scroll {
             width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; position: relative; z-index: 2;
@@ -218,7 +226,7 @@
         .skeleton-banner {
             width: var(--banner-w, clamp(260px, 85vw, 480px)); min-width: var(--banner-w, clamp(260px, 85vw, 480px));
             height: clamp(135px, 42vw, 200px); border-radius: 18px; flex-shrink: 0;
-            background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%); background-size: 400% 100%;
+            background: linear-gradient(90deg, #fef9c3 25%, #e0f2fe 37%, #fef9c3 63%); background-size: 400% 100%;
         }
 
         /* --- 7. CTA BOTTOM --- */
@@ -239,6 +247,35 @@
         #install-btn { display: none; width: calc(100% - 40px); margin: 0 auto 30px auto; max-width: 600px; background: #10b981; color: white; border: none; padding: 15px; border-radius: 16px; font-family: 'Poppins'; font-weight: 600; font-size: 1rem; cursor: pointer; text-align: center; transition: 0.3s;}
         #install-btn:hover { background: #059669; transform: translateY(-2px); }
         #install-btn.show { display: block; }
+        
+        /* FLOATING PROMO WIDGET */
+        .floating-promo {
+            position: fixed;
+            bottom: 80px; 
+            right: 20px;  
+            z-index: 9999;
+            animation: floatUpDown 3s ease-in-out infinite;
+            display: none;
+        }
+        .floating-promo img {
+            width: 100px; /* Ukuran default bisa dioverride JS */
+            height: auto;
+            cursor: pointer;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            transition: transform 0.2s;
+        }
+        .floating-promo img:hover { transform: scale(1.05) rotate(3deg); }
+        .floating-promo-close {
+            position: absolute; top: -8px; right: -8px; background: #dc2626; color: white;
+            border: 2px solid white; border-radius: 50%; width: 24px; height: 24px;
+            display: flex; justify-content: center; align-items: center; font-size: 0.8rem;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;
+        }
+        @keyframes floatUpDown {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0); }
+        }
 
         @media (min-width: 600px) and (max-width: 1023px) { .quick-actions { justify-content: center; } }
         @media (min-width: 768px) { .quick-actions { justify-content: center; padding-top: 20px; padding-bottom: 40px;} }
@@ -252,12 +289,23 @@
 </head>
 <body>
 
+    <!-- FLOATING PROMO (Menunggu instruksi Firebase) -->
+    <div class="floating-promo" id="promo-widget">
+        <div class="floating-promo-close" onclick="closePromoWidget()">
+            <i class="fa-solid fa-xmark"></i>
+        </div>
+        <img id="promo-img" src="" alt="Promo">
+    </div>
+
     <!-- NAVBAR -->
     <header class="top-navbar">
         <div class="navbar-content">
             <div class="nav-brand">
                 <img src="https://i.imgur.com/5Srjyo4.png" alt="Logo Aksara Narasi">
-                <h1>Aksara Narasi</h1>
+                <div class="nav-brand-text">
+                    <h1>Aksara Narasi</h1>
+                    <span id="user-greeting">Memuat...</span>
+                </div>
             </div>
             <div class="nav-actions">
                 <button class="btn-search" onclick="window.location.href='search.html'"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -310,7 +358,7 @@
             </div>
         </div>
 
-        <!-- REKOMENDASI UTAMA -->
+        <!-- REKOMENDASI UTAMA (RANDOM ALGORITHM) -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Rekomendasi Utama</h2>
@@ -395,6 +443,16 @@
             var verStr = "Versi Web Publik v1." + (d.getMonth() + 1) + "." + d.getDate() + "." + d.getHours();
             document.getElementById('app-version').innerText = verStr;
 
+            // Inisialisasi Sapaan Waktu Sementara
+            function getGreetingTime() {
+                var hour = new Date().getHours();
+                if (hour < 11) return 'Selamat Pagi';
+                if (hour < 15) return 'Selamat Siang';
+                if (hour < 18) return 'Selamat Sore';
+                return 'Selamat Malam';
+            }
+            document.getElementById('user-greeting').innerText = getGreetingTime() + ", Pembaca!";
+
             try {
                 var raw = localStorage.getItem('cendekia_home_cache_v1');
                 if (!raw) return; 
@@ -404,10 +462,7 @@
                 if (cache.terbaruHtml) document.getElementById('terbaru-container').innerHTML = cache.terbaruHtml;
                 if (cache.edHtml) document.getElementById('editor-container').innerHTML = cache.edHtml;
                 if (cache.genreSectionsHtml) document.getElementById('dynamic-genre-sections').innerHTML = cache.genreSectionsHtml;
-
-            } catch (e) {
-                // Abaikan jika error
-            }
+            } catch (e) {}
         })();
 
         // --- CAROUSEL BANNER ANTI-LAG ---
@@ -478,8 +533,19 @@
         const AUTHOR_CACHE_TTL = 24 * 60 * 60 * 1000;
         const GENRE_SECTION_THRESHOLD = 30; 
 
-        onAuthStateChanged(auth, (user) => {
+        function getGreetingTime() {
+            const hour = new Date().getHours();
+            if (hour < 11) return 'Selamat Pagi';
+            if (hour < 15) return 'Selamat Siang';
+            if (hour < 18) return 'Selamat Sore';
+            return 'Selamat Malam';
+        }
+
+        onAuthStateChanged(auth, async (user) => {
             const btnLogin = document.getElementById('btn-login-header');
+            const greetingEl = document.getElementById('user-greeting');
+            const timeGreet = getGreetingTime();
+
             if (user) {
                 isUserLoggedIn = true;
                 if(window.OneSignal) OneSignal.login(user.uid);
@@ -487,12 +553,50 @@
                 btnLogin.innerText = "Profil";
                 btnLogin.onclick = () => window.location.href = "profil.html"; 
                 loadContinueReading(user.uid);
+
+                // Fetch Sapaan Username
+                try {
+                    const uSnap = await getDoc(doc(db, "users", user.uid));
+                    if (uSnap.exists()) {
+                        const ud = uSnap.data();
+                        const uname = ud.username ? `@${ud.username}` : (ud.name || 'Penulis');
+                        greetingEl.innerText = `${timeGreet}, ${uname}`;
+                    } else {
+                        greetingEl.innerText = `${timeGreet}!`;
+                    }
+                } catch(e) { greetingEl.innerText = `${timeGreet}!`; }
+                
             } else {
                 isUserLoggedIn = false;
                 btnLogin.innerText = "Masuk";
                 btnLogin.onclick = goToLogin;
+                greetingEl.innerText = `${timeGreet}, Pembaca!`;
             }
         });
+
+        // --- SISTEM FLOATING PROMO WIDGET ---
+        window.closePromoWidget = () => {
+            document.getElementById('promo-widget').style.display = 'none';
+            sessionStorage.setItem('promo_closed', 'true'); // Ingat agar tidak ganggu lagi
+        };
+
+        async function fetchPromoWidget() {
+            if(sessionStorage.getItem('promo_closed')) return; // Sudah ditutup user
+            try {
+                const docSnap = await getDoc(doc(db, "admin_settings", "promo_widget"));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.isActive && data.imageUrl) {
+                        const widget = document.getElementById('promo-widget');
+                        const img = document.getElementById('promo-img');
+                        img.src = data.imageUrl;
+                        if(data.width) img.style.width = data.width + 'px';
+                        if(data.targetLink) img.onclick = () => window.location.href = data.targetLink;
+                        widget.style.display = 'block';
+                    }
+                }
+            } catch(e) { console.log('Promo widget not found'); }
+        }
 
         function toMillisSafe(ts) {
             if (!ts) return 0;
@@ -565,8 +669,9 @@
             snapBanner.forEach(docSnap => {
                 const data = docSnap.data();
                 const bgImage = data.imageBase64 ? `url('${data.imageBase64}')` : "none";
+                const clickAction = data.targetLink ? `onclick="window.location.href='${data.targetLink}'" style="cursor:pointer;"` : '';
                 htmlBanner += `
-                    <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};">
+                    <div class="banner-card" style="background-image: ${bgImage}; background-color: ${data.bgColor || '#0f172a'};" ${clickAction}>
                         <div class="banner-content">
                             <span style="background: ${data.tagColor || 'var(--gold)'}; font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; color: white;">${data.tag || 'INFO'}</span>
                             <h3 style="margin: 8px 0 0 0; font-family: 'Playfair Display', serif;">${data.title}</h3>
@@ -635,8 +740,9 @@
                     return;
                 }
 
+                // --- REKOMENDASI UTAMA DIACAK RANDOM AGAR SELALU FRESH ---
                 const recommendedList = [...allPublishedStories]
-                    .sort((a, b) => (b.views || 0) - (a.views || 0))
+                    .sort(() => 0.5 - Math.random()) // Acak cerdas
                     .slice(0, 10);
                 const recHtml = recommendedList.map(data => buildStoryCard(data)).join('');
                 recContainer.innerHTML = recHtml;
@@ -742,7 +848,10 @@
             } catch (error) { console.error("Error fetching read history:", error); }
         }
 
-        window.onload = () => { fetchAllData(); };
+        window.onload = () => { 
+            fetchAllData(); 
+            fetchPromoWidget(); // Cek Pop-Up Promo jika ada!
+        };
 
         window.goToLogin = () => { window.location.href = 'login.html'; };
 
