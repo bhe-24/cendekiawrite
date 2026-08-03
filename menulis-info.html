@@ -242,9 +242,9 @@
                 <div class="form-group">
                     <label>Tagar / Event (Opsional)</label>
                     <div class="tags-container" id="tags-container">
-                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik lalu Spasi...">
+                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar (Lalu tekan Spasi atau Enter)">
                     </div>
-                    <p class="field-hint">Maksimal 5 tagar. Ketik kata lalu tekan <b>Spasi</b>.</p>
+                    <p class="field-hint">Maksimal 5 tagar. Cukup ketik dan tekan tombol <b>Spasi</b> di keyboard/HP kamu.</p>
                 </div>
 
                 <div class="form-group">
@@ -449,7 +449,6 @@
                 const pubSnap = await getDoc(pubRef);
                 
                 // HANYA update jika cerita sudah pernah masuk etalase (sudah ada bab dirilis).
-                // Jika belum ada, biarkan saja tagarnya menunggu di tabel 'stories' (Dapur)
                 if (pubSnap.exists()) {
                     await updateDoc(pubRef, updatedData);
                 }
@@ -536,33 +535,56 @@
             saveFieldImmediate({ progressStatus: val });
         };
 
-        // --- PERBAIKAN LOGIKA PEMASUKAN TAGAR (SPACE/SPASI LANGSUNG JADI TAGAR) ---
+        // --- SISTEM PEMBENTUKAN TAGAR (AUTO-SAVE) ---
         const tagInput = document.getElementById('tag-input');
-        tagInput.addEventListener('keyup', (e) => {
+        
+        // Memakai event 'input' agar di Keyboard HP spasi bisa kedeteksi akurat
+        tagInput.addEventListener('input', (e) => {
             if (isStoryBanned) return;
+            const val = e.target.value;
             
-            // Menangkap Spasi (' '), Enter ('Enter'), atau Koma (',')
-            if (e.key === ' ' || e.key === 'Enter' || e.key === ',') {
-                // Pembersihan tagar ekstrem: buang semua kecuali huruf dan angka
-                let tag = e.target.value.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
-                
-                if (tag && !storyTags.includes(tag)) {
-                    if (storyTags.length < 5) {
-                        storyTags.push(tag);
-                        renderTags();
-                        saveFieldImmediate({ tags: storyTags });
-                    } else {
-                        Swal.fire({toast:true, position:'top', icon:'warning', title:'Maksimal 5 tagar.', showConfirmButton:false, timer:1500});
-                    }
-                }
-                e.target.value = ''; // Selalu kosongkan input setelah spasi/enter
+            // Jika ada spasi atau koma yang diketik di HP/Desktop
+            if (val.includes(' ') || val.includes(',')) {
+                processTagInput();
+            }
+        });
+
+        // Menangkap tombol 'Enter' (biasanya lebih akurat di keyboard laptop)
+        tagInput.addEventListener('keydown', (e) => {
+            if (isStoryBanned) return;
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Jangan refresh halaman
+                processTagInput();
             }
         });
         
-        // Mencegah spasi masuk ke dalam textbox (opsional agar UX lebih mulus)
-        tagInput.addEventListener('keydown', (e) => {
-            if (e.key === ' ') e.preventDefault(); 
+        // Kalau kotak input di-klik keluar (blur), otomatis jadi tagar juga
+        tagInput.addEventListener('blur', () => {
+            if (isStoryBanned) return;
+            if (tagInput.value.trim().length > 0) {
+                processTagInput();
+            }
         });
+
+        // Fungsi Inti Memproses Tagar & Otomatis Simpan
+        function processTagInput() {
+            let val = tagInput.value;
+            // Bersihkan semua simbol, sisakan huruf dan angka saja
+            let tag = val.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
+            
+            if (tag && !storyTags.includes(tag)) {
+                if (storyTags.length < 5) {
+                    storyTags.push(tag);
+                    renderTags();
+                    
+                    // LANGSUNG SIMPAN KE FIREBASE OTOMATIS (Dapur & Etalase)
+                    saveFieldImmediate({ tags: storyTags });
+                } else {
+                    Swal.fire({toast:true, position:'top', icon:'warning', title:'Maksimal 5 tagar.', showConfirmButton:false, timer:1500});
+                }
+            }
+            tagInput.value = ''; // Kosongkan kotaknya setelah jadi tagar
+        }
 
         function renderTags() {
             const container = document.getElementById('tags-container');
@@ -597,14 +619,8 @@
             const indicator = document.getElementById('save-indicator');
             
             // Cek apakah ada teks sisa yang lupa dispasi di kolom tagar sebelum disimpan
-            const tInput = document.getElementById('tag-input');
-            if (tInput && tInput.value.trim()) {
-                let leftoverTag = tInput.value.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
-                if (leftoverTag && !storyTags.includes(leftoverTag) && storyTags.length < 5) {
-                    storyTags.push(leftoverTag);
-                    renderTags();
-                }
-                tInput.value = '';
+            if (tagInput && tagInput.value.trim()) {
+                processTagInput();
             }
 
             try {
