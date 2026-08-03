@@ -30,7 +30,7 @@
         body {
             font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
             color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
-            display: flex; flex-direction: column; overflow-x: hidden; /* Anti geser horizontal */
+            display: flex; flex-direction: column; overflow-x: hidden; /* Anti geser horizontal mutlak */
         }
 
         /* --- RESPONSIVE FULL DESKTOP WRAPPER --- */
@@ -38,7 +38,7 @@
             width: 100%; max-width: 1280px; margin: 0 auto;
             background-color: transparent; flex: 1;
             display: flex; flex-direction: column; position: relative;
-            overflow-x: hidden; /* Anti geser horizontal */
+            overflow-x: hidden;
         }
         
         .content-bg {
@@ -69,7 +69,7 @@
             padding: 0 20px; height: 100%;
         }
         
-        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-decoration: none; display: flex; align-items: center;}
         .btn-back:hover { color: var(--gold); }
         
         .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
@@ -121,7 +121,7 @@
         @media (min-width: 640px) { .list-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } .content-area { padding: 30px; } }
         @media (min-width: 1024px) { .list-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; } .content-area { padding: 40px; } }
 
-        /* KARTU CERITA DIPERBAIKI */
+        /* KARTU CERITA DIPERBAIKI (ANTI-OVERFLOW) */
         .story-item {
             display: flex; gap: 15px; background: white; padding: 15px;
             border-radius: 16px; border: 1px solid #e2e8f0; height: 100%;
@@ -135,13 +135,18 @@
             border: 1px solid #cbd5e1; flex-shrink: 0; display: flex; justify-content: center; align-items: center; color: #94a3b8;
         }
         
-        .story-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0; }
+        /* Proteksi Overflow: min-width: 0 mencegah teks mendorong ke luar div */
+        .story-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0; padding-right: 25px; }
         
-        /* Judul dipotong dengan padding agar tidak menabrak titik tiga */
-        .story-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 35px; }
+        .story-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .story-meta { font-size: 0.72rem; color: var(--text-gray); margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .story-meta span { display: flex; align-items: center; gap: 4px; }
+        .story-meta i { font-size: 0.8rem; }
+        
+        .story-stats { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 600; color: #64748b;}
+        .story-stats span { display: flex; align-items: center; gap: 5px; }
+        
         .story-status-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
         
         /* Pewarnaan Status */
@@ -157,14 +162,14 @@
         }
         .story-item:hover .btn-edit { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* TOMBOL KELOLA DIPAKU DI KANAN ATAS (ABSOLUTE) AGAR TIDAK MENDORONG KELUAR LAYAR */
+        /* TOMBOL KELOLA DIPAKU DI KANAN ATAS (ABSOLUTE) */
         .btn-card-actions {
-            position: absolute; top: 15px; right: 15px; z-index: 5;
-            background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px;
-            color: var(--text-gray); cursor: pointer; display: flex;
-            align-items: center; justify-content: center; transition: 0.2s; font-size: 1rem;
+            position: absolute; top: 10px; right: 10px; z-index: 5;
+            background: transparent; border: none; width: 32px; height: 32px; border-radius: 8px;
+            color: #94a3b8; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: 0.2s; font-size: 1.1rem;
         }
-        .btn-card-actions:hover { background: var(--primary); color: white; }
+        .btn-card-actions:hover { color: var(--primary); background: #f1f5f9;}
 
         /* Action sheet di dalam popup SweetAlert2 (Kelola Cerita) */
         .action-sheet { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
@@ -397,11 +402,22 @@
 
             const bannedNotice = isBanned ? `<p class="banned-notice"><i class="fa-solid fa-triangle-exclamation"></i> Cerita ini dibekukan oleh Admin dan tidak dapat dipublikasikan ulang karena melanggar panduan komunitas.</p>` : '';
 
-            // PERBAIKAN: Tombol titik tiga kini menjadi posisi absolute agar tidak menggeser layar
             const actionButton = !isBanned 
                 ? `<button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', event)" title="Kelola Cerita">
                        <i class="fa-solid fa-ellipsis-vertical"></i>
                    </button>`
+                : '';
+                
+            // Menarik jumlah view, vote (bintang), komentar
+            const vViews = data.views || 0;
+            const vVotes = data.votes || 0;
+
+            // Jika cerita belum dirilis, tidak perlu menampilkan statistik view & vote
+            const statsHtml = isPublished 
+                ? `<div class="story-stats">
+                     <span title="Dilihat"><i class="fa-solid fa-eye"></i> ${vViews}</span>
+                     <span title="Bintang"><i class="fa-solid fa-star" style="color:var(--gold);"></i> ${vVotes}</span>
+                   </div>`
                 : '';
 
             return `
@@ -410,11 +426,15 @@
                     ${cover}
                     <div class="story-info">
                         <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
+                        
                         <div class="story-meta">
                             ${statusBadge}
-                            <span><i class="fa-regular fa-clock"></i> Diperbarui ${updateTime}</span>
                             <span><i class="fa-solid fa-list-ol"></i> ${data.chapterCount || 0} Bab</span>
+                            <span><i class="fa-regular fa-clock"></i> Diperbarui ${updateTime}</span>
                         </div>
+                        
+                        ${statsHtml}
+
                         <button class="btn-edit">${isBanned ? 'Lihat Detail' : 'Kelola Cerita'}</button>
                         ${bannedNotice}
                     </div>
@@ -449,16 +469,26 @@
                 let draftHtml = '';
                 let pubHtml = '';
 
-                fetchedStories.forEach(data => {
-                    const card = buildStoryCard(data);
+                // Ambil data publik untuk sinkronisasi View dan Vote terbaru (jika sudah diterbitkan)
+                for (let i = 0; i < fetchedStories.length; i++) {
+                    let data = fetchedStories[i];
                     
-                    // Jika cerita dibanned, PAKSA turun ke tab draf, tidak peduli statusnya published.
                     if (data.status === 'published' && data.isBanned !== true && data.isDeleted !== true) { 
-                        pubHtml += card; 
+                        // Cross-check view & vote ke tabel published_stories agar akurat
+                        try {
+                            const pubSnap = await getDoc(doc(db, "published_stories", data.id));
+                            if(pubSnap.exists()) {
+                                const pData = pubSnap.data();
+                                data.views = pData.views || 0;
+                                data.votes = pData.votes || 0;
+                            }
+                        } catch(e) {}
+                        
+                        pubHtml += buildStoryCard(data);
                     } else { 
-                        draftHtml += card; 
+                        draftHtml += buildStoryCard(data);
                     }
-                });
+                }
 
                 const draftContainer = document.getElementById('draft-list');
                 const pubContainer = document.getElementById('published-list');
