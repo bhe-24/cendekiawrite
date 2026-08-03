@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daftar Karya - Cendekia Aksara</title>
+    <title>Daftar Karya - Aksara Narasi</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -34,21 +39,30 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- 2. MOBILE FIRST WRAPPER --- */
+        /* --- 2. RESPONSIVE FULL DESKTOP WRAPPER --- */
         .app-wrapper {
             width: 100%;
-            max-width: 480px; 
+            max-width: 1280px; 
             margin: 0 auto;
-            background-color: white;
-            min-height: 100vh;
+            background-color: transparent;
+            flex: 1;
             display: flex; flex-direction: column;
             position: relative;
         }
 
+        /* Background putih untuk konten di layar besar */
+        .content-bg {
+            background-color: white;
+            flex: 1; display: flex; flex-direction: column;
+        }
+
         @media (min-width: 768px) {
             body { background-color: #e2e8f0; } 
-            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
-            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+            .content-bg { 
+                border-left: 1px solid #cbd5e1; 
+                border-right: 1px solid #cbd5e1; 
+                box-shadow: 0 0 40px rgba(0,0,0,0.05); 
+            }
         }
 
         /* --- 3. FIXED NAVBAR --- */
@@ -59,14 +73,22 @@
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .navbar-content {
+            width: 100%; max-width: 1280px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 0 20px;
+            height: 100%;
         }
 
         .btn-back {
             background: none; border: none; color: white;
             font-size: 1.2rem; cursor: pointer; transition: 0.2s;
             text-decoration: none; display: flex; align-items: center;
+            height: 100%;
         }
         .btn-back:hover { color: var(--gold); }
 
@@ -76,8 +98,8 @@
         /* --- 4. HERO BANNER GENRE --- */
         .genre-hero {
             background: linear-gradient(135deg, var(--primary) 0%, #0f172a 100%);
-            padding: 30px 20px; text-align: center; color: white;
-            position: relative; overflow: hidden;
+            padding: 40px 20px; text-align: center; color: white;
+            position: relative; overflow: hidden; margin-top: 0; /* Menghilangkan celah putih */
         }
         .genre-hero::after {
             content: '\f5fd'; font-family: "Font Awesome 6 Free"; font-weight: 900;
@@ -85,18 +107,34 @@
             color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
         }
         .genre-hero h2 {
-            font-family: 'Playfair Display', serif; font-size: 1.8rem;
+            font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 2.5rem);
             margin: 0 0 5px 0; color: var(--gold); position: relative; z-index: 2;
         }
         .genre-hero p {
-            font-size: 0.85rem; color: #cbd5e1; margin: 0; position: relative; z-index: 2;
+            font-size: clamp(0.85rem, 2vw, 1rem); color: #cbd5e1; margin: 0; position: relative; z-index: 2;
         }
 
-        /* --- 5. STORY LIST (VERTICAL) --- */
+        /* --- 5. STORY LIST (RESPONSIVE GRID) --- */
         .story-list-container {
             padding: 20px;
             flex: 1;
-            display: flex; flex-direction: column; gap: 15px;
+            position: relative;
+        }
+
+        #stories-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Di HP: 1 Kolom berbaris ke bawah */
+            gap: 15px;
+        }
+
+        /* Tablet & Laptop: Berubah jadi Grid 2 atau 3 Kolom */
+        @media (min-width: 640px) {
+            #stories-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+            .story-list-container { padding: 30px; }
+        }
+        @media (min-width: 1024px) {
+            #stories-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; }
+            .story-list-container { padding: 40px; }
         }
 
         .story-card-list {
@@ -108,7 +146,7 @@
         .story-card-list:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
 
         .story-cover {
-            width: 75px; height: 110px; border-radius: 8px;
+            width: 80px; height: 120px; border-radius: 8px;
             background-color: #cbd5e1; background-size: cover; background-position: center;
             flex-shrink: 0; border: 1px solid #e2e8f0;
         }
@@ -139,14 +177,14 @@
         }
 
         /* LOADING & EMPTY STATE */
-        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; margin-top: 10px; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; margin-top: 10px; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.95rem; }
 
         #loading-overlay {
-            position: absolute; top: 150px; left: 0; width: 100%; height: calc(100% - 150px);
-            background: var(--bg-color); z-index: 500; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 500; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; border-radius: 16px;
         }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #e2e8f0;
@@ -156,40 +194,61 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
+
+    <!-- SCRIPT INSTANT-LOAD TAMPILAN AWAL -->
+    <script>
+        (function () {
+            // Ambil parameter genre dari URL dengan sangat cepat sebelum DOM selesai diload
+            var urlParams = new URLSearchParams(window.location.search);
+            var genreQuery = urlParams.get('genre');
+            
+            // Jika ada genre yang dipilih, tampilkan langsung di kerangka HTML
+            if (genreQuery) {
+                document.write('<style>#navbar-title { display: none; } #hero-genre-name { content: "Kategori: ' + genreQuery + '"; }</style>');
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.getElementById('navbar-title').innerText = genreQuery;
+                    document.getElementById('navbar-title').style.display = 'block';
+                    document.getElementById('hero-genre-name').innerText = 'Kategori: ' + genreQuery;
+                });
+            }
+        })();
+    </script>
 </head>
 <body>
 
     <div class="app-wrapper">
-        
-        <!-- NAVBAR -->
-        <header class="top-navbar">
-            <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
-            <div class="nav-brand">
-                <h1 id="navbar-title">Daftar Karya</h1>
-            </div>
-            <div style="width: 24px;"></div> <!-- Spacer -->
-        </header>
+        <div class="content-bg">
+            <!-- NAVBAR -->
+            <header class="top-navbar">
+                <div class="navbar-content">
+                    <a href="genre.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+                    <div class="nav-brand">
+                        <h1 id="navbar-title">Daftar Karya</h1>
+                    </div>
+                    <div style="width: 24px;"></div> <!-- Spacer -->
+                </div>
+            </header>
 
-        <!-- HERO BANNER GENRE -->
-        <div class="genre-hero">
-            <h2 id="hero-genre-name">Memuat...</h2>
-            <p id="hero-genre-count">Menyiapkan daftar cerita</p>
+            <!-- HERO BANNER GENRE -->
+            <div class="genre-hero">
+                <h2 id="hero-genre-name">Memuat...</h2>
+                <p id="hero-genre-count">Menyiapkan daftar cerita</p>
+            </div>
+
+            <!-- AREA LIST CERITA -->
+            <div class="story-list-container" id="story-list-container">
+                
+                <div id="loading-overlay">
+                    <div class="spinner"></div>
+                    <div style="color: var(--primary); font-weight: 500; font-size: 0.95rem;">Menarik data dari rak buku...</div>
+                </div>
+
+                <div id="stories-grid">
+                    <!-- Akan diisi otomatis oleh JavaScript -->
+                </div>
+                
+            </div>
         </div>
-
-        <!-- AREA LIST CERITA -->
-        <div class="story-list-container" id="story-list-container" style="position: relative;">
-            
-            <div id="loading-overlay">
-                <div class="spinner"></div>
-                <div style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Menarik data dari rak buku...</div>
-            </div>
-
-            <div id="stories-grid">
-                <!-- Akan diisi otomatis oleh JavaScript -->
-            </div>
-            
-        </div>
-
     </div>
 
     <!-- Script SweetAlert2 -->
@@ -199,9 +258,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
+        // Konfigurasi Database Aksara Narasi
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
             authDomain: "mading-cf676.firebaseapp.com",
@@ -213,15 +271,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
         // Mengambil Parameter Genre dari URL (?genre=Romansa)
         const urlParams = new URLSearchParams(window.location.search);
         let selectedGenre = urlParams.get('genre') || 'Umum';
-
-        // Update teks di header agar sesuai dengan genre yang diklik
-        document.getElementById('navbar-title').innerText = selectedGenre;
-        document.getElementById('hero-genre-name').innerText = `Kategori: ${selectedGenre}`;
 
         async function fetchStoriesByGenre() {
             try {
@@ -240,7 +293,7 @@
                         data.status === 'archived' || 
                         data.isDeleted === true || 
                         data.isBanned === true) {
-                        return; // Lewati cerita yang dilarang/belum rilis secara resmi
+                        return; 
                     }
                     
                     // Standarisasi pembacaan nama genre dari database
@@ -312,7 +365,6 @@
                 const coverBg = data.coverBase64 ? `url('${data.coverBase64}')` : "none";
                 const synopsisText = data.synopsis ? data.synopsis : "Penulis belum mencantumkan sinopsis untuk cerita ini.";
                 
-                // PERBAIKAN: Menggunakan data.votes agar seragam dengan sistem Dukungan
                 html += `
                     <div class="story-card-list" onclick="window.location.href='pratinjau.html?id=${data.id}'">
                         <div class="story-cover" style="background-image: ${coverBg};"></div>
