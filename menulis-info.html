@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Info Cerita - Cendekia Aksara</title>
+    <title>Info Cerita - Aksara Narasi</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <style>
+        /* --- 1. GLOBAL & COLORS --- */
         :root {
             --nav-bg: #0f172a;       
             --primary: #003366;      
@@ -21,14 +27,55 @@
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh; }
+        body { 
+            font-family: 'Poppins', sans-serif; background-color: var(--bg-color); 
+            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; 
+            min-height: 100vh; display: flex; flex-direction: column;
+            overflow-x: hidden; /* ANTI GESER HORIZONTAL */
+        }
 
-        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
-        @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); } }
+        /* --- 2. RESPONSIVE FULL DESKTOP WRAPPER --- */
+        .app-wrapper { 
+            width: 100%; max-width: 1280px; margin: 0 auto; 
+            background-color: transparent; flex: 1; 
+            display: flex; flex-direction: column; position: relative; 
+            overflow-x: hidden;
+        }
 
-        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 2px solid var(--gold); }
-        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; }
-        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; }
+        .content-bg {
+            background-color: white;
+            flex: 1; display: flex; flex-direction: column;
+            min-height: calc(100vh - 60px);
+        }
+
+        @media (min-width: 768px) { 
+            body { background-color: #e2e8f0; } 
+            .content-bg { 
+                border-left: 1px solid #cbd5e1; 
+                border-right: 1px solid #cbd5e1; 
+                box-shadow: 0 0 40px rgba(0,0,0,0.05); 
+            }
+        }
+
+        /* --- 3. FIXED NAVBAR --- */
+        .top-navbar { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000; 
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); 
+            display: flex; justify-content: center;
+            border-bottom: 2px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .navbar-content {
+            width: 100%; max-width: 1280px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; height: 100%;
+        }
+
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; display: flex; align-items: center;}
+        .btn-back:hover { color: var(--gold); }
+        
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
         
         .nav-right-actions { display: flex; align-items: center; gap: 10px; }
         .save-indicator { font-size: 0.75rem; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 50px; display: flex; align-items: center; gap: 5px; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
@@ -38,7 +85,9 @@
         .btn-save-manual:hover:not(:disabled) { background: #b45309; transform: translateY(-1px); }
         .btn-save-manual:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
+        /* --- 4. FORM AREA (Dibatasi 800px di Desktop) --- */
         .content-area { padding: 20px; flex: 1; }
+        .form-container { width: 100%; max-width: 800px; margin: 0 auto; }
 
         /* --- BANNED NOTICE BOX --- */
         .banned-alert-box {
@@ -133,7 +182,7 @@
         .chapter-header h3 { font-family: 'Aleo', serif; font-size: 1.2rem; color: var(--primary); margin: 0; }
         
         .chapter-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;}
-        .chapter-card { background: white; border: 1px solid #cbd5e1; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .chapter-card { background: white; border: 1px solid #cbd5e1; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; /* Anti geser */ }
         .chapter-info { flex: 1; cursor: pointer; min-width: 0; }
         .chapter-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chapter-info p { margin: 0; font-size: 0.75rem; color: var(--text-gray); display: flex; gap: 10px; align-items: center;}
@@ -142,7 +191,6 @@
         .chapter-status { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
         .status-draft { background: #f1f5f9; color: #64748b; }
         .status-published { background: #dcfce7; color: #166534; }
-        /* CSS KHUSUS TERJADWAL */
         .status-scheduled { background: #f3e8ff; color: #6d28d9; }
         
         .chapter-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
@@ -169,139 +217,146 @@
 <body>
 
     <div class="app-wrapper">
-        <header class="top-navbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <a href="menulis.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-                <h1 class="nav-title">Info Cerita</h1>
-            </div>
-            <div class="nav-right-actions">
-                <div class="save-indicator" id="save-indicator"><i class="fa-solid fa-check"></i></div>
-                <button class="btn-save-manual" id="btn-save-top" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
-            </div>
-        </header>
-
-        <div class="content-area">
+        <div class="content-bg">
             
-            <!-- KERANGKA SKELETON (INSTANT LOAD) -->
-            <div id="skeleton-container">
-                <div class="story-header-row">
-                    <div class="sk-light sk-cover"></div>
-                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-                        <div class="sk-light sk-line" style="width: 40%;"></div>
+            <header class="top-navbar">
+                <div class="navbar-content">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <a href="menulis.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+                        <h1 class="nav-title">Info Cerita</h1>
+                    </div>
+                    <div class="nav-right-actions">
+                        <div class="save-indicator" id="save-indicator"><i class="fa-solid fa-check"></i></div>
+                        <button class="btn-save-manual" id="btn-save-top" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="form-container">
+                    
+                    <!-- KERANGKA SKELETON (INSTANT LOAD) -->
+                    <div id="skeleton-container">
+                        <div class="story-header-row">
+                            <div class="sk-light sk-cover"></div>
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; min-width: 0;">
+                                <div class="sk-light sk-line" style="width: 40%;"></div>
+                                <div class="sk-light sk-box"></div>
+                            </div>
+                        </div>
+                        <div class="sk-light sk-line" style="width: 30%;"></div>
                         <div class="sk-light sk-box"></div>
+                        <div class="sk-light sk-line" style="width: 35%;"></div>
+                        <div class="sk-light sk-box"></div>
+                        <div class="sk-light sk-line" style="width: 20%;"></div>
+                        <div class="sk-light sk-textarea"></div>
+                        <br>
+                        <div class="sk-light sk-line" style="width: 40%;"></div>
+                        <div class="sk-light sk-chapter-card"></div>
+                        <div class="sk-light sk-chapter-card"></div>
                     </div>
-                </div>
-                <div class="sk-light sk-line" style="width: 30%;"></div>
-                <div class="sk-light sk-box"></div>
-                <div class="sk-light sk-line" style="width: 35%;"></div>
-                <div class="sk-light sk-box"></div>
-                <div class="sk-light sk-line" style="width: 20%;"></div>
-                <div class="sk-light sk-textarea"></div>
-                <br>
-                <div class="sk-light sk-line" style="width: 40%;"></div>
-                <div class="sk-light sk-chapter-card"></div>
-                <div class="sk-light sk-chapter-card"></div>
-            </div>
 
-            <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
-            <div id="real-content" style="display: none;">
-                
-                <!-- BANNED NOTICE (Tampil hanya jika cerita dibekukan) -->
-                <div class="banned-alert-box" id="banned-alert-box">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <div>
-                        <h4>Cerita Dibekukan</h4>
-                        <p>Karya ini telah diblokir oleh Admin karena melanggar pedoman komunitas. Anda tidak dapat lagi mengedit atau menerbitkan tulisan ini.</p>
-                    </div>
-                </div>
+                    <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
+                    <div id="real-content" style="display: none;">
+                        
+                        <!-- BANNED NOTICE -->
+                        <div class="banned-alert-box" id="banned-alert-box">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <div>
+                                <h4>Cerita Dibekukan</h4>
+                                <p>Karya ini telah diblokir oleh Admin karena melanggar pedoman komunitas. Anda tidak dapat lagi mengedit atau menerbitkan tulisan ini.</p>
+                            </div>
+                        </div>
 
-                <div class="story-header-row">
-                    <div class="cover-uploader" id="cover-uploader" onclick="document.getElementById('cover-file').click()">
-                        <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
-                        <div class="cover-preview" id="cover-preview"></div>
-                        <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
-                    </div>
-                    <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
+                        <div class="story-header-row">
+                            <div class="cover-uploader" id="cover-uploader" onclick="document.getElementById('cover-file').click()">
+                                <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
+                                <div class="cover-preview" id="cover-preview"></div>
+                                <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
+                            </div>
+                            <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
 
-                    <div class="story-header-fields">
+                            <div class="story-header-fields">
+                                <div class="form-group">
+                                    <label>Judul Cerita</label>
+                                    <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
-                            <label>Judul Cerita</label>
-                            <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
+                            <label>Genre Utama</label>
+                            <button type="button" class="genre-select-btn" id="btn-genre" onclick="openGenrePicker()">
+                                <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
                         </div>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Genre Utama</label>
-                    <button type="button" class="genre-select-btn" id="btn-genre" onclick="openGenrePicker()">
-                        <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
-                </div>
+                        <div class="form-group">
+                            <label>Tagar / Event (Opsional)</label>
+                            <div class="tags-container" id="tags-container">
+                                <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar (Lalu tekan Spasi atau Enter)">
+                            </div>
+                            <p class="field-hint">Maksimal 5 tagar. Cukup ketik dan tekan tombol <b>Spasi</b> di keyboard/HP kamu.</p>
+                        </div>
 
-                <div class="form-group">
-                    <label>Tagar / Event (Opsional)</label>
-                    <div class="tags-container" id="tags-container">
-                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar (Lalu tekan Spasi atau Enter)">
-                    </div>
-                    <p class="field-hint">Maksimal 5 tagar. Cukup ketik dan tekan tombol <b>Spasi</b> di keyboard/HP kamu.</p>
-                </div>
+                        <div class="form-group">
+                            <label>Sinopsis</label>
+                            <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
+                        </div>
 
-                <div class="form-group">
-                    <label>Sinopsis</label>
-                    <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Pernyataan Hak Cipta</label>
-                    <div class="copyright-list" id="copyright-list">
-                        <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
-                            <div class="copyright-radio"></div>
-                            <div class="copyright-text">
-                                <h4>Karya Asli</h4>
-                                <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
+                        <div class="form-group">
+                            <label>Pernyataan Hak Cipta</label>
+                            <div class="copyright-list" id="copyright-list">
+                                <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
+                                    <div class="copyright-radio"></div>
+                                    <div class="copyright-text">
+                                        <h4>Karya Asli</h4>
+                                        <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
+                                    </div>
+                                </div>
+                                <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
+                                    <div class="copyright-radio"></div>
+                                    <div class="copyright-text">
+                                        <h4>Terinspirasi</h4>
+                                        <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
+                                    </div>
+                                </div>
+                                <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
+                                    <div class="copyright-radio"></div>
+                                    <div class="copyright-text">
+                                        <h4>Adaptasi / Terjemahan Berizin</h4>
+                                        <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
+                                    </div>
+                                </div>
+                                <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
+                                    <div class="copyright-radio"></div>
+                                    <div class="copyright-text">
+                                        <h4>Fan-Fiksi</h4>
+                                        <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
-                            <div class="copyright-radio"></div>
-                            <div class="copyright-text">
-                                <h4>Terinspirasi</h4>
-                                <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
+
+                        <div class="form-group">
+                            <label>Status Progres Cerita</label>
+                            <div class="progress-status-group" id="progress-status-group">
+                                <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
+                                <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
+                                <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
                             </div>
                         </div>
-                        <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
-                            <div class="copyright-radio"></div>
-                            <div class="copyright-text">
-                                <h4>Adaptasi / Terjemahan Berizin</h4>
-                                <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
-                            </div>
+
+                        <div class="chapter-section">
+                            <div class="chapter-header"><h3>Daftar Bab</h3></div>
+                            <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
+                            <button class="btn-add-chapter" id="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
                         </div>
-                        <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
-                            <div class="copyright-radio"></div>
-                            <div class="copyright-text">
-                                <h4>Fan-Fiksi</h4>
-                                <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Status Progres Cerita</label>
-                    <div class="progress-status-group" id="progress-status-group">
-                        <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
-                        <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
-                        <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
-                    </div>
+                    </div> <!-- End Real Content -->
                 </div>
-
-                <div class="chapter-section">
-                    <div class="chapter-header"><h3>Daftar Bab</h3></div>
-                    <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
-                    <button class="btn-add-chapter" id="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
-                </div>
-            </div> <!-- End Real Content -->
-
+            </div>
         </div>
     </div>
 
