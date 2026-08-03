@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+    <!-- Script Confetti (Kertas Warna-warni Kemenangan) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
             --nav-bg: #0f172a;       
@@ -19,7 +22,7 @@
             --bg-color: #f8fafc;
             --text-dark: #1e293b;
             --text-gray: #64748b;
-            --silver: #94a3b8;
+            --silver: #cbd5e1;
             --bronze: #cd7f32;
         }
 
@@ -38,7 +41,7 @@
 
         .content-area { flex: 1; display: flex; flex-direction: column; }
 
-        /* --- SECTION 1: KLASEMEN MINGGUAN (Terkunci & Terbuka) --- */
+        /* --- SECTION 1: KLASEMEN MINGGUAN --- */
         .weekly-section {
             background: linear-gradient(160deg, #1e293b 0%, var(--nav-bg) 100%);
             padding: 30px 20px; text-align: center; position: relative; color: white;
@@ -54,77 +57,41 @@
 
         /* --- ANIMASI LIQUID (SAAT TERKUNCI) --- */
         .locked-view { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; position: relative; z-index: 5;}
-        .liquid-container {
-            position: relative; width: 140px; height: 140px; margin: 10px auto 30px auto;
-            display: flex; justify-content: center; align-items: center;
-        }
-        /* Gumpalan Utama */
-        .liquid-blob {
-            position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-            animation: morph 6s ease-in-out infinite;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 10px 30px rgba(212,175,55,0.4);
-            z-index: 2;
-        }
-        /* Gumpalan Bayangan di Belakang */
-        .liquid-blob::before {
-            content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
-            background: linear-gradient(135deg, rgba(212,175,55,0.3), rgba(180,83,9,0.3));
-            border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%;
-            animation: morph 8s linear infinite reverse;
-            z-index: 1;
-        }
-        .liquid-content {
-            position: relative; z-index: 3; color: white; display: flex; flex-direction: column; align-items: center;
-        }
+        .liquid-container { position: relative; width: 140px; height: 140px; margin: 10px auto 30px auto; display: flex; justify-content: center; align-items: center; }
+        .liquid-blob { position: absolute; width: 100%; height: 100%; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: morph 6s ease-in-out infinite; box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 10px 30px rgba(212,175,55,0.4); z-index: 2; }
+        .liquid-blob::before { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; background: linear-gradient(135deg, rgba(212,175,55,0.3), rgba(180,83,9,0.3)); border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%; animation: morph 8s linear infinite reverse; z-index: 1; }
+        .liquid-content { position: relative; z-index: 3; color: white; display: flex; flex-direction: column; align-items: center; }
         .liquid-content i { font-size: 2.2rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
-        
-        @keyframes morph {
-            0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg); }
-            50% { border-radius: 70% 30% 50% 50% / 60% 40% 70% 40%; transform: rotate(180deg); }
-            100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(360deg); }
-        }
-        
+        @keyframes morph { 0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg); } 50% { border-radius: 70% 30% 50% 50% / 60% 40% 70% 40%; transform: rotate(180deg); } 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(360deg); } }
         .locked-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.5; padding: 0 20px;}
         .locked-text span { color: var(--gold); font-weight: 700; font-size: 1rem; display: block; margin-top: 5px; }
 
-        /* --- PODIUM JUARA (SAAT TERBUKA) --- */
-        .podium-view { display: none; padding-top: 10px; position: relative; z-index: 5;}
-        .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 10px; height: 280px; padding-bottom: 20px;}
-        
-        .podium-item { display: flex; flex-direction: column; align-items: center; width: 30%; position: relative; }
-        
-        /* Kartu Info Cerita di atas Podium */
-        .podium-card {
-            background: white; border-radius: 12px; padding: 12px 8px; width: 100%;
-            text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            margin-bottom: -15px; position: relative; z-index: 10;
-            display: flex; flex-direction: column; align-items: center; transition: 0.3s; cursor: pointer;
+        /* --- DAFTAR JUARA MINGGUAN (Vertikal) --- */
+        .unlocked-view { display: none; position: relative; z-index: 5; padding-top: 10px;}
+        .weekly-list { display: flex; flex-direction: column; gap: 15px; }
+        .weekly-item {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; transition: 0.3s; cursor: pointer; text-align: left;
+            position: relative; overflow: hidden;
         }
-        .podium-card:hover { transform: translateY(-5px); }
-        .podium-card img { width: 50px; height: 75px; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 8px;}
-        .podium-tag { font-size: 0.75rem; font-weight: 800; background: var(--nav-bg); padding: 2px 8px; border-radius: 50px; display: inline-block; margin-bottom: 5px; white-space: nowrap;}
-        .podium-title { font-size: 0.7rem; font-weight: 700; color: var(--primary); margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;}
-        .podium-author { font-size: 0.6rem; color: var(--text-gray); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;}
+        .weekly-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.1); }
+        
+        .weekly-item.rank-1 { border-color: var(--gold); background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(255,255,255,0.05)); }
+        .weekly-item.rank-1 .weekly-rank { color: var(--gold); }
+        .weekly-item.rank-2 .weekly-rank { color: var(--silver); }
+        .weekly-item.rank-3 .weekly-rank { color: var(--bronze); }
 
-        /* Balok Podium */
-        .podium-base { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 2.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.3); border-top-left-radius: 8px; border-top-right-radius: 8px; box-shadow: inset 0 2px 10px rgba(255,255,255,0.2);}
+        .weekly-rank { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; width: 35px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); flex-shrink: 0;}
+        .weekly-cover { width: 60px; height: 90px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background-color: #334155; flex-shrink: 0;}
         
-        /* Rank 2 (Kiri) */
-        .rank-2 .podium-base { height: 70px; background: linear-gradient(to bottom, #cbd5e1, #64748b); }
-        .rank-2 .podium-tag { color: #cbd5e1; }
+        .weekly-info { flex: 1; min-width: 0; }
+        .weekly-tag { font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.1); color: var(--gold); padding: 2px 10px; border-radius: 50px; display: inline-block; margin-bottom: 5px; border: 1px solid rgba(212,175,55,0.3);}
+        .weekly-title { font-size: 1rem; font-weight: 700; color: white; margin: 0 0 4px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;}
+        .weekly-author { font-size: 0.75rem; color: #cbd5e1; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;}
         
-        /* Rank 1 (Tengah) */
-        .rank-1 { z-index: 11; width: 36%; margin-bottom: 15px;}
-        .rank-1 .podium-card { padding: 15px 10px; border: 2px solid var(--gold);}
-        .rank-1 .podium-card img { width: 65px; height: 95px; }
-        .rank-1 .podium-tag { color: var(--gold); font-size: 0.85rem;}
-        .rank-1 .podium-base { height: 110px; background: linear-gradient(to bottom, #fde047, #b45309); font-size: 3rem;}
-        
-        /* Rank 3 (Kanan) */
-        .rank-3 .podium-base { height: 50px; background: linear-gradient(to bottom, #d97706, #78350f); }
-        .rank-3 .podium-tag { color: #d97706; }
+        .weekly-score { text-align: right; font-size: 0.85rem; font-weight: 700; color: var(--gold); flex-shrink: 0; display: flex; flex-direction: column; align-items: center;}
+        .weekly-score i { font-size: 1.2rem; margin-bottom: 2px; }
 
         /* --- SECTION 2: TREN HARIAN (Selalu Tampil) --- */
         .daily-section { background: white; padding: 25px 20px; flex: 1; }
@@ -141,19 +108,25 @@
         }
         .trend-item:hover { border-color: var(--gold); transform: translateX(5px); background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
         
-        .trend-rank { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: #cbd5e1; width: 25px; text-align: center; }
-        /* Warnai rank 4,5,6 agak berbeda */
+        .trend-rank { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: #94a3b8; width: 25px; text-align: center; }
+        
+        /* Pewarnaan dinamis untuk top 3 harian jika tidak ada klasemen mingguan */
         .trend-item:nth-child(1) .trend-rank { color: var(--gold); }
-        .trend-item:nth-child(2) .trend-rank { color: var(--silver); }
+        .trend-item:nth-child(2) .trend-rank { color: #94a3b8; }
         .trend-item:nth-child(3) .trend-rank { color: var(--bronze); }
 
         .trend-info { flex: 1; min-width: 0; }
-        .trend-tag { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin: 0 0 2px 0; }
+        .trend-tag { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin: 0 0 2px 0; text-transform: lowercase; }
         .trend-stat { font-size: 0.75rem; color: var(--text-gray); margin: 0; display: flex; align-items: center; gap: 5px;}
         
         .trend-action i { font-size: 1.2rem; color: #94a3b8; transition: 0.2s;}
         .trend-item:hover .trend-action i { color: var(--gold); }
 
+        .empty-state { text-align: center; padding: 30px 20px; color: #94a3b8; font-size: 0.85rem; border: 2px dashed #cbd5e1; border-radius: 16px; }
+        
+        /* Shimmer untuk Realtime Loading */
+        .sk-shimmer { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; border-radius: 8px;}
+        .sk-dark { background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 37%, rgba(255,255,255,0.1) 63%); }
     </style>
 </head>
 <body>
@@ -163,25 +136,23 @@
             <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <h1 class="nav-title">Peringkat Tagar</h1>
             <!-- Tombol Debug: Hanya untuk pengetesan, nanti bisa dihapus -->
-            <button class="btn-debug" onclick="toggleDebug()"><i class="fa-solid fa-clock-rotate-left"></i> Test UI</button>
+            <button class="btn-debug" onclick="toggleDebug()"><i class="fa-solid fa-clock-rotate-left"></i> Test Waktu</button>
         </header>
 
         <div class="content-area">
             
-            <!-- SECTION 1: MINGGUAN -->
+            <!-- SECTION 1: JUARA MINGGUAN -->
             <div class="weekly-section">
                 <div class="section-header-weekly">
                     <h2>Juara Mingguan</h2>
                     <p>Tagar dengan interaksi pembaca tertinggi</p>
                 </div>
 
-                <!-- STATE A: TERKUNCI (Animasi Liquid) -->
+                <!-- TERKUNCI (Menunggu Hari Senin) -->
                 <div class="locked-view" id="weekly-locked">
                     <div class="liquid-container">
                         <div class="liquid-blob"></div>
-                        <div class="liquid-content">
-                            <i class="fa-solid fa-lock"></i>
-                        </div>
+                        <div class="liquid-content"><i class="fa-solid fa-lock"></i></div>
                     </div>
                     <div class="locked-text">
                         Kawah kompetisi sedang menghimpun kekuatan. Papan juara akan terungkap secara eksklusif pada:
@@ -189,154 +160,190 @@
                     </div>
                 </div>
 
-                <!-- STATE B: TERBUKA (Podium) -->
-                <div class="podium-view" id="weekly-podium">
-                    <div class="podium-container">
-                        <!-- Rank 2 -->
-                        <div class="podium-item rank-2">
-                            <div class="podium-card" onclick="window.location.href='search.html?q=%23misteri'">
-                                <img src="https://i.pinimg.com/236x/8f/c9/c3/8fc9c3a3c20042a92c46f6dc9c02506b.jpg" alt="Cover">
-                                <span class="podium-tag">#misteri</span>
-                                <h4 class="podium-title">Rumah Tanpa Pintu</h4>
-                                <p class="podium-author">@sangpenulis</p>
-                            </div>
-                            <div class="podium-base">2</div>
-                        </div>
-                        
-                        <!-- Rank 1 -->
-                        <div class="podium-item rank-1">
-                            <div class="podium-card" onclick="window.location.href='search.html?q=%23romansa'">
-                                <img src="https://i.pinimg.com/236x/21/df/b4/21dfb47bb6b6ec42b6a95cc7076b3aab.jpg" alt="Cover">
-                                <span class="podium-tag">#romansa</span>
-                                <h4 class="podium-title">Hujan di Bulan Juni dan Kenangan</h4>
-                                <p class="podium-author">@aksaracinta</p>
-                            </div>
-                            <div class="podium-base">1</div>
-                        </div>
-
-                        <!-- Rank 3 -->
-                        <div class="podium-item rank-3">
-                            <div class="podium-card" onclick="window.location.href='search.html?q=%23fiksi'">
-                                <img src="https://i.pinimg.com/236x/4d/91/97/4d9197c38525b6a71bbdc512760a5e8f.jpg" alt="Cover">
-                                <span class="podium-tag">#fiksi</span>
-                                <h4 class="podium-title">Ekspedisi Langit Ke-7</h4>
-                                <p class="podium-author">@petualang</p>
-                            </div>
-                            <div class="podium-base">3</div>
-                        </div>
+                <!-- TERBUKA (Menampilkan Data Realtime) -->
+                <div class="unlocked-view" id="weekly-unlocked">
+                    <div class="weekly-list" id="weekly-list-container">
+                        <!-- Skeleton Loading -->
+                        <div class="weekly-item"><div class="sk-shimmer sk-dark" style="width:30px; height:30px;"></div><div class="sk-shimmer sk-dark" style="width:60px; height:90px;"></div><div style="flex:1;"><div class="sk-shimmer sk-dark" style="width:60px; height:20px; margin-bottom:10px;"></div><div class="sk-shimmer sk-dark" style="width:90%; height:15px; margin-bottom:10px;"></div></div></div>
+                        <div class="weekly-item"><div class="sk-shimmer sk-dark" style="width:30px; height:30px;"></div><div class="sk-shimmer sk-dark" style="width:60px; height:90px;"></div><div style="flex:1;"><div class="sk-shimmer sk-dark" style="width:60px; height:20px; margin-bottom:10px;"></div><div class="sk-shimmer sk-dark" style="width:90%; height:15px; margin-bottom:10px;"></div></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- SECTION 2: HARIAN REALTIME -->
+            <!-- SECTION 2: TREN HARIAN -->
             <div class="daily-section">
                 <div class="section-header-daily">
                     <h3><i class="fa-solid fa-fire-flame-curved"></i> Tren Hari Ini</h3>
                     <span id="realtime-clock">Memuat waktu...</span>
                 </div>
 
-                <!-- List Tren (Data Dummy untuk visual UI) -->
-                <div class="trend-list">
-                    <div class="trend-item" onclick="window.location.href='search.html?q=%23puisi'">
-                        <div class="trend-rank">4</div>
-                        <div class="trend-info">
-                            <h4 class="trend-tag">#puisi</h4>
-                            <p class="trend-stat"><i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i> 12.450 interaksi hari ini</p>
-                        </div>
-                        <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
-                    </div>
-
-                    <div class="trend-item" onclick="window.location.href='search.html?q=%23komedi'">
-                        <div class="trend-rank">5</div>
-                        <div class="trend-info">
-                            <h4 class="trend-tag">#komedi</h4>
-                            <p class="trend-stat"><i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i> 9.120 interaksi hari ini</p>
-                        </div>
-                        <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
-                    </div>
-
-                    <div class="trend-item" onclick="window.location.href='search.html?q=%23remaja'">
-                        <div class="trend-rank">6</div>
-                        <div class="trend-info">
-                            <h4 class="trend-tag">#remaja</h4>
-                            <p class="trend-stat"><i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i> 7.800 interaksi hari ini</p>
-                        </div>
-                        <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
-                    </div>
-
-                    <div class="trend-item" onclick="window.location.href='search.html?q=%23thriller'">
-                        <div class="trend-rank">7</div>
-                        <div class="trend-info">
-                            <h4 class="trend-tag">#thriller</h4>
-                            <p class="trend-stat"><i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i> 5.300 interaksi hari ini</p>
-                        </div>
-                        <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
-                    </div>
-                    
-                    <div class="trend-item" onclick="window.location.href='search.html?q=%23horor'">
-                        <div class="trend-rank">8</div>
-                        <div class="trend-info">
-                            <h4 class="trend-tag">#horor</h4>
-                            <p class="trend-stat"><i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i> 4.100 interaksi hari ini</p>
-                        </div>
-                        <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
-                    </div>
+                <div class="trend-list" id="daily-list-container">
+                    <!-- Skeleton Loading -->
+                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:100px; height:18px; margin-bottom:8px;"></div><div class="sk-shimmer" style="width:150px; height:12px;"></div></div></div>
+                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:100px; height:18px; margin-bottom:8px;"></div><div class="sk-shimmer" style="width:150px; height:12px;"></div></div></div>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <script>
-        // --- LOGIKA WAKTU (PENENTU TERKUNCI/TERBUKA) ---
-        let isForceDebug = false; // Untuk tombol test UI
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        function checkRankingStatus() {
-            if (isForceDebug) return; // Jika tombol test ditekan, jangan otomatis mengubah
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
+            authDomain: "mading-cf676.firebaseapp.com",
+            projectId: "mading-cf676",
+            storageBucket: "mading-cf676.firebasestorage.app",
+            messagingSenderId: "72175203671",
+            appId: "1:72175203671:web:7a0676a55beb64bc96ba12"
+        };
+        const app = initializeApp(firebaseConfig); 
+        const db = getFirestore(app);
 
-            const now = new Date();
-            const day = now.getDay(); // 0 = Minggu, 1 = Senin, 2 = Selasa, dst
-            const hour = now.getHours();
+        let isForceDebug = false;
+        let confettiFired = false;
+        let hasWeeklyDataToShow = false;
 
-            const lockedView = document.getElementById('weekly-locked');
-            const podiumView = document.getElementById('weekly-podium');
-
-            // Syarat Terbuka: Hari Senin (1) DAN Jam 09:00 s.d 23:59
-            if (day === 1 && hour >= 9 && hour <= 23) {
-                lockedView.style.display = 'none';
-                podiumView.style.display = 'block';
-            } else {
-                lockedView.style.display = 'flex';
-                podiumView.style.display = 'none';
-            }
-        }
-
-        // Fungsi rahasia untuk kamu menguji tampilan tanpa harus menunggu hari Senin
-        function toggleDebug() {
-            isForceDebug = true;
-            const lockedView = document.getElementById('weekly-locked');
-            const podiumView = document.getElementById('weekly-podium');
-            
-            if (podiumView.style.display === 'none' || podiumView.style.display === '') {
-                lockedView.style.display = 'none';
-                podiumView.style.display = 'block';
-            } else {
-                lockedView.style.display = 'flex';
-                podiumView.style.display = 'none';
-            }
-        }
-
-        // Update jam kecil di bagian "Tren Hari Ini"
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             document.getElementById('realtime-clock').innerHTML = `Live • ${timeStr} WIB`;
         }
 
-        // Jalankan saat halaman dimuat
-        checkRankingStatus();
+        // --- SISTEM LOGIKA WAKTU & CONFETTI ---
+        function checkRankingStatus() {
+            const now = new Date();
+            const day = now.getDay(); // 1 = Senin
+            const hour = now.getHours();
+
+            const lockedView = document.getElementById('weekly-locked');
+            const unlockedView = document.getElementById('weekly-unlocked');
+
+            // Syarat Buka: Force Debug ditekan ATAU (Hari Senin jam 09:00 - 23:59)
+            if (isForceDebug || (day === 1 && hour >= 9 && hour <= 23)) {
+                lockedView.style.display = 'none';
+                unlockedView.style.display = 'block';
+                
+                // Tembakkan confetti HANYA jika data mingguan ada dan belum ditembakkan
+                if (!confettiFired && hasWeeklyDataToShow) {
+                    triggerConfetti();
+                    confettiFired = true;
+                }
+            } else {
+                lockedView.style.display = 'flex';
+                unlockedView.style.display = 'none';
+                confettiFired = false; // Reset jika kembali terkunci
+            }
+        }
+
+        function triggerConfetti() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#d4af37', '#b45309', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#d4af37', '#b45309', '#ffffff']
+                });
+
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+
+        window.toggleDebug = () => {
+            isForceDebug = !isForceDebug;
+            checkRankingStatus();
+        };
+
+        // --- PENGAMBILAN DATA REALTIME DARI FIREBASE ---
+        async function fetchRankings() {
+            try {
+                // 1. Ambil Data Tren Harian (Top 10 yang skor hariannya > 0)
+                const qDaily = query(collection(db, "tag_rankings"), where("dailyScore", ">", 0), orderBy("dailyScore", "desc"), limit(10));
+                const snapDaily = await getDocs(qDaily);
+                
+                const dailyContainer = document.getElementById('daily-list-container');
+                if (snapDaily.empty) {
+                    dailyContainer.innerHTML = `<div class="empty-state">Belum ada interaksi tagar hari ini. Jadilah yang pertama membaca!</div>`;
+                } else {
+                    let dailyHtml = '';
+                    let rank = 1;
+                    snapDaily.forEach(doc => {
+                        const data = doc.data();
+                        const tagUrl = encodeURIComponent(data.tag);
+                        dailyHtml += `
+                            <div class="trend-item" onclick="window.location.href='search.html?q=%23${tagUrl}'">
+                                <div class="trend-rank">${rank}</div>
+                                <div class="trend-info">
+                                    <h4 class="trend-tag">#${data.tag}</h4>
+                                    <p class="trend-stat"><i class="fa-solid fa-fire" style="color:#ef4444;"></i> ${data.dailyScore} interaksi hari ini</p>
+                                </div>
+                                <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
+                            </div>
+                        `;
+                        rank++;
+                    });
+                    dailyContainer.innerHTML = dailyHtml;
+                }
+
+                // 2. Ambil Data Juara Mingguan (Top 3 yang skor mingguannya > 0)
+                const qWeekly = query(collection(db, "tag_rankings"), where("weeklyScore", ">", 0), orderBy("weeklyScore", "desc"), limit(3));
+                const snapWeekly = await getDocs(qWeekly);
+                
+                const weeklyContainer = document.getElementById('weekly-list-container');
+                if (snapWeekly.empty) {
+                    hasWeeklyDataToShow = false;
+                    weeklyContainer.innerHTML = `<div class="empty-state" style="border-color:rgba(255,255,255,0.2); color:#cbd5e1;">Papan peringkat minggu ini masih kosong. Belum ada kompetisi yang memanas!</div>`;
+                } else {
+                    hasWeeklyDataToShow = true;
+                    let weeklyHtml = '';
+                    let wRank = 1;
+                    snapWeekly.forEach(doc => {
+                        const data = doc.data();
+                        const coverBg = data.bestStoryCover || 'https://via.placeholder.com/60x90?text=No+Cover';
+                        const author = data.bestStoryAuthor || 'Anonim';
+                        const title = data.bestStoryTitle || 'Tanpa Judul';
+                        const tagUrl = encodeURIComponent(data.tag);
+                        
+                        weeklyHtml += `
+                            <div class="weekly-item rank-${wRank}" onclick="window.location.href='pratinjau.html?id=${data.bestStoryId}'">
+                                <div class="weekly-rank">${wRank}</div>
+                                <img src="${coverBg}" alt="Cover" class="weekly-cover">
+                                <div class="weekly-info">
+                                    <span class="weekly-tag">#${data.tag}</span>
+                                    <h4 class="weekly-title">${title}</h4>
+                                    <p class="weekly-author"><i class="fa-solid fa-at"></i> ${author}</p>
+                                </div>
+                                <div class="weekly-score">
+                                    <i class="fa-solid fa-crown"></i>
+                                    ${data.weeklyScore}
+                                </div>
+                            </div>
+                        `;
+                        wRank++;
+                    });
+                    weeklyContainer.innerHTML = weeklyHtml;
+                    
+                    // Cek lagi apakah sedang terbuka agar confetti bisa menembak
+                    checkRankingStatus();
+                }
+
+            } catch (error) {
+                console.error("Gagal memuat data peringkat:", error);
+                document.getElementById('daily-list-container').innerHTML = `<div class="empty-state" style="color:#dc2626;">Gagal terhubung ke database.</div>`;
+                document.getElementById('weekly-list-container').innerHTML = `<div class="empty-state" style="color:#dc2626;">Gagal terhubung ke database.</div>`;
+            }
+        }
+
+        // Inisialisasi
         updateClock();
         setInterval(updateClock, 60000); // Update jam setiap menit
+        checkRankingStatus(); // Set status UI (kunci/buka)
+        fetchRankings(); // Mulai tarik data dari Firebase
     </script>
 </body>
 </html>
