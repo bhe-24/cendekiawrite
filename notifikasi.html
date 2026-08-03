@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Notifikasi - Cendekia Aksara</title>
+    <title>Notifikasi - Aksara Narasi</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +16,7 @@
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <!-- ONESIGNAL SDK (Penting untuk Push Notification HP) -->
+    <!-- ONESIGNAL SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -41,42 +46,58 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0; padding: 0;
-            padding-top: 60px; 
+            padding-top: 60px; /* DISINKRONKAN DENGAN TINGGI NAVBAR */
             min-height: 100vh;
             display: flex; flex-direction: column;
         }
 
-        /* --- 2. MOBILE FIRST WRAPPER --- */
+        /* --- 2. RESPONSIVE FULL DESKTOP WRAPPER --- */
         .app-wrapper {
             width: 100%;
-            max-width: 480px; 
+            max-width: 1280px; 
             margin: 0 auto;
-            background-color: white;
-            min-height: 100vh;
+            background-color: transparent;
+            flex: 1;
             display: flex; flex-direction: column;
             position: relative;
         }
 
+        .content-bg {
+            background-color: white;
+            flex: 1; display: flex; flex-direction: column;
+            min-height: calc(100vh - 60px);
+        }
+
         @media (min-width: 768px) {
             body { background-color: #e2e8f0; } 
-            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
-            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+            .content-bg { 
+                border-left: 1px solid #cbd5e1; 
+                border-right: 1px solid #cbd5e1; 
+                box-shadow: 0 0 40px rgba(0,0,0,0.05); 
+            }
         }
 
         /* --- 3. FIXED NAVBAR --- */
         .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .navbar-content {
+            width: 100%; max-width: 1280px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 0 20px; height: 100%;
         }
 
         .btn-back {
             background: none; border: none; color: white;
             font-size: 1.2rem; cursor: pointer; transition: 0.2s;
             text-decoration: none; display: flex; align-items: center;
+            height: 100%;
         }
         .btn-back:hover { color: var(--gold); }
 
@@ -85,105 +106,167 @@
 
         /* --- 4. HEADER NOTIFIKASI --- */
         .page-header {
-            padding: 20px 20px 10px 20px;
+            padding: 20px 20px;
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0; margin-top: 0;
+            background: white;
         }
         .page-header h2 { font-size: 1.2rem; margin: 0; color: var(--primary); font-weight: 700; }
         
         .btn-mark-read {
             background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
-            padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
-            cursor: pointer; transition: 0.2s; font-family: 'Poppins';
+            padding: 6px 14px; border-radius: 50px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s; font-family: 'Poppins'; display: flex; align-items: center; gap: 6px;
         }
         .btn-mark-read:hover { background: #3b82f6; color: white; }
 
-        /* --- 5. NOTIFICATION LIST --- */
+        /* --- 5. NOTIFICATION LIST (RESPONSIVE GRID) --- */
         .notif-container {
-            flex: 1; overflow-y: auto; padding-bottom: 20px;
+            padding: 20px; flex: 1; position: relative;
+        }
+
+        .notif-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile: 1 Kolom */
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .notif-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .notif-container { padding: 30px; }
         }
 
         .notif-item {
-            display: flex; gap: 15px; padding: 15px 20px;
-            border-bottom: 1px solid #f1f5f9; cursor: pointer;
-            transition: 0.3s; position: relative;
+            display: flex; gap: 15px; padding: 15px 18px;
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); height: 100%;
         }
-        .notif-item:hover { background-color: #f8fafc; }
+        .notif-item:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.06); border-color: var(--primary); }
         
         /* State Belum Dibaca */
-        .notif-item.unread { background-color: #f0fdf4; }
+        .notif-item.unread { background-color: #f0fdf4; border-color: #bbf7d0; }
         .notif-item.unread::before {
             content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
             background-color: #10b981;
         }
 
-        /* Ikon Notifikasi (Berdasarkan Tipe) */
-        .notif-icon {
-            width: 45px; height: 45px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.1rem; flex-shrink: 0; color: white;
+        /* --- STYLING AVATAR / IKON SENDER --- */
+        .notif-avatar-wrap {
+            position: relative; width: 48px; height: 48px; flex-shrink: 0;
         }
-        /* Palet Warna Kategori Notifikasi */
-        .icon-comment { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 4px 10px rgba(59,130,246,0.3);}
-        .icon-vote { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 10px rgba(245,158,11,0.3);}
-        .icon-follow { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 10px rgba(16,185,129,0.3);}
-        .icon-editor { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 10px rgba(139,92,246,0.3);}
-        .icon-release { background: linear-gradient(135deg, #0ea5e9, #0284c7); box-shadow: 0 4px 10px rgba(14,165,233,0.3);}
-        .icon-system { background: linear-gradient(135deg, #64748b, #334155); box-shadow: 0 4px 10px rgba(100,116,139,0.3);}
+        .notif-avatar-img {
+            width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+            border: 1.5px solid #cbd5e1; background-color: #e2e8f0;
+        }
+        .notif-badge-mini {
+            position: absolute; bottom: -2px; right: -2px;
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.65rem; color: white; border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
 
-        .notif-content { flex: 1; }
+        /* Ikon Notifikasi Bawaan (Jika Tidak Ada Avatar) */
+        .notif-icon {
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.15rem; flex-shrink: 0; color: white;
+        }
+
+        /* Palet Warna Kategori Notifikasi */
+        .icon-comment { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .icon-vote { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-follow { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-editor { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .icon-release { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .icon-system { background: linear-gradient(135deg, #64748b, #334155); }
+
+        .notif-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .notif-title {
             font-size: 0.9rem; margin: 0 0 3px 0; color: var(--text-dark);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .notif-item.unread .notif-title { font-weight: 700; color: #064e3b; }
         
         .notif-message {
-            font-size: 0.8rem; color: var(--text-gray); margin: 0 0 5px 0;
+            font-size: 0.8rem; color: var(--text-gray); margin: 0 0 6px 0;
             line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         .notif-time {
-            font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;
+            font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 500;
         }
 
-        /* LOADING & EMPTY STATE */
-        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; border: none; }
-        .empty-state i { font-size: 4rem; margin-bottom: 15px; color: #cbd5e1; }
+        /* EMPTY STATE */
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; margin-top: 10px; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 15px; color: #cbd5e1; }
         .empty-state p { margin: 0; font-size: 0.95rem; }
 
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #e2e8f0;
-            border-top-color: var(--gold); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* SKELETON SHIMMER (INSTANT LOAD) */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-notif-card { display: flex; gap: 15px; background: white; padding: 16px; border-radius: 16px; border: 1px solid #e2e8f0; height: 100%; }
+        .sk-avatar, .sk-line { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        .sk-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
+        .sk-line { height: 12px; border-radius: 6px; margin-bottom: 8px; }
+        .sk-line.short { width: 50%; }
+        @media (max-width: 767px) { .sk-notif-card.desktop-only { display: none; } }
     </style>
+
+    <!-- RENDER INSTAN DARI CACHE LOKAL -->
+    <script>
+        (function() {
+            const uid = localStorage.getItem('cendekia_last_uid');
+            if(!uid) return;
+            try {
+                const raw = localStorage.getItem('cendekia_notif_cache_' + uid);
+                if(raw) {
+                    const data = JSON.parse(raw);
+                    if(data.notifHtml) {
+                        document.addEventListener("DOMContentLoaded", function() {
+                            const grid = document.getElementById('notif-grid');
+                            const sk = document.getElementById('notif-skeleton');
+                            if (grid && sk) {
+                                grid.innerHTML = data.notifHtml;
+                                sk.style.display = 'none';
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
 </head>
 <body>
 
     <div class="app-wrapper">
-        
-        <!-- NAVBAR -->
-        <header class="top-navbar">
-            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-            <div class="nav-brand">
-                <h1>Notifikasi</h1>
+        <div class="content-bg">
+            <!-- NAVBAR -->
+            <header class="top-navbar">
+                <div class="navbar-content">
+                    <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+                    <div class="nav-brand">
+                        <h1>Notifikasi</h1>
+                    </div>
+                    <div style="width: 24px;"></div> <!-- Spacer -->
+                </div>
+            </header>
+
+            <div class="page-header">
+                <h2>Aktivitas Terbaru</h2>
+                <button class="btn-mark-read" onclick="markAllAsRead()"><i class="fa-solid fa-check-double"></i> Tandai Dibaca</button>
             </div>
-            <div style="width: 24px;"></div> <!-- Spacer -->
-        </header>
 
-        <div class="page-header">
-            <h2>Aktivitas Terbaru</h2>
-            <button class="btn-mark-read" onclick="markAllAsRead()"><i class="fa-solid fa-check-double"></i> Tandai Dibaca</button>
-        </div>
+            <!-- LIST NOTIFIKASI -->
+            <div class="notif-container" id="notif-container">
+                <div id="notif-skeleton" class="notif-grid">
+                    <div class="sk-notif-card"><div class="sk-avatar"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+                    <div class="sk-notif-card"><div class="sk-avatar"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+                    <div class="sk-notif-card desktop-only"><div class="sk-avatar"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+                </div>
 
-        <!-- LIST NOTIFIKASI -->
-        <div class="notif-container" id="notif-container">
-            <div class="empty-state">
-                <div class="spinner"></div>
-                <p>Sinkronisasi Radar Cendekia...</p>
+                <div class="notif-grid" id="notif-grid"></div>
             </div>
         </div>
-
     </div>
 
     <!-- Script SweetAlert2 -->
@@ -195,7 +278,7 @@
         import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Konfigurasi Database Cendekia Aksara
+        // Konfigurasi Database Aksara Narasi
         const firebaseConfig = {
             apiKey: "AIzaSyDpUWUIzPXIZN6rrNtsIqcL6VfOE2RLVl0",
             authDomain: "mading-cf676.firebaseapp.com",
@@ -216,8 +299,9 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
+                localStorage.setItem('cendekia_last_uid', user.uid);
                 
-                // Mendaftarkan user ke OneSignal dengan cara yang aman
+                // Mendaftarkan user ke OneSignal
                 if (window.OneSignalDeferred) {
                     window.OneSignalDeferred.push(async function(OneSignal) {
                         try {
@@ -230,7 +314,6 @@
 
                 listenToNotifications();
             } else {
-                // Tolak akses jika belum login
                 Swal.fire({
                     title: 'Akses Ditolak',
                     text: 'Silakan masuk terlebih dahulu untuk melihat pemberitahuan Anda.',
@@ -243,7 +326,7 @@
             }
         });
 
-        // 2. Fungsi Formatting Waktu
+        // 2. Fungsi Formatting Waktu Relative
         function timeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
             let interval = seconds / 31536000;
@@ -259,20 +342,30 @@
             return "Baru saja";
         }
 
-        // 3. Listener Real-time ke Firestore (Menangkap SEMUA Progres)
+        function saveNotifCache(html) {
+            if(!currentUserUid) return;
+            try {
+                localStorage.setItem('cendekia_notif_cache_' + currentUserUid, JSON.stringify({ notifHtml: html, cachedAt: Date.now() }));
+            } catch(e) {}
+        }
+
+        // 3. Listener Real-time ke Firestore
         function listenToNotifications() {
             const q = query(collection(db, "users", currentUserUid, "notifications"), orderBy("createdAt", "desc"));
             
             onSnapshot(q, (snap) => {
-                const container = document.getElementById('notif-container');
+                const grid = document.getElementById('notif-grid');
+                const skeleton = document.getElementById('notif-skeleton');
 
                 if (snap.empty) {
-                    container.innerHTML = `
+                    if (skeleton) skeleton.style.display = 'none';
+                    grid.innerHTML = `
                         <div class="empty-state">
                             <i class="fa-regular fa-bell-slash"></i>
                             <p>Belum ada aktivitas atau pemberitahuan baru.</p>
                         </div>
                     `;
+                    saveNotifCache(grid.innerHTML);
                     return;
                 }
 
@@ -285,7 +378,7 @@
                     
                     if (isUnread) unreadNotifIds.push(docSnap.id);
 
-                    // PENGKONDISIAN IKON BERDASARKAN TIPE NOTIFIKASI
+                    // Pengkondisian Ikon & Warna Kategori
                     let iconClass = 'fa-solid fa-bell';
                     let bgClass = 'icon-system';
                     
@@ -301,12 +394,27 @@
                         iconClass = 'fa-solid fa-book-open'; bgClass = 'icon-release'; 
                     }
 
+                    // FOTO PROFIL PENGIRIM (AVATAR)
+                    let iconOrAvatarHtml = '';
+                    const senderPic = data.senderAvatar || data.avatarBase64 || data.senderPhoto;
+
+                    if (senderPic) {
+                        iconOrAvatarHtml = `
+                            <div class="notif-avatar-wrap">
+                                <img src="${senderPic}" class="notif-avatar-img" alt="Foto Profil">
+                                <div class="notif-badge-mini ${bgClass}"><i class="${iconClass}"></i></div>
+                            </div>
+                        `;
+                    } else {
+                        iconOrAvatarHtml = `<div class="notif-icon ${bgClass}"><i class="${iconClass}"></i></div>`;
+                    }
+
                     const timeStr = data.createdAt ? timeAgo(data.createdAt.toDate()) : 'Baru saja';
 
-                    // Kartu HTML
+                    // Render Kartu Notifikasi
                     html += `
                         <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifClick('${docSnap.id}', '${data.targetUrl}', ${isUnread})">
-                            <div class="notif-icon ${bgClass}"><i class="${iconClass}"></i></div>
+                            ${iconOrAvatarHtml}
                             <div class="notif-content">
                                 <h4 class="notif-title">${data.title}</h4>
                                 <p class="notif-message">${data.message}</p>
@@ -316,10 +424,17 @@
                     `;
                 });
 
-                container.innerHTML = html;
+                if (skeleton) skeleton.style.display = 'none';
+                grid.innerHTML = html;
+
+                // Simpan cache lokal
+                saveNotifCache(html);
+
             }, (error) => {
                 console.error("Gagal menarik notifikasi:", error);
-                document.getElementById('notif-container').innerHTML = `
+                const skeleton = document.getElementById('notif-skeleton');
+                if (skeleton) skeleton.style.display = 'none';
+                document.getElementById('notif-grid').innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i>
                         <p>Gagal memuat notifikasi. Silakan periksa koneksi Anda.</p>
@@ -340,7 +455,7 @@
                 }
             }
 
-            if (url && url !== "null" && url !== "undefined") {
+            if (url && url !== "null" && url !== "undefined" && url !== "") {
                 window.location.href = url;
             }
         };
