@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio Menulis - Cendekia Aksara</title>
+    <title>Studio Menulis - Aksara Narasi</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,52 +30,70 @@
         body {
             font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
             color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
-        /* --- MOBILE FIRST WRAPPER --- */
+        /* --- RESPONSIVE FULL DESKTOP WRAPPER --- */
         .app-wrapper {
-            width: 100%; max-width: 480px; margin: 0 auto;
-            background-color: white; min-height: 100vh;
+            width: 100%; max-width: 1280px; margin: 0 auto;
+            background-color: transparent; flex: 1;
             display: flex; flex-direction: column; position: relative;
+        }
+        
+        .content-bg {
+            background-color: white;
+            flex: 1; display: flex; flex-direction: column;
+            min-height: calc(100vh - 60px);
         }
 
         @media (min-width: 768px) {
             body { background-color: #e2e8f0; } 
-            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
-            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
+            .content-bg { 
+                border-left: 1px solid #cbd5e1; 
+                border-right: 1px solid #cbd5e1; 
+                box-shadow: 0 0 40px rgba(0,0,0,0.05); 
+            }
         }
 
         /* --- FIXED NAVBAR --- */
         .top-navbar {
             position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-bottom: 2px solid var(--gold);
         }
+        .navbar-content {
+            width: 100%; max-width: 1280px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; height: 100%;
+        }
+        
         .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .btn-back:hover { color: var(--gold); }
-        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; }
+        
+        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
+        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
 
         /* --- HERO STUDIO MENULIS --- */
         .hero-studio {
             background: linear-gradient(135deg, var(--primary) 0%, #0f172a 100%);
-            padding: 30px 20px; text-align: center; color: white; position: relative; overflow: hidden;
+            padding: 40px 20px; text-align: center; color: white; position: relative; overflow: hidden; margin-top: 0;
         }
         .hero-studio::after {
             content: '\f303'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: -20px; bottom: -20px; font-size: 8rem;
+            position: absolute; right: -10px; bottom: -20px; font-size: 8rem;
             color: rgba(255, 255, 255, 0.05); pointer-events: none; transform: rotate(-15deg);
         }
-        .hero-studio h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; color: var(--gold); position: relative; z-index: 2;}
-        .hero-studio p { font-size: 0.85rem; color: #cbd5e1; margin: 0 0 20px 0; position: relative; z-index: 2;}
+        .hero-studio h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0 0 5px 0; color: var(--gold); position: relative; z-index: 2;}
+        .hero-studio p { font-size: clamp(0.85rem, 2vw, 1rem); color: #cbd5e1; margin: 0 auto 25px auto; position: relative; z-index: 2; max-width: 600px;}
 
         .btn-create {
-            background: var(--gold); color: white; border: none; padding: 12px 25px;
-            border-radius: 50px; font-family: 'Poppins'; font-size: 0.95rem; font-weight: 700;
+            background: var(--gold); color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-family: 'Poppins'; font-size: clamp(0.95rem, 2vw, 1.05rem); font-weight: 700;
             cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
             display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; transition: 0.3s;
         }
-        .btn-create:hover { background: #b45309; transform: translateY(-2px); }
+        .btn-create:hover { background: #b45309; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6); }
 
         /* --- TABS --- */
         .tab-container {
@@ -79,52 +102,61 @@
         }
         .tab-btn {
             flex: 1; text-align: center; padding: 14px 0; cursor: pointer;
-            font-size: 0.9rem; font-weight: 600; color: var(--text-gray);
+            font-size: 0.95rem; font-weight: 600; color: var(--text-gray); font-family: 'Poppins';
             border-bottom: 3px solid transparent; transition: 0.3s;
         }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-        /* --- KARYA LIST --- */
+        /* --- KARYA LIST (RESPONSIVE GRID) --- */
         .content-area { display: none; padding: 20px; background: var(--bg-color); animation: fadeIn 0.3s ease; flex: 1; }
         .content-area.active { display: block; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
 
+        .list-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 640px) { .list-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } .content-area { padding: 30px; } }
+        @media (min-width: 1024px) { .list-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; } .content-area { padding: 40px; } }
+
         .story-item {
             display: flex; gap: 15px; background: white; padding: 15px;
-            border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px;
+            border-radius: 16px; border: 1px solid #e2e8f0; height: 100%;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s; cursor: pointer; position: relative;
         }
-        .story-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+        .story-item:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
         
         .story-cover {
-            width: 70px; height: 100px; border-radius: 8px;
+            width: 75px; height: 110px; border-radius: 8px;
             background-color: #e2e8f0; background-size: cover; background-position: center;
             border: 1px solid #cbd5e1; flex-shrink: 0; display: flex; justify-content: center; align-items: center; color: #94a3b8;
         }
+        
         .story-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0; }
         .story-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .story-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
-        .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .story-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+        .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .story-meta span { display: flex; align-items: center; gap: 4px; }
-        .story-status-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+        .story-status-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
         
         /* Pewarnaan Status */
         .badge-draft { background: #f1f5f9; color: #64748b; }
         .badge-published { background: #dcfce7; color: #166534; }
         .badge-banned { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-        .banned-notice { font-size: 0.65rem; color: #dc2626; font-weight: 600; margin-top: 5px; line-height: 1.3;}
+        .banned-notice { font-size: 0.65rem; color: #dc2626; font-weight: 600; margin-top: 8px; line-height: 1.3;}
         
         .btn-edit {
             background: #f1f5f9; color: var(--text-dark); border: 1px solid #cbd5e1;
-            padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-family: 'Poppins';
-            width: fit-content; transition: 0.2s;
+            padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; font-family: 'Poppins';
+            width: fit-content; transition: 0.2s; margin-top: auto;
         }
         .story-item:hover .btn-edit { background: var(--primary); color: white; border-color: var(--primary); }
 
         .btn-card-actions {
-            background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 8px;
+            background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px;
             color: var(--text-gray); cursor: pointer; flex-shrink: 0; display: flex;
-            align-items: center; justify-content: center; transition: 0.2s; font-size: 0.9rem;
+            align-items: center; justify-content: center; transition: 0.2s; font-size: 1rem;
         }
         .btn-card-actions:hover { background: var(--primary); color: white; }
 
@@ -141,100 +173,145 @@
         .action-sheet-btn.danger { color: #dc2626; border-color: #fecaca; }
         .action-sheet-btn.danger:hover { background: #fef2f2; }
 
-        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: #94a3b8; border: 2px dashed #cbd5e1; border-radius: 16px; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #cbd5e1; }
-        .empty-state p { margin: 0; font-size: 0.9rem; }
+        .empty-state p { margin: 0; font-size: 0.95rem; }
+
+        /* SKELETON SHIMMER INSTANT LOAD */
+        @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .sk-card { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; height: 100%;}
+        .sk-cover, .sk-line { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+        .sk-cover { width: 75px; height: 110px; border-radius: 8px; flex-shrink: 0; }
+        .sk-line { height: 12px; border-radius: 6px; margin-bottom: 10px; }
+        .sk-line.short { width: 60%; }
+        @media (max-width: 639px) { .sk-card.desktop-only { display: none; } }
 
         /* --- PROMO SEKOLAH MENULIS (Kompak/Kecil) --- */
         .promo-school-card {
-            margin: 10px 20px 25px 20px; padding: 20px 15px; border-radius: 16px;
+            margin: 20px 20px 30px 20px; padding: 25px 20px; border-radius: 16px; max-width: 800px;
             background: linear-gradient(135deg, var(--nav-bg) 0%, var(--primary) 100%);
             color: white; text-align: center; position: relative; overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0,51,102,0.15); display: flex; flex-direction: column; align-items: center; gap: 10px;
+            box-shadow: 0 6px 20px rgba(0,51,102,0.15); display: flex; flex-direction: column; align-items: center; gap: 15px;
+            align-self: center; /* Untuk Desktop agar ke tengah */
         }
         .promo-school-card::after {
             content: '\f19d'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: -10px; bottom: -10px; font-size: 6rem;
+            position: absolute; right: -10px; bottom: -10px; font-size: 8rem;
             color: rgba(255,255,255,0.04); pointer-events: none; transform: rotate(-10deg);
         }
-        .promo-text-wrap h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin: 0 0 4px 0; color: white; position: relative; z-index: 2; }
-        .promo-text-wrap p { font-size: 0.75rem; color: #cbd5e1; line-height: 1.4; margin: 0; position: relative; z-index: 2; }
+        .promo-text-wrap h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin: 0 0 5px 0; color: white; position: relative; z-index: 2; }
+        .promo-text-wrap p { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; margin: 0; position: relative; z-index: 2; }
         .btn-promo-school {
             display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: white; text-decoration: none;
-            padding: 8px 20px; border-radius: 50px; font-family: 'Poppins'; font-weight: 700; font-size: 0.8rem;
-            box-shadow: 0 4px 10px rgba(212,175,55,0.3); position: relative; z-index: 2; transition: 0.3s; margin-top: 5px;
+            padding: 10px 25px; border-radius: 50px; font-family: 'Poppins'; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3); position: relative; z-index: 2; transition: 0.3s;
         }
-        .btn-promo-school:hover { background: #b45309; transform: translateY(-2px); }
+        .btn-promo-school:hover { background: #b45309; transform: translateY(-3px); }
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9); z-index: 5000; display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.9); z-index: 5000; flex-direction: column;
             justify-content: center; align-items: center; display: none;
         }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e2e8f0; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY LOADING -->
+    <!-- OVERLAY LOADING SAAT BUAT CERITA BARU -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div id="loading-msg" style="color: var(--primary); font-weight: 500; font-size: 0.9rem;">Memuat Studio...</div>
+        <div id="loading-msg" style="color: var(--primary); font-weight: 500; font-size: 1rem;">Mempersiapkan Kanvas...</div>
     </div>
 
     <div class="app-wrapper">
-        
-        <!-- NAVBAR -->
-        <header class="top-navbar">
-            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-            <h1 class="nav-title">Studio Menulis</h1>
-            <div style="width: 24px;"></div> <!-- Spacer -->
-        </header>
+        <div class="content-bg">
+            <!-- NAVBAR -->
+            <header class="top-navbar">
+                <div class="navbar-content">
+                    <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+                    <div class="nav-brand">
+                        <h1 class="nav-title">Studio Menulis</h1>
+                    </div>
+                    <div style="width: 24px;"></div> <!-- Spacer -->
+                </div>
+            </header>
 
-        <!-- HERO STUDIO -->
-        <div class="hero-studio">
-            <h2>Karya Saya</h2>
-            <p>Ruang kreativitasmu. Buat draf baru atau kelola karya yang sudah diterbitkan.</p>
-            <button class="btn-create" onclick="createNewStory()"><i class="fa-solid fa-plus"></i> Buat Cerita Baru</button>
-        </div>
+            <!-- HERO STUDIO -->
+            <div class="hero-studio">
+                <h2>Karya Saya</h2>
+                <p>Ruang kreativitasmu. Buat draf baru atau kelola karya yang sudah diterbitkan.</p>
+                <button class="btn-create" onclick="createNewStory()"><i class="fa-solid fa-plus"></i> Buat Cerita Baru</button>
+            </div>
 
-        <!-- TABS -->
-        <div class="tab-container">
-            <div class="tab-btn active" onclick="switchTab('draft')">Draf Saya</div>
-            <div class="tab-btn" onclick="switchTab('published')">Diterbitkan</div>
-        </div>
+            <!-- TABS -->
+            <div class="tab-container">
+                <div class="tab-btn active" onclick="switchTab('draft')">Draf Saya</div>
+                <div class="tab-btn" onclick="switchTab('published')">Diterbitkan</div>
+            </div>
 
-        <!-- TAB: DRAF -->
-        <div class="content-area active" id="tab-draft">
-            <div id="draft-list">
-                <div style="text-align: center; padding: 30px;"><div class="spinner" style="margin: 0 auto;"></div></div>
+            <!-- TAB: DRAF -->
+            <div class="content-area active" id="tab-draft">
+                <div id="draft-skeleton" class="list-grid">
+                    <div class="sk-card"><div class="sk-cover"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-line" style="margin-top:20px;"></div></div></div>
+                    <div class="sk-card"><div class="sk-cover"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-line" style="margin-top:20px;"></div></div></div>
+                    <div class="sk-card desktop-only"><div class="sk-cover"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-line" style="margin-top:20px;"></div></div></div>
+                </div>
+                <div id="draft-list" class="list-grid"></div>
+            </div>
+
+            <!-- TAB: DITERBITKAN -->
+            <div class="content-area" id="tab-published">
+                <div id="published-skeleton" class="list-grid">
+                    <div class="sk-card"><div class="sk-cover"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-line" style="margin-top:20px;"></div></div></div>
+                    <div class="sk-card desktop-only"><div class="sk-cover"></div><div style="flex:1"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-line" style="margin-top:20px;"></div></div></div>
+                </div>
+                <div id="published-list" class="list-grid"></div>
+            </div>
+
+            <!-- PROMO SEKOLAH MENULIS -->
+            <div class="promo-school-card">
+                <div class="promo-text-wrap">
+                    <h3>Belajar Menulis Lebih Dalam?</h3>
+                    <p>Ikuti kelas intensif di Sekolah Menulis Cendekia bersama mentor berpengalaman.</p>
+                </div>
+                <a href="https://wa.me/6285939188592?text=Halo%20Admin%20Sekolah%20Menulis%20Cendekia%20Aksara,%0A%0APerkenalkan,%0ANama:%20...%0AAsal:%20...%0A%0ASaya%20tertarik%20dan%20ingin%20mendaftar%20untuk%20bergabung%20dengan%20kelas%20menulisnya.%20Mohon%20informasi%20selengkapnya.%20Terima%20kasih!" target="_blank" rel="noopener" class="btn-promo-school">
+                    <i class="fa-brands fa-whatsapp"></i> Chat Admin Sekarang
+                </a>
             </div>
         </div>
-
-        <!-- TAB: DITERBITKAN -->
-        <div class="content-area" id="tab-published">
-            <div id="published-list">
-                <div style="text-align: center; padding: 30px;"><div class="spinner" style="margin: 0 auto;"></div></div>
-            </div>
-        </div>
-
-        <!-- PROMO SEKOLAH MENULIS (Kompak, Mengarah ke WA) -->
-        <div class="promo-school-card">
-            <div class="promo-text-wrap">
-                <h3>Belajar Menulis Lebih Dalam?</h3>
-                <p>Ikuti kelas intensif di Sekolah Menulis Cendekia bersama mentor berpengalaman.</p>
-            </div>
-            <!-- Link menuju WhatsApp dengan template pesan -->
-            <a href="https://wa.me/6285939188592?text=Halo%20Admin%20Sekolah%20Menulis%20Cendekia%20Aksara,%0A%0APerkenalkan,%0ANama:%20...%0AAsal:%20...%0A%0ASaya%20tertarik%20dan%20ingin%20mendaftar%20untuk%20bergabung%20dengan%20kelas%20menulisnya.%20Mohon%20informasi%20selengkapnya.%20Terima%20kasih!" target="_blank" rel="noopener" class="btn-promo-school">
-                <i class="fa-brands fa-whatsapp"></i> Chat Admin Sekarang
-            </a>
-        </div>
-
     </div>
 
     <!-- Script SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- RENDER INSTAN DARI CACHE LOKAL -->
+    <script>
+        (function() {
+            const uid = localStorage.getItem('cendekia_last_uid');
+            if(!uid) return;
+            try {
+                const raw = localStorage.getItem('cendekia_studio_cache_' + uid);
+                if(raw) {
+                    const data = JSON.parse(raw);
+                    if(data.draftHtml) {
+                        document.addEventListener("DOMContentLoaded", function() {
+                            document.getElementById('draft-list').innerHTML = data.draftHtml;
+                            const sk = document.getElementById('draft-skeleton');
+                            if(sk) sk.style.display = 'none';
+                        });
+                    }
+                    if(data.pubHtml) {
+                        document.addEventListener("DOMContentLoaded", function() {
+                            document.getElementById('published-list').innerHTML = data.pubHtml;
+                            const sk = document.getElementById('published-skeleton');
+                            if(sk) sk.style.display = 'none';
+                        });
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
 
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
@@ -261,6 +338,7 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                localStorage.setItem('cendekia_last_uid', user.uid);
                 fetchMyStories();
             } else {
                 Swal.fire({ title: 'Akses Ditolak', text: 'Silakan masuk untuk menulis cerita.', icon: 'warning', allowOutsideClick: false }).then(() => {
@@ -290,7 +368,7 @@
         const hideLoading = () => document.getElementById('loading-overlay').style.display = 'none';
 
         function buildStoryCard(data) {
-            const cover = data.coverBase64 ? `<div class="story-cover" style="background-image: url('${data.coverBase64}');"></div>` : `<div class="story-cover"><i class="fa-solid fa-image"></i></div>`;
+            const cover = data.coverBase64 ? `<div class="story-cover" style="background-image: url('${data.coverBase64}');"></div>` : `<div class="story-cover"><i class="fa-solid fa-image" style="font-size: 2rem;"></i></div>`;
 
             let updateTime = 'Baru saja';
             if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
@@ -313,7 +391,6 @@
 
             const bannedNotice = isBanned ? `<p class="banned-notice"><i class="fa-solid fa-triangle-exclamation"></i> Cerita ini dibekukan oleh Admin dan tidak dapat dipublikasikan ulang karena melanggar panduan komunitas.</p>` : '';
 
-            // PERBAIKAN: Jika cerita dibanned, jangan munculkan tombol aksi kelola (titik tiga)
             const actionButton = !isBanned 
                 ? `<button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', event)" title="Kelola Cerita">
                        <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -340,6 +417,13 @@
             `;
         }
 
+        function saveStudioCache(draftHtml, pubHtml) {
+            if(!currentUser) return;
+            try {
+                localStorage.setItem('cendekia_studio_cache_' + currentUser.uid, JSON.stringify({ draftHtml, pubHtml, cachedAt: Date.now() }));
+            } catch(e) {}
+        }
+
         // 1. Ambil Data Cerita Penulis (Draf & Diterbitkan)
         async function fetchMyStories() {
             try {
@@ -352,8 +436,8 @@
                 });
 
                 fetchedStories.sort((a, b) => {
-                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
-                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
+                    const timeA = a.updatedAt ? (typeof a.updatedAt.toMillis === 'function' ? a.updatedAt.toMillis() : a.updatedAt.seconds * 1000) : 0;
+                    const timeB = b.updatedAt ? (typeof b.updatedAt.toMillis === 'function' ? b.updatedAt.toMillis() : b.updatedAt.seconds * 1000) : 0;
                     return timeB - timeA; 
                 });
 
@@ -363,7 +447,7 @@
                 fetchedStories.forEach(data => {
                     const card = buildStoryCard(data);
                     
-                    // PERBAIKAN: Jika cerita dibanned, PAKSA turun ke tab draf, tidak peduli statusnya published.
+                    // Jika cerita dibanned, PAKSA turun ke tab draf, tidak peduli statusnya published.
                     if (data.status === 'published' && data.isBanned !== true && data.isDeleted !== true) { 
                         pubHtml += card; 
                     } else { 
@@ -371,20 +455,36 @@
                     }
                 });
 
-                document.getElementById('draft-list').innerHTML = draftHtml || `
+                const draftContainer = document.getElementById('draft-list');
+                const pubContainer = document.getElementById('published-list');
+                
+                const draftSkeleton = document.getElementById('draft-skeleton');
+                const pubSkeleton = document.getElementById('published-skeleton');
+                if(draftSkeleton) draftSkeleton.style.display = 'none';
+                if(pubSkeleton) pubSkeleton.style.display = 'none';
+
+                draftContainer.innerHTML = draftHtml || `
                     <div class="empty-state">
                         <i class="fa-solid fa-file-pen"></i>
                         <p>Belum ada draf. Mulai tulis ide pertamamu!</p>
                     </div>`;
                     
-                document.getElementById('published-list').innerHTML = pubHtml || `
+                pubContainer.innerHTML = pubHtml || `
                     <div class="empty-state">
                         <i class="fa-solid fa-book-open"></i>
                         <p>Belum ada karya yang diterbitkan.</p>
                     </div>`;
 
+                // Simpan untuk instant load berikutnya
+                saveStudioCache(draftHtml, pubHtml);
+
             } catch (error) {
                 console.error("Gagal menarik data cerita:", error);
+                const draftSkeleton = document.getElementById('draft-skeleton');
+                if(draftSkeleton) draftSkeleton.style.display = 'none';
+                const pubSkeleton = document.getElementById('published-skeleton');
+                if(pubSkeleton) pubSkeleton.style.display = 'none';
+
                 document.getElementById('draft-list').innerHTML = `<div class="empty-state"><p>Gagal memuat daftar draf. Coba muat ulang halaman.</p></div>`;
                 document.getElementById('published-list').innerHTML = `<div class="empty-state"><p>Gagal memuat daftar karya. Coba muat ulang halaman.</p></div>`;
                 Swal.fire('Error', 'Gagal memuat daftar cerita. Silakan coba lagi.', 'error');
@@ -402,7 +502,7 @@
 
                 await setDoc(newStoryRef, {
                     authorId: currentUser.uid,
-                    authorName: currentUser.displayName || 'Penulis Cendekia',
+                    authorName: currentUser.displayName || 'Penulis Aksana',
                     title: '',
                     description: '',
                     coverBase64: null,
