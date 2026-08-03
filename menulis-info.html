@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Info Cerita - Aksara Narasi</title>
-    
-    <!-- FAVICON -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
-    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
+    <title>Info Cerita - Cendekia Aksara</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <style>
-        /* --- 1. GLOBAL & COLORS --- */
         :root {
             --nav-bg: #0f172a;       
             --primary: #003366;      
@@ -27,54 +21,14 @@
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
-        html, body { 
-            font-family: 'Poppins', sans-serif; background-color: var(--bg-color); 
-            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; 
-            min-height: 100vh; display: flex; flex-direction: column;
-            overflow-x: hidden; /* ANTI GESER HORIZONTAL MUTLAK */
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh; }
 
-        /* --- 2. RESPONSIVE FULL DESKTOP WRAPPER --- */
-        .app-wrapper { 
-            width: 100%; max-width: 1280px; margin: 0 auto; 
-            background-color: transparent; flex: 1; 
-            display: flex; flex-direction: column; position: relative; 
-        }
+        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+        @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); } }
 
-        .content-bg {
-            background-color: white;
-            flex: 1; display: flex; flex-direction: column;
-            min-height: calc(100vh - 60px);
-        }
-
-        @media (min-width: 768px) { 
-            body { background-color: #e2e8f0; } 
-            .content-bg { 
-                border-left: 1px solid #cbd5e1; 
-                border-right: 1px solid #cbd5e1; 
-                box-shadow: 0 0 40px rgba(0,0,0,0.05); 
-            }
-        }
-
-        /* --- 3. FIXED NAVBAR --- */
-        .top-navbar { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000; 
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); 
-            display: flex; justify-content: center;
-            border-bottom: 2px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        }
-
-        .navbar-content {
-            width: 100%; max-width: 1280px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; height: 100%;
-        }
-
-        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; display: flex; align-items: center;}
-        .btn-back:hover { color: var(--gold); }
-        
-        .nav-brand { display: flex; align-items: center; gap: 10px; margin: 0 auto; transform: translateX(-10px);}
-        .nav-brand h1 { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; letter-spacing: 0.5px; }
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 2px solid var(--gold); }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; }
+        .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: white; margin: 0; }
         
         .nav-right-actions { display: flex; align-items: center; gap: 10px; }
         .save-indicator { font-size: 0.75rem; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 50px; display: flex; align-items: center; gap: 5px; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
@@ -84,9 +38,7 @@
         .btn-save-manual:hover:not(:disabled) { background: #b45309; transform: translateY(-1px); }
         .btn-save-manual:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
-        /* --- 4. FORM AREA (Dibatasi 800px di Desktop) --- */
         .content-area { padding: 20px; flex: 1; }
-        .form-container { width: 100%; max-width: 800px; margin: 0 auto; }
 
         /* --- BANNED NOTICE BOX --- */
         .banned-alert-box {
@@ -118,13 +70,7 @@
 
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
-        
-        /* Font-size dipaku 16px (1rem) agar HP iPhone/Android tidak auto-zoom saat ngetik! */
-        .form-input, .form-select, textarea { 
-            width: 100%; padding: 14px 15px; border: 1px solid #cbd5e1; border-radius: 12px; 
-            font-family: 'Poppins', sans-serif; font-size: 1rem; background: #f8fafc; 
-            color: var(--text-dark); transition: 0.3s; outline: none; 
-        }
+        .form-input, .form-select, textarea { width: 100%; padding: 14px 15px; border: 1px solid #cbd5e1; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 0.95rem; background: #f8fafc; color: var(--text-dark); transition: 0.3s; outline: none; }
         .form-input:focus:not(:disabled), textarea:focus:not(:disabled) { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
         .form-input:disabled, textarea:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; border-color: #cbd5e1; }
         textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
@@ -144,7 +90,7 @@
         .genre-pick-btn:hover { border-color: var(--primary); }
         .genre-pick-btn.active-genre { background: var(--primary); color: white; border-color: var(--primary); }
         .genre-custom-row { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
-        .genre-custom-input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins'; font-size: 1rem; }
+        .genre-custom-input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins'; font-size: 0.85rem; }
         .genre-custom-btn { background: var(--gold); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Poppins'; white-space: nowrap; }
 
         /* TAGS INPUT UI */
@@ -155,7 +101,7 @@
         .tag-chip.disabled { background: #94a3b8; }
         .tag-chip i { cursor: pointer; font-size: 0.9rem; }
         .tag-chip.disabled i { cursor: not-allowed; }
-        .tag-input { border: none; outline: none; background: transparent; flex: 1; min-width: 120px; font-family: 'Poppins'; font-size: 1rem; color: var(--text-dark); }
+        .tag-input { border: none; outline: none; background: transparent; flex: 1; min-width: 120px; font-family: 'Poppins'; font-size: 0.9rem; color: var(--text-dark); }
         .tag-input:disabled { background: transparent; }
         .field-hint { font-size: 0.72rem; color: #94a3b8; margin: 6px 2px 0 2px; }
 
@@ -187,16 +133,16 @@
         .chapter-header h3 { font-family: 'Aleo', serif; font-size: 1.2rem; color: var(--primary); margin: 0; }
         
         .chapter-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;}
-        .chapter-card { background: white; border: 1px solid #cbd5e1; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; }
-        
-        /* Flex min-width: 0 mencegah teks mendorong tombol ke luar layar */
-        .chapter-info { flex: 1; cursor: pointer; min-width: 0; padding-right: 10px; }
+        .chapter-card { background: white; border: 1px solid #cbd5e1; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .chapter-info { flex: 1; cursor: pointer; min-width: 0; }
         .chapter-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chapter-info p { margin: 0; font-size: 0.75rem; color: var(--text-gray); display: flex; gap: 10px; align-items: center;}
         
+        /* PEWARNAAN STATUS BAB */
         .chapter-status { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
         .status-draft { background: #f1f5f9; color: #64748b; }
         .status-published { background: #dcfce7; color: #166534; }
+        /* CSS KHUSUS TERJADWAL */
         .status-scheduled { background: #f3e8ff; color: #6d28d9; }
         
         .chapter-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
@@ -209,7 +155,7 @@
         .btn-add-chapter { width: 100%; background: linear-gradient(135deg, var(--gold), #b45309); color: white; border: none; padding: 14px; border-radius: 50px; font-family: 'Poppins'; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .empty-chapter { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; border: 1px dashed #cbd5e1; border-radius: 12px; }
 
-        /* SKELETON SHIMMER (INSTANT LOAD) */
+        /* SKELETON SHIMMER (Pengganti Loading Overlay Putar) */
         @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .sk-light { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 400% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
         .sk-cover { width: 100px; height: 145px; border-radius: 12px; }
@@ -217,151 +163,145 @@
         .sk-box { height: 48px; border-radius: 12px; margin-bottom: 20px; }
         .sk-textarea { height: 120px; border-radius: 12px; margin-bottom: 20px; }
         .sk-chapter-card { height: 68px; border-radius: 12px; margin-bottom: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="app-wrapper">
-        <div class="content-bg">
-            
-            <header class="top-navbar">
-                <div class="navbar-content">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <a href="menulis.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
-                        <h1 class="nav-title">Info Cerita</h1>
-                    </div>
-                    <div class="nav-right-actions">
-                        <div class="save-indicator" id="save-indicator"><i class="fa-solid fa-check"></i></div>
-                        <button class="btn-save-manual" id="btn-save-top" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
-                    </div>
-                </div>
-            </header>
-
-            <div class="content-area">
-                <div class="form-container">
-                    
-                    <!-- KERANGKA SKELETON (INSTANT LOAD) -->
-                    <div id="skeleton-container">
-                        <div class="story-header-row">
-                            <div class="sk-light sk-cover"></div>
-                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; min-width: 0;">
-                                <div class="sk-light sk-line" style="width: 40%;"></div>
-                                <div class="sk-light sk-box"></div>
-                            </div>
-                        </div>
-                        <div class="sk-light sk-line" style="width: 30%;"></div>
-                        <div class="sk-light sk-box"></div>
-                        <div class="sk-light sk-line" style="width: 35%;"></div>
-                        <div class="sk-light sk-box"></div>
-                        <div class="sk-light sk-line" style="width: 20%;"></div>
-                        <div class="sk-light sk-textarea"></div>
-                        <br>
-                        <div class="sk-light sk-line" style="width: 40%;"></div>
-                        <div class="sk-light sk-chapter-card"></div>
-                        <div class="sk-light sk-chapter-card"></div>
-                    </div>
-
-                    <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
-                    <div id="real-content" style="display: none;">
-                        
-                        <!-- BANNED NOTICE -->
-                        <div class="banned-alert-box" id="banned-alert-box">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <div>
-                                <h4>Cerita Dibekukan</h4>
-                                <p>Karya ini telah diblokir oleh Admin karena melanggar pedoman komunitas. Anda tidak dapat lagi mengedit atau menerbitkan tulisan ini.</p>
-                            </div>
-                        </div>
-
-                        <div class="story-header-row">
-                            <div class="cover-uploader" id="cover-uploader" onclick="document.getElementById('cover-file').click()">
-                                <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
-                                <div class="cover-preview" id="cover-preview"></div>
-                                <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
-                            </div>
-                            <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
-
-                            <div class="story-header-fields">
-                                <div class="form-group">
-                                    <label>Judul Cerita</label>
-                                    <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Genre Utama</label>
-                            <button type="button" class="genre-select-btn" id="btn-genre" onclick="openGenrePicker()">
-                                <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </button>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tagar / Event (Opsional)</label>
-                            <div class="tags-container" id="tags-container">
-                                <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar (Lalu tekan Spasi atau Enter)">
-                            </div>
-                            <p class="field-hint">Maksimal 5 tagar. Cukup ketik dan tekan tombol <b>Spasi</b> di keyboard/HP kamu.</p>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Sinopsis</label>
-                            <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Pernyataan Hak Cipta</label>
-                            <div class="copyright-list" id="copyright-list">
-                                <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
-                                    <div class="copyright-radio"></div>
-                                    <div class="copyright-text">
-                                        <h4>Karya Asli</h4>
-                                        <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
-                                    </div>
-                                </div>
-                                <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
-                                    <div class="copyright-radio"></div>
-                                    <div class="copyright-text">
-                                        <h4>Terinspirasi</h4>
-                                        <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
-                                    </div>
-                                </div>
-                                <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
-                                    <div class="copyright-radio"></div>
-                                    <div class="copyright-text">
-                                        <h4>Adaptasi / Terjemahan Berizin</h4>
-                                        <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
-                                    </div>
-                                </div>
-                                <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
-                                    <div class="copyright-radio"></div>
-                                    <div class="copyright-text">
-                                        <h4>Fan-Fiksi</h4>
-                                        <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Status Progres Cerita</label>
-                            <div class="progress-status-group" id="progress-status-group">
-                                <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
-                                <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
-                                <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
-                            </div>
-                        </div>
-
-                        <div class="chapter-section">
-                            <div class="chapter-header"><h3>Daftar Bab</h3></div>
-                            <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
-                            <button class="btn-add-chapter" id="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
-                        </div>
-
-                    </div> <!-- End Real Content -->
-                </div>
+        <header class="top-navbar">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <a href="menulis.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+                <h1 class="nav-title">Info Cerita</h1>
             </div>
+            <div class="nav-right-actions">
+                <div class="save-indicator" id="save-indicator"><i class="fa-solid fa-check"></i></div>
+                <button class="btn-save-manual" id="btn-save-top" onclick="manualSave()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- KERANGKA SKELETON (INSTANT LOAD) -->
+            <div id="skeleton-container">
+                <div class="story-header-row">
+                    <div class="sk-light sk-cover"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="sk-light sk-line" style="width: 40%;"></div>
+                        <div class="sk-light sk-box"></div>
+                    </div>
+                </div>
+                <div class="sk-light sk-line" style="width: 30%;"></div>
+                <div class="sk-light sk-box"></div>
+                <div class="sk-light sk-line" style="width: 35%;"></div>
+                <div class="sk-light sk-box"></div>
+                <div class="sk-light sk-line" style="width: 20%;"></div>
+                <div class="sk-light sk-textarea"></div>
+                <br>
+                <div class="sk-light sk-line" style="width: 40%;"></div>
+                <div class="sk-light sk-chapter-card"></div>
+                <div class="sk-light sk-chapter-card"></div>
+            </div>
+
+            <!-- KONTEN ASLI (DISEMBUNYIKAN SEBELUM LOAD) -->
+            <div id="real-content" style="display: none;">
+                
+                <!-- BANNED NOTICE (Tampil hanya jika cerita dibekukan) -->
+                <div class="banned-alert-box" id="banned-alert-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div>
+                        <h4>Cerita Dibekukan</h4>
+                        <p>Karya ini telah diblokir oleh Admin karena melanggar pedoman komunitas. Anda tidak dapat lagi mengedit atau menerbitkan tulisan ini.</p>
+                    </div>
+                </div>
+
+                <div class="story-header-row">
+                    <div class="cover-uploader" id="cover-uploader" onclick="document.getElementById('cover-file').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i><span>Sampul</span>
+                        <div class="cover-preview" id="cover-preview"></div>
+                        <div class="cover-upload-overlay" id="cover-upload-overlay"><div class="mini-spinner"></div></div>
+                    </div>
+                    <input type="file" id="cover-file" accept="image/png, image/jpeg, image/jpg" onchange="handleCoverUpload(event)">
+
+                    <div class="story-header-fields">
+                        <div class="form-group">
+                            <label>Judul Cerita</label>
+                            <input type="text" id="story-title" class="form-input" placeholder="Tuliskan judul yang menarik..." oninput="triggerAutoSave()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Genre Utama</label>
+                    <button type="button" class="genre-select-btn" id="btn-genre" onclick="openGenrePicker()">
+                        <span id="genre-select-label" class="genre-select-label placeholder">Pilih Genre</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Tagar / Event (Opsional)</label>
+                    <div class="tags-container" id="tags-container">
+                        <input type="text" class="tag-input" id="tag-input" placeholder="Ketik tagar (Lalu tekan Spasi atau Enter)">
+                    </div>
+                    <p class="field-hint">Maksimal 5 tagar. Cukup ketik dan tekan tombol <b>Spasi</b> di keyboard/HP kamu.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Sinopsis</label>
+                    <textarea id="story-desc" placeholder="Tuliskan sinopsis singkat..." oninput="triggerAutoSave()"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Pernyataan Hak Cipta</label>
+                    <div class="copyright-list" id="copyright-list">
+                        <div class="copyright-card" data-value="original" onclick="selectCopyright('original')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Karya Asli</h4>
+                                <p>Cerita ini murni karya asli saya sendiri, ditulis tanpa menyalin karya pihak lain.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="inspired" onclick="selectCopyright('inspired')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Terinspirasi</h4>
+                                <p>Cerita ini terinspirasi dari karya lain, namun saya tulis ulang dengan alur dan gaya bahasa saya sendiri.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="adaptation" onclick="selectCopyright('adaptation')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Adaptasi / Terjemahan Berizin</h4>
+                                <p>Cerita ini adalah adaptasi atau terjemahan yang saya miliki izin sah untuk menerbitkannya di platform ini.</p>
+                            </div>
+                        </div>
+                        <div class="copyright-card" data-value="fanfiction" onclick="selectCopyright('fanfiction')">
+                            <div class="copyright-radio"></div>
+                            <div class="copyright-text">
+                                <h4>Fan-Fiksi</h4>
+                                <p>Cerita ini adalah fan-fiksi non-komersial berdasarkan karya/universe milik pihak lain.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Progres Cerita</label>
+                    <div class="progress-status-group" id="progress-status-group">
+                        <button type="button" class="status-btn active" data-value="ongoing" onclick="selectProgressStatus('ongoing')"><i class="fa-solid fa-feather-pointed"></i> On Going</button>
+                        <button type="button" class="status-btn" data-value="completed" onclick="selectProgressStatus('completed')"><i class="fa-solid fa-flag-checkered"></i> Selesai</button>
+                        <button type="button" class="status-btn" data-value="hiatus" onclick="selectProgressStatus('hiatus')"><i class="fa-solid fa-pause"></i> Hiatus</button>
+                    </div>
+                </div>
+
+                <div class="chapter-section">
+                    <div class="chapter-header"><h3>Daftar Bab</h3></div>
+                    <div class="chapter-list" id="chapter-list"><div class="empty-chapter">Memuat bab...</div></div>
+                    <button class="btn-add-chapter" id="btn-add-chapter" onclick="createNewChapter()"><i class="fa-solid fa-pen-to-square"></i> Tulis Bab Baru</button>
+                </div>
+            </div> <!-- End Real Content -->
+
         </div>
     </div>
 
@@ -385,7 +325,7 @@
         let selectedGenre = '';
         let selectedCopyright = '';
         let progressStatus = 'ongoing';
-        let isStoryBanned = false; 
+        let isStoryBanned = false; // Flag status banned
 
         if (!storyId) window.location.href = 'menulis.html';
 
@@ -405,26 +345,39 @@
             }
         });
 
+        // FUNGSI LOCK UI JIKA BANNED
         function lockInterfaceIfBanned() {
             if (!isStoryBanned) return;
+            
+            // Tampilkan Alert Banned
             document.getElementById('banned-alert-box').style.display = 'flex';
             
+            // Matikan Tombol Simpan
             const btnSave = document.getElementById('btn-save-top');
             btnSave.disabled = true;
             btnSave.innerHTML = '<i class="fa-solid fa-lock"></i> Terkunci';
 
+            // Matikan Input Teks
             document.getElementById('story-title').disabled = true;
             document.getElementById('story-desc').disabled = true;
             document.getElementById('tag-input').disabled = true;
+
+            // Matikan Tombol Pilihan
             document.getElementById('btn-genre').disabled = true;
             document.querySelectorAll('.status-btn').forEach(btn => btn.disabled = true);
+            
+            // Matikan Area Copyright
             document.querySelectorAll('.copyright-card').forEach(card => card.classList.add('disabled'));
 
+            // Matikan Upload Sampul
             const coverArea = document.getElementById('cover-uploader');
             coverArea.classList.add('disabled');
-            coverArea.onclick = null; 
+            coverArea.onclick = null; // Copot fungsi klik
 
+            // Sembunyikan Tombol Tambah Bab
             document.getElementById('btn-add-chapter').style.display = 'none';
+
+            // Ubah tampilan div tagar
             document.getElementById('tags-container').classList.add('disabled');
         }
 
@@ -441,6 +394,7 @@
                     Swal.fire('Akses Ditolak', 'Bukan cerita Anda.', 'error').then(()=>window.location.href = 'menulis.html'); return;
                 }
 
+                // Cek status banned
                 if (data.isBanned === true || data.isDeleted === true) {
                     isStoryBanned = true;
                 }
@@ -461,6 +415,7 @@
                 }
 
                 if (data.tags && Array.isArray(data.tags)) {
+                    // Bersihkan tagar saat dimuat agar konsisten (kecil semua, tanpa simbol)
                     storyTags = data.tags.map(t => t.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase()).filter(Boolean);
                     renderTags();
                 }
@@ -473,8 +428,10 @@
                 progressStatus = data.progressStatus || 'ongoing';
                 document.querySelectorAll('.status-btn').forEach(el => el.classList.toggle('active', el.dataset.value === progressStatus));
 
+                // Eksekusi penguncian UI jika dibanned
                 lockInterfaceIfBanned();
 
+                // Hilangkan skeleton dan tampilkan konten
                 document.getElementById('skeleton-container').style.display = 'none';
                 document.getElementById('real-content').style.display = 'block';
 
@@ -484,11 +441,14 @@
             }
         }
 
+        // --- PERBAIKAN SINKRONISASI KE TABEL PUBLIK (ANTI ERROR JIKA BELUM DIRILIS) ---
         async function syncToPublishedStories(updatedData) {
             if (isStoryBanned) return; 
             try {
                 const pubRef = doc(db, "published_stories", storyId);
                 const pubSnap = await getDoc(pubRef);
+                
+                // HANYA update jika cerita sudah pernah masuk etalase (sudah ada bab dirilis).
                 if (pubSnap.exists()) {
                     await updateDoc(pubRef, updatedData);
                 }
@@ -498,7 +458,7 @@
         }
 
         async function saveFieldImmediate(fields) {
-            if (isStoryBanned) return; 
+            if (isStoryBanned) return; // Tolak simpan jika dibanned
             
             const indicator = document.getElementById('save-indicator');
             indicator.className = 'save-indicator saving';
@@ -578,22 +538,27 @@
         // --- SISTEM PEMBENTUKAN TAGAR (AUTO-SAVE) ---
         const tagInput = document.getElementById('tag-input');
         
+        // Memakai event 'input' agar di Keyboard HP spasi bisa kedeteksi akurat
         tagInput.addEventListener('input', (e) => {
             if (isStoryBanned) return;
             const val = e.target.value;
+            
+            // Jika ada spasi atau koma yang diketik di HP/Desktop
             if (val.includes(' ') || val.includes(',')) {
                 processTagInput();
             }
         });
 
+        // Menangkap tombol 'Enter' (biasanya lebih akurat di keyboard laptop)
         tagInput.addEventListener('keydown', (e) => {
             if (isStoryBanned) return;
             if (e.key === 'Enter') {
-                e.preventDefault(); 
+                e.preventDefault(); // Jangan refresh halaman
                 processTagInput();
             }
         });
         
+        // Kalau kotak input di-klik keluar (blur), otomatis jadi tagar juga
         tagInput.addEventListener('blur', () => {
             if (isStoryBanned) return;
             if (tagInput.value.trim().length > 0) {
@@ -601,20 +566,24 @@
             }
         });
 
+        // Fungsi Inti Memproses Tagar & Otomatis Simpan
         function processTagInput() {
             let val = tagInput.value;
+            // Bersihkan semua simbol, sisakan huruf dan angka saja
             let tag = val.replace(/[^a-zA-Z0-9]/g, '').trim().toLowerCase();
             
             if (tag && !storyTags.includes(tag)) {
                 if (storyTags.length < 5) {
                     storyTags.push(tag);
                     renderTags();
-                    saveFieldImmediate({ tags: storyTags }); // LANGSUNG SIMPAN
+                    
+                    // LANGSUNG SIMPAN KE FIREBASE OTOMATIS (Dapur & Etalase)
+                    saveFieldImmediate({ tags: storyTags });
                 } else {
                     Swal.fire({toast:true, position:'top', icon:'warning', title:'Maksimal 5 tagar.', showConfirmButton:false, timer:1500});
                 }
             }
-            tagInput.value = ''; 
+            tagInput.value = ''; // Kosongkan kotaknya setelah jadi tagar
         }
 
         function renderTags() {
@@ -649,6 +618,7 @@
             if (isStoryBanned) return;
             const indicator = document.getElementById('save-indicator');
             
+            // Cek apakah ada teks sisa yang lupa dispasi di kolom tagar sebelum disimpan
             if (tagInput && tagInput.value.trim()) {
                 processTagInput();
             }
