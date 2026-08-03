@@ -30,7 +30,7 @@
         body {
             font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
             color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; overflow-x: hidden; /* Anti geser horizontal */
         }
 
         /* --- RESPONSIVE FULL DESKTOP WRAPPER --- */
@@ -38,6 +38,7 @@
             width: 100%; max-width: 1280px; margin: 0 auto;
             background-color: transparent; flex: 1;
             display: flex; flex-direction: column; position: relative;
+            overflow-x: hidden; /* Anti geser horizontal */
         }
         
         .content-bg {
@@ -120,6 +121,7 @@
         @media (min-width: 640px) { .list-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } .content-area { padding: 30px; } }
         @media (min-width: 1024px) { .list-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; } .content-area { padding: 40px; } }
 
+        /* KARTU CERITA DIPERBAIKI */
         .story-item {
             display: flex; gap: 15px; background: white; padding: 15px;
             border-radius: 16px; border: 1px solid #e2e8f0; height: 100%;
@@ -134,8 +136,10 @@
         }
         
         .story-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0; }
-        .story-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .story-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+        
+        /* Judul dipotong dengan padding agar tidak menabrak titik tiga */
+        .story-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 35px; }
+        
         .story-meta { font-size: 0.75rem; color: var(--text-gray); margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .story-meta span { display: flex; align-items: center; gap: 4px; }
         .story-status-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
@@ -153,9 +157,11 @@
         }
         .story-item:hover .btn-edit { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* TOMBOL KELOLA DIPAKU DI KANAN ATAS (ABSOLUTE) AGAR TIDAK MENDORONG KELUAR LAYAR */
         .btn-card-actions {
+            position: absolute; top: 15px; right: 15px; z-index: 5;
             background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px;
-            color: var(--text-gray); cursor: pointer; flex-shrink: 0; display: flex;
+            color: var(--text-gray); cursor: pointer; display: flex;
             align-items: center; justify-content: center; transition: 0.2s; font-size: 1rem;
         }
         .btn-card-actions:hover { background: var(--primary); color: white; }
@@ -391,6 +397,7 @@
 
             const bannedNotice = isBanned ? `<p class="banned-notice"><i class="fa-solid fa-triangle-exclamation"></i> Cerita ini dibekukan oleh Admin dan tidak dapat dipublikasikan ulang karena melanggar panduan komunitas.</p>` : '';
 
+            // PERBAIKAN: Tombol titik tiga kini menjadi posisi absolute agar tidak menggeser layar
             const actionButton = !isBanned 
                 ? `<button class="btn-card-actions" onclick="openStoryActions('${data.id}', '${isPublished ? 'published' : 'draft'}', event)" title="Kelola Cerita">
                        <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -399,12 +406,10 @@
 
             return `
                 <div class="story-item" onclick="window.location.href='menulis-info.html?id=${data.id}'">
+                    ${actionButton}
                     ${cover}
                     <div class="story-info">
-                        <div class="story-title-row">
-                            <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
-                            ${actionButton}
-                        </div>
+                        <h3 class="story-title">${data.title || 'Tanpa Judul'}</h3>
                         <div class="story-meta">
                             ${statusBadge}
                             <span><i class="fa-regular fa-clock"></i> Diperbarui ${updateTime}</span>
