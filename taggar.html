@@ -33,11 +33,10 @@
         .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;}
         @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); } }
 
-        /* --- NAVBAR --- */
-        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: var(--nav-bg); display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 2px solid var(--gold); }
-        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; }
+        /* --- NAVBAR (Tinggi Dipaku 60px agar tidak ada celah putih) --- */
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000; background: var(--nav-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--gold); }
+        .btn-back { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; text-decoration: none; display: flex; align-items: center; height: 100%;}
         .nav-title { font-family: 'Aleo', serif; font-size: 1.15rem; color: white; margin: 0; }
-        .btn-debug { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; cursor: pointer; }
 
         .content-area { flex: 1; display: flex; flex-direction: column; }
 
@@ -45,7 +44,7 @@
         .weekly-section {
             background: linear-gradient(160deg, #1e293b 0%, var(--nav-bg) 100%);
             padding: 30px 20px; text-align: center; position: relative; color: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); z-index: 10; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); z-index: 10; overflow: hidden; margin-top: 0;
         }
         .weekly-section::before {
             content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -93,7 +92,7 @@
         .weekly-score { text-align: right; font-size: 0.85rem; font-weight: 700; color: var(--gold); flex-shrink: 0; display: flex; flex-direction: column; align-items: center;}
         .weekly-score i { font-size: 1.2rem; margin-bottom: 2px; }
 
-        /* --- SECTION 2: TREN HARIAN (Selalu Tampil) --- */
+        /* --- SECTION 2: TREN HARIAN (Kaya Informasi) --- */
         .daily-section { background: white; padding: 25px 20px; flex: 1; }
         .section-header-daily { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;}
         .section-header-daily h3 { font-size: 1.1rem; color: var(--primary); margin: 0; font-weight: 700; display: flex; align-items: center; gap: 8px;}
@@ -101,26 +100,30 @@
         .section-header-daily span { font-size: 0.75rem; color: var(--text-gray); font-weight: 500; }
 
         .trend-list { display: flex; flex-direction: column; gap: 12px; }
+        
+        /* Desain Item Harian yang Lebih Kaya */
         .trend-item {
-            display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+            display: flex; align-items: center; gap: 12px; padding: 12px;
             background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-            transition: 0.3s; cursor: pointer;
+            transition: 0.3s; cursor: pointer; text-align: left;
         }
-        .trend-item:hover { border-color: var(--gold); transform: translateX(5px); background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
+        .trend-item:hover { border-color: var(--gold); transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
         
-        .trend-rank { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: #94a3b8; width: 25px; text-align: center; }
-        
-        /* Pewarnaan dinamis untuk top 3 harian jika tidak ada klasemen mingguan */
+        .trend-rank { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: #cbd5e1; width: 25px; text-align: center; flex-shrink: 0;}
         .trend-item:nth-child(1) .trend-rank { color: var(--gold); }
         .trend-item:nth-child(2) .trend-rank { color: #94a3b8; }
         .trend-item:nth-child(3) .trend-rank { color: var(--bronze); }
 
-        .trend-info { flex: 1; min-width: 0; }
-        .trend-tag { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin: 0 0 2px 0; text-transform: lowercase; }
-        .trend-stat { font-size: 0.75rem; color: var(--text-gray); margin: 0; display: flex; align-items: center; gap: 5px;}
+        .trend-cover { width: 50px; height: 75px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background-color: #cbd5e1; flex-shrink: 0;}
         
-        .trend-action i { font-size: 1.2rem; color: #94a3b8; transition: 0.2s;}
-        .trend-item:hover .trend-action i { color: var(--gold); }
+        .trend-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;}
+        .trend-tag { font-size: 0.7rem; font-weight: 800; background: #e2e8f0; color: var(--primary); padding: 2px 8px; border-radius: 50px; display: inline-block; margin-bottom: 4px; width: fit-content; text-transform: lowercase;}
+        .trend-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;}
+        .trend-author { font-size: 0.7rem; color: var(--text-gray); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px;}
+        
+        .trend-stat-box { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 40px;}
+        .trend-stat-box i { font-size: 1.1rem; color: #ef4444; margin-bottom: 2px;}
+        .trend-stat-box span { font-size: 0.75rem; font-weight: 700; color: var(--text-dark);}
 
         .empty-state { text-align: center; padding: 30px 20px; color: #94a3b8; font-size: 0.85rem; border: 2px dashed #cbd5e1; border-radius: 16px; }
         
@@ -135,8 +138,8 @@
         <header class="top-navbar">
             <button class="btn-back" onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <h1 class="nav-title">Peringkat Tagar</h1>
-            <!-- Tombol Debug: Hanya untuk pengetesan, nanti bisa dihapus -->
-            <button class="btn-debug" onclick="toggleDebug()"><i class="fa-solid fa-clock-rotate-left"></i> Test Waktu</button>
+            <!-- Tombol Test Waktu telah dibuang -->
+            <div style="width: 25px;"></div> <!-- Spasi penyeimbang header -->
         </header>
 
         <div class="content-area">
@@ -170,7 +173,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: TREN HARIAN -->
+            <!-- SECTION 2: TREN HARIAN (KINI MENAMPILKAN PENULIS & CERITA) -->
             <div class="daily-section">
                 <div class="section-header-daily">
                     <h3><i class="fa-solid fa-fire-flame-curved"></i> Tren Hari Ini</h3>
@@ -179,8 +182,8 @@
 
                 <div class="trend-list" id="daily-list-container">
                     <!-- Skeleton Loading -->
-                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:100px; height:18px; margin-bottom:8px;"></div><div class="sk-shimmer" style="width:150px; height:12px;"></div></div></div>
-                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:100px; height:18px; margin-bottom:8px;"></div><div class="sk-shimmer" style="width:150px; height:12px;"></div></div></div>
+                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div class="sk-shimmer" style="width:50px; height:75px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:50px; height:15px; margin-bottom:5px;"></div><div class="sk-shimmer" style="width:100%; height:15px; margin-bottom:5px;"></div><div class="sk-shimmer" style="width:60%; height:12px;"></div></div></div>
+                    <div class="trend-item"><div class="sk-shimmer" style="width:20px; height:20px;"></div><div class="sk-shimmer" style="width:50px; height:75px;"></div><div style="flex:1"><div class="sk-shimmer" style="width:50px; height:15px; margin-bottom:5px;"></div><div class="sk-shimmer" style="width:100%; height:15px; margin-bottom:5px;"></div><div class="sk-shimmer" style="width:60%; height:12px;"></div></div></div>
                 </div>
             </div>
 
@@ -202,7 +205,6 @@
         const app = initializeApp(firebaseConfig); 
         const db = getFirestore(app);
 
-        let isForceDebug = false;
         let confettiFired = false;
         let hasWeeklyDataToShow = false;
 
@@ -212,7 +214,7 @@
             document.getElementById('realtime-clock').innerHTML = `Live • ${timeStr} WIB`;
         }
 
-        // --- SISTEM LOGIKA WAKTU & CONFETTI ---
+        // --- SISTEM LOGIKA WAKTU (MURNI TANPA DEBUG) & CONFETTI ---
         function checkRankingStatus() {
             const now = new Date();
             const day = now.getDay(); // 1 = Senin
@@ -221,8 +223,8 @@
             const lockedView = document.getElementById('weekly-locked');
             const unlockedView = document.getElementById('weekly-unlocked');
 
-            // Syarat Buka: Force Debug ditekan ATAU (Hari Senin jam 09:00 - 23:59)
-            if (isForceDebug || (day === 1 && hour >= 9 && hour <= 23)) {
+            // Syarat Buka: HANYA Hari Senin jam 09:00 - 23:59
+            if (day === 1 && hour >= 9 && hour <= 23) {
                 lockedView.style.display = 'none';
                 unlockedView.style.display = 'block';
                 
@@ -254,11 +256,6 @@
             }());
         }
 
-        window.toggleDebug = () => {
-            isForceDebug = !isForceDebug;
-            checkRankingStatus();
-        };
-
         // --- PENGAMBILAN DATA REALTIME DARI FIREBASE ---
         async function fetchRankings() {
             try {
@@ -274,15 +271,25 @@
                     let rank = 1;
                     snapDaily.forEach(doc => {
                         const data = doc.data();
+                        const coverBg = data.bestStoryCover || 'https://via.placeholder.com/50x75?text=Cover';
+                        const author = data.bestStoryAuthor || 'Anonim';
+                        const title = data.bestStoryTitle || 'Tanpa Judul';
                         const tagUrl = encodeURIComponent(data.tag);
+                        
+                        // KINI ITEM HARIAN BISA DIKLIK LANGSUNG MENUJU KE CERITA TERSEBUT
                         dailyHtml += `
-                            <div class="trend-item" onclick="window.location.href='search.html?q=%23${tagUrl}'">
+                            <div class="trend-item" onclick="window.location.href='pratinjau.html?id=${data.bestStoryId}'">
                                 <div class="trend-rank">${rank}</div>
+                                <img src="${coverBg}" alt="Cover" class="trend-cover">
                                 <div class="trend-info">
-                                    <h4 class="trend-tag">#${data.tag}</h4>
-                                    <p class="trend-stat"><i class="fa-solid fa-fire" style="color:#ef4444;"></i> ${data.dailyScore} interaksi hari ini</p>
+                                    <span class="trend-tag">#${data.tag}</span>
+                                    <h4 class="trend-title">${title}</h4>
+                                    <p class="trend-author"><i class="fa-solid fa-at"></i> ${author}</p>
                                 </div>
-                                <div class="trend-action"><i class="fa-solid fa-circle-chevron-right"></i></div>
+                                <div class="trend-stat-box">
+                                    <i class="fa-solid fa-fire"></i>
+                                    <span>${data.dailyScore}</span>
+                                </div>
                             </div>
                         `;
                         rank++;
@@ -307,7 +314,6 @@
                         const coverBg = data.bestStoryCover || 'https://via.placeholder.com/60x90?text=No+Cover';
                         const author = data.bestStoryAuthor || 'Anonim';
                         const title = data.bestStoryTitle || 'Tanpa Judul';
-                        const tagUrl = encodeURIComponent(data.tag);
                         
                         weeklyHtml += `
                             <div class="weekly-item rank-${wRank}" onclick="window.location.href='pratinjau.html?id=${data.bestStoryId}'">
@@ -342,7 +348,7 @@
         // Inisialisasi
         updateClock();
         setInterval(updateClock, 60000); // Update jam setiap menit
-        checkRankingStatus(); // Set status UI (kunci/buka)
+        checkRankingStatus(); // Set status UI (kunci/buka murni mengikuti jam real)
         fetchRankings(); // Mulai tarik data dari Firebase
     </script>
 </body>
