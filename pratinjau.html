@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Detail Cerita - Cendekia Aksara</title>
+    <title>Detail Cerita - Aksara Narasi</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,88 +25,43 @@
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
-        body {
-            font-family: 'Poppins', sans-serif; background-color: var(--bg-color);
-            color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; padding-top: 60px; min-height: 100vh; }
 
-        .app-wrapper {
-            width: 100%; max-width: 480px; margin: 0 auto;
-            background-color: white; min-height: 100vh;
-            display: flex; flex-direction: column; position: relative;
-        }
-
-        @media (min-width: 768px) {
-            body { background-color: #e2e8f0; } 
-            .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
-            .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); }
-        }
+        .app-wrapper { width: 100%; max-width: 480px; margin: 0 auto; background-color: white; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+        @media (min-width: 768px) { body { background-color: #e2e8f0; } .app-wrapper { border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; box-shadow: 0 0 40px rgba(0,0,0,0.1); } .top-navbar { max-width: 480px; left: 50% !important; transform: translateX(-50%); } }
 
         /* --- FIXED NAVBAR --- */
-        .top-navbar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000;
-            background: white; border-bottom: 1px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1000; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .btn-icon { background: none; border: none; color: var(--text-dark); font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 5px; }
         .btn-icon:hover { color: var(--primary); }
         .nav-title { font-family: 'Aleo', serif; font-size: 1.1rem; color: var(--primary); margin: 0; }
 
         /* --- HERO PREVIEW --- */
-        .preview-header {
-            position: relative;
-            background: linear-gradient(to bottom, #0f172a 0%, var(--primary) 100%);
-            padding: 40px 20px 30px 20px; text-align: center; color: white;
-            /* PERBAIKAN: border-radius dihapus agar menyatu mulus dengan section di bawahnya */
-        }
-        .cover-blur-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            opacity: 0.2; filter: blur(15px); z-index: 1; pointer-events: none;
-        }
-
-        .cover-image {
-            width: 130px; height: 190px; margin: 0 auto 15px auto;
-            border-radius: 12px; background-size: cover; background-position: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2);
-            position: relative; z-index: 2; background-color: #cbd5e1;
-        }
+        .preview-header { position: relative; background: linear-gradient(to bottom, #0f172a 0%, var(--primary) 100%); padding: 40px 20px 30px 20px; text-align: center; color: white; }
+        .cover-blur-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.2; filter: blur(15px); z-index: 1; pointer-events: none; }
+        .cover-image { width: 130px; height: 190px; margin: 0 auto 15px auto; border-radius: 12px; background-size: cover; background-position: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); position: relative; z-index: 2; background-color: #cbd5e1; }
 
         .story-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 5px 0; position: relative; z-index: 2; line-height: 1.2;}
         .story-author { font-size: 0.9rem; color: #cbd5e1; margin: 0 0 10px 0; position: relative; z-index: 2; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;}
         .story-author:hover { color: var(--gold); }
 
-        /* --- STATUS PROGRES (badge) --- */
-        .status-pill {
-            display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 700;
-            padding: 3px 12px; border-radius: 50px; margin: 0 0 15px 0; position: relative; z-index: 2;
-        }
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 700; padding: 3px 12px; border-radius: 50px; margin: 0 0 15px 0; position: relative; z-index: 2; }
         .status-pill.ongoing { background: rgba(14,165,233,0.18); color: #7dd3fc; }
         .status-pill.completed { background: rgba(16,185,129,0.18); color: #6ee7b7; }
         .status-pill.hiatus { background: rgba(245,158,11,0.18); color: #fcd34d; }
 
-        .stats-row {
-            display: flex; justify-content: center; gap: 25px; margin-bottom: 20px;
-            position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;
-        }
+        .stats-row { display: flex; justify-content: center; gap: 25px; margin-bottom: 20px; position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .stat-item { display: flex; flex-direction: column; align-items: center; }
         .stat-item i { font-size: 1.2rem; color: var(--gold); margin-bottom: 5px; }
         .stat-val { font-size: 1.1rem; font-weight: 700; line-height: 1;}
         .stat-lbl { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;}
 
-        .btn-read {
-            background: var(--gold); color: white; border: none; padding: 12px 30px;
-            border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-            display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; width: 100%; justify-content: center; transition: 0.3s;
-        }
+        .btn-read { background: var(--gold); color: white; border: none; padding: 12px 30px; border-radius: 50px; font-family: 'Poppins'; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 2; width: 100%; justify-content: center; transition: 0.3s; }
         .btn-read:hover { background: #b45309; transform: translateY(-2px); }
 
-        /* --- SYNOPSIS & TAGS --- */
+        /* --- SINOPSIS & TAGS --- */
         .info-section { padding: 25px 20px; background: white; border-bottom: 1px solid #e2e8f0; }
         .section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 15px 0; border-left: 3px solid var(--gold); padding-left: 10px;}
-        
         .synopsis-text { font-size: 0.85rem; color: #475569; line-height: 1.6; margin: 0; text-align: justify; white-space: pre-wrap;}
         
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
@@ -112,61 +71,43 @@
         .badge-tag:hover { background: #e2e8f0; border-color: var(--primary); transform: translateY(-2px); }
         .badge-copyright { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
+        /* --- PERINGKAT TAGAR (ACHIEVEMENTS) --- */
+        .achievement-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .achievement-list.in-modal { max-height: 50vh; overflow-y: auto; padding-right: 5px; }
+        .achieve-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .achieve-item:hover { border-color: var(--gold); transform: translateX(4px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .achieve-icon { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #b45309); color: white; display: flex; justify-content: center; align-items: center; font-size: 1rem; flex-shrink: 0; box-shadow: 0 2px 5px rgba(212,175,55,0.4);}
+        .achieve-info { flex: 1; min-width: 0; }
+        .achieve-tag { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin: 0 0 2px 0; text-transform: lowercase; }
+        .achieve-stat { font-size: 0.75rem; color: var(--text-gray); margin: 0; display: flex; align-items: center; gap: 4px;}
+
         /* --- DAFTAR BAB --- */
         .chapter-list-preview { display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px;}
         .chapter-list-preview.in-modal { max-height: 60vh; }
-        .chapter-item-preview { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; 
-            cursor: pointer; transition: 0.2s; font-size: 0.9rem; color: var(--text-dark); font-weight: 600;
-            background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
+        .chapter-item-preview { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; color: var(--text-dark); font-weight: 600; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .chapter-item-preview:hover { border-color: var(--primary); color: var(--primary); transform: translateX(4px); box-shadow: 0 4px 10px rgba(0,51,102,0.05); }
         .chapter-title-wrapper { display: flex; align-items: center; gap: 12px; min-width: 0; }
         .chapter-title-wrapper span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chapter-number {
-            background: #f1f5f9; color: var(--primary); width: 30px; height: 30px; 
-            display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
-        }
-        .btn-see-all-chapters {
-            width: 100%; margin-top: 2px; padding: 12px; border-radius: 12px; border: 1.5px dashed #cbd5e1;
-            background: #f8fafc; color: var(--primary); font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
-        }
-        .btn-see-all-chapters:hover { border-color: var(--primary); background: #eff6ff; }
+        .chapter-number { background: #f1f5f9; color: var(--primary); width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+        
+        .btn-action-more { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: 1.5px dashed #cbd5e1; background: #f8fafc; color: var(--primary); font-family: 'Poppins'; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-action-more:hover { border-color: var(--primary); background: #eff6ff; }
 
         /* --- REKOMENDASI --- */
         .similar-section { padding: 25px 20px; background: var(--bg-color); }
-        .story-scroll {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-            gap: 15px; padding-bottom: 15px; scrollbar-width: none;
-        }
+        .story-scroll { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 15px; padding-bottom: 15px; scrollbar-width: none; }
         .story-scroll::-webkit-scrollbar { display: none; }
         .story-card { width: 120px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; transition: 0.3s;}
         .story-card:hover { transform: translateY(-3px); }
-        .story-cover-sim {
-            width: 100%; height: 180px; border-radius: 12px; background-size: cover; background-position: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0; background-color: #cbd5e1;
-        }
+        .story-cover-sim { width: 100%; height: 180px; border-radius: 12px; background-size: cover; background-position: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px solid #e2e8f0; background-color: #cbd5e1; }
         .story-title-sim { font-size: 0.85rem; font-weight: 700; margin: 0 0 3px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; color: var(--text-dark); }
 
-        /* --- DROPDOWN 3 TITIK --- */
-        .dropdown-menu {
-            position: absolute; top: 50px; right: 15px; background: white;
-            border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 230px; display: none; flex-direction: column; overflow: hidden; z-index: 1001;
-        }
+        /* --- DROPDOWN --- */
+        .dropdown-menu { position: absolute; top: 50px; right: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 230px; display: none; flex-direction: column; overflow: hidden; z-index: 1001; }
         .dropdown-menu.active { display: flex; animation: dropFade 0.2s ease; }
         @keyframes dropFade { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
-        
-        .dropdown-item {
-            padding: 12px 15px; font-size: 0.85rem; color: var(--text-dark);
-            background: none; border: none; text-align: left; font-family: 'Poppins';
-            cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s;
-        }
+        .dropdown-item { padding: 12px 15px; font-size: 0.85rem; color: var(--text-dark); background: none; border: none; text-align: left; font-family: 'Poppins'; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
-
         .empty-state { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem; }
 
         /* --- SKELETON SHIMMER --- */
@@ -191,14 +132,12 @@
 
     <div class="app-wrapper">
         
-        <!-- NAVBAR -->
         <header class="top-navbar">
             <button class="btn-icon" onclick="goBackToHome()"><i class="fa-solid fa-arrow-left"></i></button>
             <h1 class="nav-title">Pratinjau</h1>
             <div>
                 <button class="btn-icon" onclick="toggleMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
             </div>
-
             <div class="dropdown-menu" id="dropdown-menu">
                 <button class="dropdown-item" id="btn-add-lib" onclick="toggleLibrary()"><i class="fa-solid fa-book-medical"></i> Masukkan ke Daftar Bacaan</button>
                 <button class="dropdown-item" style="color: #dc2626;" onclick="reportStory()"><i class="fa-solid fa-flag"></i> Laporkan Cerita</button>
@@ -258,6 +197,16 @@
             <div class="tags-container" id="p-tags" style="display:none;"></div>
         </div>
 
+        <!-- PERINGKAT TAGAR (ACHIEVEMENT SECTION) -->
+        <div class="info-section" id="tag-achievements-section" style="display:none;">
+            <h3 class="section-title"><i class="fa-solid fa-trophy" style="color:var(--gold);"></i> Peringkat Tagar</h3>
+            <div id="p-achievements-skeleton">
+                <div class="sk-light sk-chapter-row"></div>
+                <div class="sk-light sk-chapter-row"></div>
+            </div>
+            <div class="achievement-list" id="p-achievements-list" style="display:none;"></div>
+        </div>
+
         <!-- DAFTAR BAB INTERAKTIF -->
         <div class="info-section">
             <h3 class="section-title">Daftar Bab</h3>
@@ -290,6 +239,10 @@
             window.showAllChapters = function () {
                 Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Sedang menyiapkan daftar bab, coba lagi sesaat.', showConfirmButton: false, timer: 1800 });
             };
+            window.showAllTagsRank = function() {
+                Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Mempersiapkan peringkat tagar...', showConfirmButton: false, timer: 1800 });
+            };
+
             try {
                 var params = new URLSearchParams(window.location.search);
                 var sid = params.get('id');
@@ -329,8 +282,18 @@
                 if (c.tagsHtml) { document.getElementById('p-tags').innerHTML = c.tagsHtml; showReal('p-tags'); }
                 if (c.chapterListHtml) { document.getElementById('p-chapter-list').innerHTML = c.chapterListHtml; showReal('p-chapter-list'); }
                 if (c.similarHtml) { document.getElementById('similar-container').innerHTML = c.similarHtml; showReal('similar-container'); }
+                
+                // Load Prestasi Tagar Cache
+                if (c.achievementsHtml) {
+                    document.getElementById('tag-achievements-section').style.display = 'block';
+                    document.getElementById('p-achievements-skeleton').style.display = 'none';
+                    document.getElementById('p-achievements-list').innerHTML = c.achievementsHtml;
+                    document.getElementById('p-achievements-list').style.display = 'flex';
+                }
+
                 if (c.fullChapterListHtml) window.__previewFullChapterListHtml = c.fullChapterListHtml;
                 if (c.firstChapterId) window.__previewFirstChapterId = c.firstChapterId;
+                if (c.fullTagStats) window.__fullTagStats = c.fullTagStats;
                 
                 if (c.fullChapterListHtml) {
                     window.showAllChapters = function () {
@@ -394,9 +357,7 @@
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            if (user) {
-                checkLibraryStatus(); 
-            }
+            if (user) { checkLibraryStatus(); }
             if (!isPreviewLoaded) {
                 isPreviewLoaded = true;
                 loadPreview();
@@ -404,7 +365,7 @@
         });
 
         window.goBackToHome = () => {
-            if (document.referrer && !document.referrer.includes('read.html')) {
+            if (document.referrer && !document.referrer.includes('read.html') && !document.referrer.includes('login.html')) {
                 history.back();
             } else {
                 window.location.replace('index.html');
@@ -417,17 +378,132 @@
             if (skEl) skEl.style.display = 'none';
         }
 
+        // --- SISTEM KEAMANAN (WAJIB LOGIN UNTUK BACA) ---
+        window.promptLogin = () => {
+            Swal.fire({
+                title: 'Akses Eksklusif',
+                text: 'Hanya pembaca yang sudah mendaftar yang dapat mengakses isi bab ini. Gabung sekarang secara gratis!',
+                icon: 'lock',
+                showCancelButton: true,
+                confirmButtonText: 'Masuk / Daftar',
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#64748b',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((res) => { if (res.isConfirmed) window.location.href = 'login.html'; });
+        };
+
+        window.startReading = () => {
+            if (!currentUser) { window.promptLogin(); return; }
+            if (firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
+            else window.location.href = `read.html?id=${storyId}`; 
+        };
+
+        window.handleChapterClick = (chapId) => {
+            if (!currentUser) { window.promptLogin(); return; }
+            window.location.href = `read.html?id=${storyId}&ch=${chapId}`;
+        };
+
         function buildChapterItemHtml(cData, chapId, index) {
             return `
-                <div class="chapter-item-preview" onclick="window.location.href='read.html?id=${storyId}&ch=${chapId}'">
+                <div class="chapter-item-preview" onclick="handleChapterClick('${chapId}')">
                     <div class="chapter-title-wrapper">
                         <div class="chapter-number">${index}</div>
                         <span>${cData.title || 'Tanpa Judul'}</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
+                    <i class="fa-solid fa-lock-open" style="color:#cbd5e1; font-size: 0.8rem;"></i>
                 </div>
             `;
         }
+
+        // --- SISTEM PERINGKAT TAGAR (ACHIEVEMENTS) ---
+        async function loadTagAchievements(tagsArray) {
+            const section = document.getElementById('tag-achievements-section');
+            const listContainer = document.getElementById('p-achievements-list');
+            const skeleton = document.getElementById('p-achievements-skeleton');
+            
+            if (!tagsArray || tagsArray.length === 0) {
+                section.style.display = 'none';
+                return '';
+            }
+
+            section.style.display = 'block';
+
+            try {
+                let tagStats = tagsArray.map(t => ({ tag: t, score: 0 }));
+                // Query ke koleksi peringkat harian/mingguan yang sudah kita buat sebelumnya
+                const qTags = query(collection(db, "tag_rankings"), where("tag", "in", tagsArray));
+                const snapTags = await getDocs(qTags);
+                
+                snapTags.forEach(doc => {
+                    const d = doc.data();
+                    const idx = tagStats.findIndex(ts => ts.tag === d.tag);
+                    if (idx > -1) {
+                        tagStats[idx].score = d.dailyScore || 0; // Menggunakan skor harian/api
+                    }
+                });
+
+                // Urutkan dari yang skornya paling besar
+                tagStats.sort((a, b) => b.score - a.score);
+                window.__fullTagStats = tagStats;
+
+                let html = '';
+                const limitDisplay = 3; // Batas tampil sebelum masuk pop-up modal
+                
+                tagStats.slice(0, limitDisplay).forEach((ts) => {
+                    const rankStr = ts.score > 0 ? `${ts.score} Interaksi 🔥` : 'Baru Bergabung';
+                    const scoreColor = ts.score > 0 ? '#ef4444' : '#cbd5e1';
+                    
+                    html += `
+                        <div class="achieve-item" onclick="window.location.href='search.html?q=%23${encodeURIComponent(ts.tag)}'">
+                            <div class="achieve-icon"><i class="fa-solid fa-hashtag"></i></div>
+                            <div class="achieve-info">
+                                <h4 class="achieve-tag">${ts.tag}</h4>
+                                <p class="achieve-stat" style="color:${scoreColor}; font-weight:600;">${rankStr}</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color:#cbd5e1;"></i>
+                        </div>
+                    `;
+                });
+
+                if (tagStats.length > limitDisplay) {
+                    html += `<button type="button" class="btn-action-more" onclick="showAllTagsRank()"><i class="fa-solid fa-list-ul"></i> Lihat Seluruh ${tagStats.length} Tagar</button>`;
+                }
+
+                skeleton.style.display = 'none';
+                listContainer.innerHTML = html;
+                listContainer.style.display = 'flex';
+                
+                return html;
+            } catch(e) {
+                console.error("Gagal meload prestasi tagar:", e);
+                skeleton.style.display = 'none';
+                listContainer.innerHTML = '<div class="empty-state">Data tagar tidak tersedia.</div>';
+                listContainer.style.display = 'block';
+                return '';
+            }
+        }
+
+        window.showAllTagsRank = () => {
+            if(!window.__fullTagStats) return;
+            let mHtml = '<div class="achievement-list in-modal">';
+            window.__fullTagStats.forEach(ts => {
+                const rankStr = ts.score > 0 ? `${ts.score} Interaksi 🔥` : 'Baru Bergabung';
+                const scoreColor = ts.score > 0 ? '#ef4444' : '#cbd5e1';
+                
+                mHtml += `
+                    <div class="achieve-item" onclick="window.location.href='search.html?q=%23${encodeURIComponent(ts.tag)}'">
+                        <div class="achieve-icon"><i class="fa-solid fa-hashtag"></i></div>
+                        <div class="achieve-info" style="text-align:left;">
+                            <h4 class="achieve-tag">${ts.tag}</h4>
+                            <p class="achieve-stat" style="color:${scoreColor}; font-weight:600;">${rankStr}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            mHtml += '</div>';
+            Swal.fire({ title: 'Semua Peringkat Tagar', html: mHtml, showConfirmButton: false, showCloseButton: true, width: 440 });
+        };
 
         async function loadPreview() {
             try {
@@ -448,9 +524,7 @@
                         data.views = pubData.views || data.views || 0;
                         data.votes = pubData.votes || data.votes || 0;
                     }
-                } catch(e) {
-                    console.warn("Karya belum dirilis publik.");
-                }
+                } catch(e) { console.warn("Karya belum dirilis publik."); }
 
                 storyDataCache = data; 
                 currentGenre = data.genre || 'Umum';
@@ -463,7 +537,7 @@
                             const uData = authorSnap.data();
                             realAuthorName = uData.username ? `@${uData.username}` : (uData.name || realAuthorName);
                         }
-                    } catch(e) { console.error('Gagal ambil nama penulis:', e); }
+                    } catch(e) {}
                 }
 
                 document.getElementById('p-title').innerText = data.title || 'Tanpa Judul';
@@ -493,22 +567,29 @@
                     document.getElementById('p-cover').style.backgroundImage = coverUrl;
                     document.getElementById('blur-bg').style.backgroundImage = coverUrl;
                 }
-                
                 document.getElementById('p-cover').classList.remove('sk-dark');
                 document.getElementById('blur-bg').classList.remove('sk-dark');
 
+                // --- RENDERING TAGAR & PRESTASI TAGAR ---
                 let tagsHtml = `<span class="badge-genre" onclick="window.location.href='search.html?q=${encodeURIComponent(currentGenre)}'">${currentGenre}</span>`;
                 if (data.copyrightStatement && copyrightLabels[data.copyrightStatement]) {
                     const cr = copyrightLabels[data.copyrightStatement];
                     tagsHtml += `<span class="badge-copyright"><i class="fa-solid ${cr.icon}"></i> ${cr.label}</span>`;
                 }
+                
+                let tagsArray = [];
                 if (data.tags && Array.isArray(data.tags)) {
-                    data.tags.forEach(t => { 
+                    tagsArray = data.tags.filter(Boolean);
+                    tagsArray.forEach(t => { 
                         tagsHtml += `<span class="badge-tag" onclick="window.location.href='search.html?q=%23${encodeURIComponent(t)}'">#${t}</span>`; 
                     });
                 }
+                
                 document.getElementById('p-tags').innerHTML = tagsHtml;
                 showReal('p-tags');
+
+                // Panggil loader prestasi tagar setelah mendapatkan tagArray
+                const achievementsHtml = await loadTagAchievements(tagsArray);
 
                 const chapCount = await loadChapters();
                 const similarHtml = await loadSimilarStories();
@@ -519,11 +600,10 @@
                     statusClass: statusInfo.cls, statusLabel: statusInfo.label,
                     descText, coverUrl,
                     views: data.views || 0, votes: data.votes || 0, chapCount,
-                    tagsHtml,
+                    tagsHtml, achievementsHtml,
                     chapterListHtml: document.getElementById('p-chapter-list').innerHTML,
-                    fullChapterListHtml,
-                    similarHtml,
-                    firstChapterId
+                    fullChapterListHtml, fullTagStats: window.__fullTagStats,
+                    similarHtml, firstChapterId
                 });
 
             } catch (error) {
@@ -570,7 +650,7 @@
                 } else {
                     const previewChapters = publishedChapters.slice(0, PREVIEW_CHAPTER_LIMIT);
                     previewHtml = previewChapters.map((c, i) => buildChapterItemHtml(c, c.id, i + 1)).join('');
-                    previewHtml += `<button type="button" class="btn-see-all-chapters" onclick="showAllChapters()"><i class="fa-solid fa-list"></i> Lihat Semua ${chapCount} Bab</button>`;
+                    previewHtml += `<button type="button" class="btn-action-more" onclick="showAllChapters()"><i class="fa-solid fa-list-ol"></i> Lihat Semua ${chapCount} Bab Lengkap</button>`;
                 }
 
                 document.getElementById('p-chapter-list').innerHTML = previewHtml;
@@ -593,10 +673,8 @@
             }
         }
 
-        // PERBAIKAN: Fungsi Rekomendasi diubah agar merujuk ke published_stories (Bukan stories/draf)
         async function loadSimilarStories() {
             try {
-                // Diubah dari "stories" menjadi "published_stories"
                 const q = query(collection(db, "published_stories"), where("genre", "==", currentGenre), limit(6));
                 const snap = await getDocs(q);
                 let html = '';
@@ -623,24 +701,6 @@
                 return '';
             }
         }
-
-        window.startReading = () => {
-            if (!currentUser) {
-                Swal.fire({
-                    title: 'Login Diperlukan',
-                    text: 'Anda harus masuk ke akun untuk membaca cerita ini.',
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonText: 'Login Sekarang',
-                    confirmButtonColor: '#003366',
-                    cancelButtonText: 'Batal'
-                }).then((res) => { if (res.isConfirmed) window.location.href = 'login.html'; });
-                return;
-            }
-
-            if (firstChapterId) window.location.href = `read.html?id=${storyId}&ch=${firstChapterId}`;
-            else window.location.href = `read.html?id=${storyId}`; 
-        };
 
         window.toggleMenu = () => {
             document.getElementById('dropdown-menu').classList.toggle('active');
