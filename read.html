@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Membaca - Cendekia Aksara</title>
+    <title>Membaca - Aksara Narasi</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@700&family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -276,7 +280,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, updateDoc, addDoc, increment, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, setDoc, updateDoc, addDoc, increment, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Konfigurasi Database
@@ -310,14 +314,38 @@
 
         // Smart Back Button
         document.getElementById('btn-back').onclick = () => { 
-            if (document.referrer && !document.referrer.includes('read.html')) {
+            if (document.referrer && !document.referrer.includes('read.html') && !document.referrer.includes('login.html')) {
                 history.back(); 
             } else {
                 window.location.replace(`pratinjau.html?id=${storyId}`); 
             }
         };
 
+        // --- SISTEM PENJAGA PINTU (PROTEKSI WAJIB LOGIN) ---
         onAuthStateChanged(auth, (user) => { 
+            if (!user) {
+                document.getElementById('loading-overlay').style.display = 'none';
+                Swal.fire({
+                    title: 'Akses Eksklusif',
+                    text: 'Hanya pembaca terdaftar yang dapat membaca isi cerita ini. Silakan daftar atau masuk terlebih dahulu secara gratis!',
+                    icon: 'lock',
+                    allowOutsideClick: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Masuk / Daftar',
+                    confirmButtonColor: '#003366',
+                    cancelButtonColor: '#64748b',
+                    cancelButtonText: 'Kembali',
+                    reverseButtons: true
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        window.location.href = 'login.html';
+                    } else {
+                        window.location.replace(`pratinjau.html?id=${storyId}`);
+                    }
+                });
+                return; 
+            }
+            
             currentUser = user; 
             fetchStoryAndChapters(); 
         });
@@ -336,12 +364,10 @@
                 storyData = storySnap.data();
                 document.getElementById('nav-story-title').innerText = storyData.title || "Tanpa Judul";
                 
-                // Set Data ke Template Poster
                 document.getElementById('poster-story-title').innerText = storyData.title || "Tanpa Judul";
-                document.getElementById('poster-author-name').innerText = storyData.authorName || "Penulis Cendekia";
+                document.getElementById('poster-author-name').innerText = storyData.authorName || "Penulis Aksana";
                 if(storyData.coverBase64) document.getElementById('poster-cover-img').style.backgroundImage = `url('${storyData.coverBase64}')`;
 
-                // Ambil Bab
                 const chapSnap = await getDocs(query(collection(db, "stories", storyId, "chapters"), orderBy("createdAt", "asc")));
                 chapSnap.forEach(d => { 
                     if (d.data().status === 'published') chaptersList.push({ id: d.id, ...d.data() }); 
@@ -361,20 +387,75 @@
                 await renderCurrentChapter();
                 renderTableOfContents();
                 
-                // Penambahan View Cerita
                 if (storySnap.ref.path.includes("published_stories") && !sessionStorage.getItem(`viewed_story_${storyId}`)) {
                     await updateDoc(storyRef, { views: increment(1) });
                     sessionStorage.setItem(`viewed_story_${storyId}`, 'true');
-                    storyData.votes = (storyData.votes || 0); // Pastikan nilai lokal tidak error
+                    storyData.votes = (storyData.votes || 0); 
                 }
                 
                 saveReadProgress(); 
                 document.getElementById('loading-overlay').style.display = 'none';
 
+                // --- TRIGGER BONUS TAMAT JIKA USER MEMBACA BAB TERAKHIR ---
+                if (currentActiveIndex === chaptersList.length - 1) {
+                    awardCompletionBonusToTags();
+                }
+
             } catch (error) { 
                 console.error(error); 
                 document.getElementById('loading-overlay').style.display = 'none';
-                Swal.fire('Error 404', 'Cerita tidak ditemukan atau telah dihapus.', 'error').then(()=>window.location.href='index.html');
+                Swal.fire('Error 404', 'Cerita tidak ditemukan atau telah ditarik oleh penulis.', 'error').then(()=>window.location.replace(`pratinjau.html?id=${storyId}`));
+            }
+        }
+
+        // --- SISTEM BONUS 5 POIN UNTUK TAGAR SAAT CERITA DIBACA SAMPAI TAMAT ---
+        async function awardCompletionBonusToTags() {
+            if (!currentUser || !storyData.tags || !Array.isArray(storyData.tags) || storyData.tags.length === 0) return;
+            
+            // Cegah spam: Pastikan bonus hanya diberikan 1 kali per user per cerita
+            const bonusKey = `bonus_tamat_${currentUser.uid}_${storyId}`;
+            if (localStorage.getItem(bonusKey)) return; 
+
+            try {
+                // Filter tagar yang valid
+                const validTags = storyData.tags.filter(t => typeof t === 'string' && t.trim() !== '').map(t => t.trim().toLowerCase());
+                if (validTags.length === 0) return;
+
+                // Tambahkan +5 ke setiap tagar di database menggunakan Transaction agar aman
+                for (const tag of validTags) {
+                    const tagRef = doc(db, "tag_rankings", tag);
+                    
+                    await runTransaction(db, async (transaction) => {
+                        const tagDoc = await transaction.get(tagRef);
+                        if (!tagDoc.exists()) {
+                            // Jika tagar belum ada di papan peringkat, buat baru
+                            transaction.set(tagRef, {
+                                tag: tag,
+                                dailyScore: 5,
+                                weeklyScore: 5,
+                                bestStoryId: storyId,
+                                bestStoryTitle: storyData.title,
+                                bestStoryAuthor: storyData.authorName,
+                                bestStoryCover: storyData.coverBase64 || null
+                            });
+                        } else {
+                            // Jika sudah ada, tambahkan poinnya
+                            const currentDaily = tagDoc.data().dailyScore || 0;
+                            const currentWeekly = tagDoc.data().weeklyScore || 0;
+                            transaction.update(tagRef, {
+                                dailyScore: currentDaily + 5,
+                                weeklyScore: currentWeekly + 5
+                            });
+                        }
+                    });
+                }
+                
+                // Tandai di lokal bahwa user ini sudah memberikan bonus tamat
+                localStorage.setItem(bonusKey, 'true');
+                console.log("Bonus tamat +5 poin berhasil dikirim ke tagar:", validTags);
+
+            } catch (error) {
+                console.error("Gagal mengirim bonus tagar:", error);
             }
         }
 
@@ -398,10 +479,9 @@
 
             document.getElementById('reader-footer').style.display = 'block';
             
-            // Generate QR Code untuk Chapter Ini (Untuk Poster)
             document.getElementById("poster-qrcode").innerHTML = "";
             const currentUrl = `${window.location.origin}${window.location.pathname}?id=${storyId}`;
-            const displayUrl = currentUrl.replace(/^https?:\/\//, ''); // Hapus https:// untuk tampilan
+            const displayUrl = currentUrl.replace(/^https?:\/\//, ''); 
             document.getElementById("poster-link-text").innerText = displayUrl;
 
             new QRCode(document.getElementById("poster-qrcode"), {
@@ -409,10 +489,9 @@
                 width: 140, height: 140, colorDark : "#003366", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
 
-            // --- CEK VOTE PER BAB ---
             const btnVote = document.getElementById('btn-vote');
             btnVote.classList.remove('voted');
-            document.getElementById('vote-count-display').innerText = storyData.votes || 0; // Tampilkan total vote cerita
+            document.getElementById('vote-count-display').innerText = storyData.votes || 0; 
             
             if (currentUser) {
                 try {
@@ -453,7 +532,6 @@
             }, { merge: true });
         }
 
-        // --- SISTEM VOTE (Satu Kali Per Bab) ---
         window.handleVote = async () => {
             if(!currentUser) { Swal.fire('Login Diperlukan', 'Silakan masuk untuk memberikan bintang.', 'info'); return; }
             
@@ -463,7 +541,6 @@
                 return;
             }
 
-            // Optimistic UI Update
             btn.classList.add('voted'); 
             const voteDisplay = document.getElementById('vote-count-display');
             const newCount = parseInt(voteDisplay.innerText) + 1;
@@ -473,14 +550,12 @@
                 const chId = chaptersList[currentActiveIndex].id;
                 const storyRef = doc(db, "published_stories", storyId);
                 const chapterRef = doc(db, "published_stories", storyId, "chapters", chId);
-                // Catat user yang vote di subcollection bab ini
                 const chapterVoterRef = doc(db, "published_stories", storyId, "chapters", chId, "voters", currentUser.uid);
                 
                 await setDoc(chapterVoterRef, { votedAt: serverTimestamp() });
                 await updateDoc(storyRef, { votes: increment(1) });
                 await updateDoc(chapterRef, { votes: increment(1) }).catch(() => {}); 
 
-                // --- KIRIM NOTIFIKASI KE PENULIS CERITA ---
                 if (storyData.authorId && storyData.authorId !== currentUser.uid) {
                     try {
                         const uSnap = await getDoc(doc(db, "users", currentUser.uid));
@@ -510,7 +585,6 @@
             }
         };
 
-        // --- SISTEM KOMENTAR BERUTAS & LENCANA PENULIS ---
         window.toggleCommentSection = () => {
             document.getElementById('comment-section-box').classList.toggle('active');
             window.scrollBy({ top: 150, behavior: 'smooth' });
@@ -540,11 +614,9 @@
                 
                 document.getElementById('comment-count').innerText = commentsData.length;
 
-                // Pisahkan Parent dan Child (Replies)
                 let parents = commentsData.filter(c => !c.parentId);
                 let replies = commentsData.filter(c => c.parentId);
 
-                // Urutkan parent dari yang terbaru
                 parents.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
 
                 let html = '';
@@ -598,7 +670,7 @@
             const chId = chaptersList[currentActiveIndex].id;
             
             const userSnap = await getDoc(doc(db, "users", currentUser.uid));
-            let ava = null, name = currentUser.displayName || 'Pembaca Cendekia';
+            let ava = null, name = currentUser.displayName || 'Pembaca Aksana';
             if (userSnap.exists()) { 
                 const uData = userSnap.data();
                 ava = uData.profilePicBase64 || null; 
@@ -617,7 +689,6 @@
             try {
                 await addDoc(collection(db, "published_stories", storyId, "chapters", chId, "comments"), payload);
                 
-                // --- KIRIM NOTIFIKASI KE PENULIS CERITA ---
                 if (storyData.authorId && storyData.authorId !== currentUser.uid) {
                     try {
                         let notifMsg = `${name} berkomentar: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`;
@@ -641,7 +712,6 @@
             }
         };
 
-        // --- SISTEM GENERATE POSTER ---
         window.generatePoster = async () => {
             const overlay = document.getElementById('share-overlay');
             overlay.style.display = 'flex';
@@ -658,14 +728,14 @@
                     const imgData = canvas.toDataURL("image/png");
                     
                     const link = document.createElement('a');
-                    link.download = `Cendekia_${storyData.title.replace(/\s+/g, '_')}.png`;
+                    link.download = `Aksana_${storyData.title.replace(/\s+/g, '_')}.png`;
                     link.href = imgData;
                     link.click();
 
                     overlay.style.display = 'none';
 
                     const currentUrl = `${window.location.origin}${window.location.pathname}?id=${storyId}`;
-                    const captionText = `📚 Mari membaca "${storyData.title}" karya ${storyData.authorName || 'Penulis Cendekia'} di Cendekia Aksara!\n\nTemukan cerita selengkapnya di sini:\n${currentUrl}`;
+                    const captionText = `📚 Mari membaca "${storyData.title}" karya ${storyData.authorName || 'Penulis Aksana'} di Aksara Narasi!\n\nTemukan cerita selengkapnya di sini:\n${currentUrl}`;
 
                     Swal.fire({
                         title: 'Poster Tersimpan!',
@@ -688,7 +758,6 @@
             }, 1000); 
         };
 
-        // --- SISTEM UI INTERAKSI BACAAN ---
         let lastScrollTop = 0;
         window.addEventListener('scroll', () => {
             const st = window.pageYOffset || document.documentElement.scrollTop;
