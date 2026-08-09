@@ -120,7 +120,7 @@
         const SEARCH_CACHE_KEY = 'cendekia_search_cache_v1';
 
         let allStories = [];
-        let allUsers = []; // ARRAY BARU UNTUK SELURUH PENGGUNA
+        let allUsers = []; 
         let authorCache = {}; 
         let searchTimer;
 
@@ -165,7 +165,6 @@
         // --- MENGAMBIL SELURUH DATA CERITA DAN AKUN DARI FIREBASE ---
         async function loadDatabase() {
             try {
-                // 1. Tarik seluruh pengguna terdaftar (Mau punya karya atau tidak, semua ditarik)
                 const userSnap = await getDocs(collection(db, "users"));
                 let freshUsers = [];
                 userSnap.forEach(d => {
@@ -175,16 +174,12 @@
                 });
                 allUsers = freshUsers;
 
-                // 2. Tarik cerita yang sudah rilis
                 const storySnap = await getDocs(collection(db, "published_stories"));
                 let freshStories = [];
 
                 storySnap.forEach(d => {
                     const sData = d.data();
-                    // Lewati yang tidak layak
                     if (sData.status === 'draft' || sData.status === 'archived' || sData.isDeleted === true || sData.isBanned === true) return;
-                    
-                    // Tempelkan nama author dari cache
                     sData.realAuthorName = authorCache[sData.authorId] || sData.authorName || 'Anonim';
                     freshStories.push({ id: d.id, ...sData });
                 });
@@ -307,18 +302,29 @@
             searchTimer = setTimeout(() => { runSearchOrQueue(val.toLowerCase()); }, 400);
         });
 
+        // --- SISTEM AUTO-SUBMIT ENTER MENDETEKSI KALIMAT UNTUK AI ---
         document.getElementById('search-input').addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
                 const val = e.target.value.trim();
-                if (val) saveHistory(val);
+                if (!val) return;
+
+                // Jika mengandung lebih dari 2 spasi (biasanya berupa kalimat panjang/curhatan),
+                // maka secara OTOMATIS panggil AI, tanpa harus menekan tombol tongkat sihir!
+                if (val.split(' ').length > 2 && !val.includes('#') && !val.includes('@')) {
+                    triggerAISearch(val);
+                } else {
+                    saveHistory(val);
+                    runSearchOrQueue(val.toLowerCase());
+                }
             }
         });
 
         // --- SISTEM PENCARIAN PINTAR (AI GROQ API) ---
-        window.triggerAISearch = async () => {
-            const queryText = document.getElementById('search-input').value.trim();
+        window.triggerAISearch = async (autoQuery = null) => {
+            const queryText = autoQuery || document.getElementById('search-input').value.trim();
+            
             if (!queryText) {
-                alert("Ketikkan sesuatu (misal: 'cerita yang bikin nangis') lalu klik tombol ini.");
+                alert("Ketikkan sesuatu (misal: 'cerita yang bikin nangis') lalu klik tombol ini atau tekan Enter.");
                 return;
             }
 
@@ -342,13 +348,18 @@
 
                 const data = await response.json();
                 if (data.success && data.tags && data.tags.length > 0) {
+                    
+                    // --- PERBAIKAN: Ubah Teks di Kotak Pencarian & Simpan Riwayat ---
+                    const generatedTagsText = data.tags.map(t => `#${t}`).join(' ');
+                    document.getElementById('search-input').value = generatedTagsText;
+                    saveHistory(generatedTagsText); // Simpan hasil racikan AI ke riwayat
+                    
                     displayAIResults(data.tags, queryText);
                 } else {
                     throw new Error("Gagal mengambil tagar dari AI.");
                 }
             } catch (error) {
                 console.error("AI Error:", error);
-                // Jika API Groq mati/gagal, kembalikan ke pencarian biasa
                 executeSearch(queryText.toLowerCase());
             }
         };
@@ -361,7 +372,6 @@
                 const storyTags = extractTags(story).map(t => t.toLowerCase());
                 const storyGenre = (story.genre || '').toLowerCase();
                 
-                // Cari cerita yang minimal punya SATU tagar atau genre yang disarankan AI
                 return tagsLower.some(aiTag => storyTags.includes(aiTag) || storyGenre.includes(aiTag));
             });
 
@@ -371,7 +381,7 @@
                 resView.innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-face-frown-open"></i>
-                        <p>AI menyarankan tagar: <b>${aiTags.map(t=>'#'+t).join(', ')}</b><br>Namun maaf, belum ada cerita yang cocok di perpustakaan kami.</p>
+                        <p>AI menyarankan tema: <b>${aiTags.map(t=>'#'+t).join(', ')}</b><br>Namun maaf, belum ada cerita yang cocok di perpustakaan kami.</p>
                     </div>`;
                 return;
             }
@@ -460,7 +470,6 @@
             let storyResults = [];
             let userResults = [];
 
-            // Jika mencari menggunakan "@", hanya cari akun/pengguna (entah punya karya atau tidak)
             if (queryText.startsWith('@')) {
                 const aQuery = queryText.substring(1).trim().toLowerCase();
                 if (aQuery) {
@@ -470,7 +479,6 @@
                     );
                 }
             } 
-            // Jika pencarian biasa, cari cerita DAN akun yang mengandung kata tersebut
             else {
                 storyResults = allStories.filter(story => {
                     const safeTitle = (story.title || '').toLowerCase();
@@ -488,7 +496,6 @@
                     }
                 });
 
-                // Jangan cari user jika sedang mencari tagar #
                 if (!queryText.startsWith('#')) {
                     userResults = allUsers.filter(u => 
                         (u.username || '').toLowerCase().includes(queryText) || 
@@ -508,7 +515,6 @@
 
             let html = '';
 
-            // RENDER HASIL PENGGUNA/AKUN DULU (JIKA ADA)
             if (userResults.length > 0) {
                 html += `<p class="result-count-label"><i class="fa-solid fa-users"></i> ${userResults.length} Akun Ditemukan</p>`;
                 userResults.forEach(user => {
@@ -528,11 +534,9 @@
                         </div>
                     `;
                 });
-                // Beri jarak jika ada hasil cerita di bawahnya
                 if(storyResults.length > 0) html += `<div style="height:15px;"></div>`;
             }
 
-            // RENDER HASIL CERITA (JIKA ADA)
             if (storyResults.length > 0) {
                 html += `<p class="result-count-label"><i class="fa-solid fa-book"></i> ${storyResults.length} Cerita Ditemukan</p><div style="display:flex; flex-direction:column;">`;
                 storyResults.forEach(data => {
@@ -580,7 +584,6 @@
                 showSearchingSkeleton();
             }
 
-            // Langsung Tarik Database (Tanpa Cache Lokal untuk memastikan profil penulis baru terbaca)
             await loadDatabase();
             dataReady = true;
             renderRecommendations();
