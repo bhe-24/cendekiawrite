@@ -142,13 +142,33 @@
         .banner-content { position: absolute; bottom: 15px; left: 20px; right: 20px; color: white; z-index: 2; }
         .banner-content h3 { font-size: clamp(1.05rem, 2.4vw, 1.4rem); word-break: break-word; margin:0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
 
-        /* --- 5. QUICK ACTION ICONS --- */
+        /* --- 5. QUICK ACTION ICONS & NOTIF BADGE --- */
         .quick-actions { display: flex; overflow-x: auto; gap: clamp(14px, 3vw, 40px); padding: 15px clamp(16px,4vw,20px) 30px clamp(16px,4vw,20px); scrollbar-width: none; justify-content: flex-start; }
         .quick-actions::-webkit-scrollbar { display: none; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; cursor: pointer; width: clamp(65px, 8vw, 80px); text-decoration: none; }
-        .action-icon { width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%; background: white; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .action-icon { position: relative; width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px); border-radius: 50%; background: white; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .action-item:hover .action-icon { background: var(--nav-bg); color: white; transform: scale(1.1); }
         .action-item span { font-size: clamp(0.72rem, 1.6vw, 0.9rem); font-weight: 600; text-align: center; color: var(--text-dark); }
+        
+        /* CSS Khusus Badge Angka Notifikasi */
+        .notif-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            background-color: #ef4444; /* Merah menyala */
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
 
         /* --- 6. STORY SECTIONS --- */
         .section-container { margin-bottom: clamp(28px, 5vw, 40px); }
@@ -289,7 +309,7 @@
 </head>
 <body>
 
-    <!-- FLOATING PROMO (Menunggu instruksi Firebase) -->
+    <!-- FLOATING PROMO -->
     <div class="floating-promo" id="promo-widget">
         <div class="floating-promo-close" onclick="closePromoWidget()">
             <i class="fa-solid fa-xmark"></i>
@@ -316,7 +336,7 @@
 
     <div class="app-wrapper">
         
-        <!-- BANNERS (Membentang Full Layar Desktop) -->
+        <!-- BANNERS -->
         <div class="hero-banner-wrap">
             <div class="banner-container" id="banner-container">
                 <div class="skeleton-banner"></div>
@@ -339,7 +359,11 @@
                 <span>Pustaka</span>
             </a>
             <a href="#" class="action-item" onclick="requireLogin('notifikasi', 'notifikasi.html')">
-                <div class="action-icon"><i class="fa-solid fa-bell" style="color: #ef4444;"></i></div>
+                <div class="action-icon" style="position: relative;">
+                    <i class="fa-solid fa-bell" style="color: #ef4444;"></i>
+                    <!-- BADGE NOTIFIKASI DISINI -->
+                    <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
+                </div>
                 <span>Notifikasi</span>
             </a>
             <a href="#" class="action-item" onclick="requireLogin('profil', 'profil.html')">
@@ -358,7 +382,7 @@
             </div>
         </div>
 
-        <!-- REKOMENDASI UTAMA (RANDOM ALGORITHM) -->
+        <!-- REKOMENDASI UTAMA -->
         <div class="section-container">
             <div class="section-header">
                 <h2>Rekomendasi Utama</h2>
@@ -386,7 +410,7 @@
             </div>
         </div>
 
-        <!-- PILIHAN EDITOR EKSKLUSIF (Membentang Full Layar Desktop) -->
+        <!-- PILIHAN EDITOR EKSKLUSIF -->
         <div class="editor-section-wrap">
             <div class="section-header">
                 <h2>Pilihan Editor<span class="editor-subtitle">Sorotan Kurasi Khusus</span></h2>
@@ -425,7 +449,7 @@
         </div>
     </div>
 
-    <!-- FOOTER FULL WIDTH DILUAR APP-WRAPPER -->
+    <!-- FOOTER -->
     <footer class="app-footer">
         <p>&copy; <span id="current-year"></span> Aksara Narasi. Seluruh Hak Cipta Dilindungi.</p>
         <p>
@@ -509,7 +533,7 @@
     <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, where, limit, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -553,6 +577,21 @@
                 btnLogin.innerText = "Profil";
                 btnLogin.onclick = () => window.location.href = "profil.html"; 
                 loadContinueReading(user.uid);
+
+                // REAL-TIME LISTENER UNTUK BADGE NOTIFIKASI
+                const notifQuery = query(collection(db, "users", user.uid, "notifications"), where("isRead", "==", false));
+                onSnapshot(notifQuery, (snapshot) => {
+                    const badge = document.getElementById('notif-badge');
+                    if (badge) {
+                        const unreadCount = snapshot.size;
+                        if (unreadCount > 0) {
+                            badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                });
 
                 // Fetch Sapaan Username
                 try {
