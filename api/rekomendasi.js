@@ -1,5 +1,3 @@
-// File: api/rekomendasi.js
-
 export default async function handler(req, res) {
     // 1. Izinkan akses dari halaman web (CORS)
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -11,34 +9,28 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // 2. Pastikan requestnya adalah POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Metode tidak diizinkan. Gunakan POST.' });
     }
 
     const { action, text } = req.body;
     
-    // API Key Groq ini NANTI harus kamu masukkan di pengaturan Vercel (Environment Variables)
-    // JANGAN PERNAH MENULIS API KEY LANGSUNG DI KODE HTML!
+    // API Key Groq dari Vercel Environment Variables
     const GROQ_API_KEY = process.env.GROQ_API_KEY; 
 
     if (!GROQ_API_KEY) {
-        return res.status(500).json({ error: 'API Key Groq belum dipasang di Server.' });
+        return res.status(500).json({ error: 'API Key Groq belum dipasang di Server Vercel.' });
     }
 
     try {
         let systemPrompt = "";
 
-        // 3. Logika "Banyak Kamar": AI bertindak sesuai perintah dari halaman yang memanggilnya
         if (action === "auto_tag") {
-            // Jika dipanggil dari halaman Menulis (menulis-info.html)
             systemPrompt = `Kamu adalah asisten editor novel profesional di platform Aksara Narasi. 
             Tugasmu: Baca sinopsis atau potongan cerita dari penulis berikut, lalu berikan MAKSIMAL 5 tagar (genre/tema) yang paling relevan.
             ATURAN MUTLAK: Balasanmu HARUS berupa array JSON murni tanpa awalan/akhiran teks apapun. 
             Contoh balasan: ["Romansa", "Sekolah", "PatahHati", "FiksiRemaja", "Sedih"]`;
-        
         } else if (action === "semantic_search") {
-            // Jika dipanggil dari halaman Pencarian (search.html)
             systemPrompt = `Kamu adalah asisten mesin pencari buku. 
             Tugasmu: Analisis curhatan/kalimat pembaca berikut, lalu ekstrak menjadi MAKSIMAL 3 kata kunci/tagar utama untuk mencari novel yang cocok.
             ATURAN MUTLAK: Balasanmu HARUS berupa array JSON murni tanpa awalan/akhiran teks apapun.
@@ -47,7 +39,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Action tidak dikenali.' });
         }
 
-        // 4. Memanggil Groq API yang Super Cepat (Pakai model Llama 3 8B)
+        // 4. Memanggil Groq API
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -55,21 +47,29 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "llama3-8b-8192", // Model ringan dan super kilat
+                model: "llama3-8b-8192", 
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: text }
                 ],
-                temperature: 0.3 // Dibuat rendah agar jawabannya fokus dan tidak melantur
+                temperature: 0.3 
             })
         });
 
         const data = await response.json();
         
-        // 5. Tangkap balasan AI
+        // --- PERBAIKAN DI SINI: TANGKAP ERROR DARI GROQ ---
+        if (!response.ok || !data.choices || data.choices.length === 0) {
+            console.error("ALASAN ERROR DARI GROQ:", JSON.stringify(data, null, 2));
+            return res.status(500).json({ 
+                success: false, 
+                error: data.error?.message || 'Groq API menolak permintaan atau mengembalikan data kosong.' 
+            });
+        }
+        
         let aiReply = data.choices[0].message.content.trim();
         
-        // Bersihkan balasan jika AI bandel memberikan teks tambahan di luar JSON
+        // Bersihkan balasan dari karakter tak berguna
         const jsonMatch = aiReply.match(/\[.*\]/s);
         if (jsonMatch) {
             aiReply = jsonMatch[0];
@@ -77,11 +77,10 @@ export default async function handler(req, res) {
 
         const tagsArray = JSON.parse(aiReply);
 
-        // 6. Kirim kembali ke halaman web (HTML)
         return res.status(200).json({ success: true, tags: tagsArray });
 
     } catch (error) {
-        console.error("Groq Error:", error);
-        return res.status(500).json({ success: false, error: 'Gagal berkomunikasi dengan otak AI.' });
+        console.error("System Error (Rekomendasi):", error.message);
+        return res.status(500).json({ success: false, error: 'Gagal memproses data JSON dari AI.' });
     }
 }
